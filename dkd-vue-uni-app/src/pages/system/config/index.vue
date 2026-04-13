@@ -1,68 +1,57 @@
 <template>
-  <TopBar title="Device Management" :showBack="true" />
+  <TopBar title="Config Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.innerCode" placeholder="Search by Inner Code" @confirm="handleSearch" />
+      <input class="n-input search-input" v-model="queryParams.configName" placeholder="Search by Config Name" @confirm="handleSearch" />
       <view class="filter-toggle" @click="toggleFilters">
         <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
         <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
       </view>
       <view class="filters-container" :class="{ expanded: filtersExpanded }">
-        <picker mode="selector" :range="nodeList" range-key="nodeName" :value="filterNodeIndex" @change="onFilterNodeChange">
-          <view class="filter-picker">{{ queryParams.nodeId ? nodeList[filterNodeIndex]?.nodeName : 'All Nodes' }}</view>
-        </picker>
-        <picker mode="selector" :range="regionList" range-key="regionName" :value="filterRegionIndex" @change="onFilterRegionChange">
-          <view class="filter-picker">{{ queryParams.regionId ? regionList[filterRegionIndex]?.regionName : 'All Regions' }}</view>
-        </picker>
-        <picker mode="selector" :range="partnerList" range-key="partnerName" :value="filterPartnerIndex" @change="onFilterPartnerChange">
-          <view class="filter-picker">{{ queryParams.partnerId ? partnerList[filterPartnerIndex]?.partnerName : 'All Partners' }}</view>
-        </picker>
-        <picker mode="selector" :range="vmTypeList" range-key="typeName" :value="filterVmTypeIndex" @change="onFilterVmTypeChange">
-          <view class="filter-picker">{{ queryParams.vmTypeId ? vmTypeList[filterVmTypeIndex]?.typeName : 'All VM Types' }}</view>
-        </picker>
-        <picker mode="selector" :range="statusOptions" :value="filterStatusIndex" @change="onFilterStatusChange">
-          <view class="filter-picker">{{ statusOptions[filterStatusIndex] }}</view>
+        <input class="n-input search-input" v-model="queryParams.configKey" placeholder="Search by Config Key" @confirm="handleSearch" />
+        <picker mode="selector" :range="configTypeOptions" :value="filterConfigTypeIndex" @change="onFilterConfigTypeChange">
+          <view class="filter-picker">{{ configTypeOptions[filterConfigTypeIndex] }}</view>
         </picker>
       </view>
     </view>
 
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
-      <view class="vm-list">
-        <view class="vm-card" v-for="item in vmList" :key="item.id" @click="handleViewDetail(item)">
-          <view class="vm-card-header">
-            <text class="vm-code">{{ item.innerCode }}</text>
-            <view class="status-badge" :class="'status-' + item.vmStatus">
-              {{ getStatusText(item.vmStatus) }}
+      <view class="config-list">
+        <view class="config-card" v-for="item in configList" :key="item.configId" @click="handleViewDetail(item)">
+          <view class="config-card-header">
+            <text class="config-name">{{ item.configName }}</text>
+            <view class="config-type-badge" :class="item.configType === 'Y' ? 'type-system' : 'type-user'">
+              {{ item.configType === 'Y' ? 'System' : 'User' }}
             </view>
           </view>
           
-          <view class="vm-info">
+          <view class="config-info">
             <view class="info-row">
-              <text class="info-label">Address</text>
-              <text class="info-value">{{ item.addr || 'Unknown' }}</text>
+              <text class="info-label">Config Key</text>
+              <text class="info-value">{{ item.configKey }}</text>
             </view>
             <view class="info-row">
-              <text class="info-label">Model</text>
-              <text class="info-value">{{ item.vmTypeId || 'Unknown' }}</text>
+              <text class="info-label">Config Value</text>
+              <text class="info-value">{{ item.configValue }}</text>
             </view>
             <view class="info-row">
-              <text class="info-label">Partner ID</text>
-              <text class="info-value">{{ item.partnerId || 'N/A' }}</text>
+              <text class="info-label">Remark</text>
+              <text class="info-value">{{ item.remark || 'N/A' }}</text>
             </view>
           </view>
 
           <view class="card-actions">
-            <view class="action-btn" @click="handleEdit(item)" v-if="hasPermission('manage:vm:edit')">
+            <view class="action-btn" @click.stop="handleEdit(item)" v-if="hasPermission('system:config:edit')">
               <text class="action-text">Edit</text>
             </view>
-            <view class="action-btn delete" @click="handleDelete(item)" v-if="hasPermission('manage:vm:remove')">
+            <view class="action-btn delete" @click.stop="handleDelete(item)" v-if="hasPermission('system:config:remove')">
               <text class="action-text">Delete</text>
             </view>
           </view>
         </view>
 
-        <view class="empty-state" v-if="vmList.length === 0 && !loading">
-          <text class="empty-text">No devices found</text>
+        <view class="empty-state" v-if="configList.length === 0 && !loading">
+          <text class="empty-text">No configs found</text>
         </view>
       </view>
     </scroll-view>
@@ -70,37 +59,29 @@
     <view class="modal-overlay" v-if="showDetailModal" @click="closeDetailModal">
       <view class="modal-content detail-modal" @click.stop>
         <view class="modal-header">
-          <text class="modal-title">Device Detail</text>
+          <text class="modal-title">Config Detail</text>
           <text class="modal-close" @click="closeDetailModal">×</text>
         </view>
         <view class="modal-body">
           <view class="detail-info-row">
-            <text class="detail-label">Device Code:</text>
-            <text class="detail-value">{{ detailData.innerCode }}</text>
+            <text class="detail-label">Config Name:</text>
+            <text class="detail-value">{{ detailData.configName }}</text>
           </view>
           <view class="detail-info-row">
-            <text class="detail-label">Address:</text>
-            <text class="detail-value">{{ detailData.addr }}</text>
+            <text class="detail-label">Config Key:</text>
+            <text class="detail-value">{{ detailData.configKey }}</text>
           </view>
           <view class="detail-info-row">
-            <text class="detail-label">Node:</text>
-            <text class="detail-value">{{ detailData.nodeName }}</text>
+            <text class="detail-label">Config Value:</text>
+            <text class="detail-value">{{ detailData.configValue }}</text>
           </view>
           <view class="detail-info-row">
-            <text class="detail-label">Region:</text>
-            <text class="detail-value">{{ detailData.regionName }}</text>
+            <text class="detail-label">Config Type:</text>
+            <text class="detail-value">{{ detailData.configType === 'Y' ? 'System' : 'User' }}</text>
           </view>
           <view class="detail-info-row">
-            <text class="detail-label">Partner:</text>
-            <text class="detail-value">{{ detailData.partnerName }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">VM Type:</text>
-            <text class="detail-value">{{ detailData.vmTypeName }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Status:</text>
-            <text class="detail-value">{{ getStatusText(detailData.vmStatus) }}</text>
+            <text class="detail-label">Remark:</text>
+            <text class="detail-value">{{ detailData.remark || 'N/A' }}</text>
           </view>
         </view>
         <view class="modal-footer">
@@ -114,25 +95,31 @@
     <view class="modal-overlay" v-if="showModal" @click="closeModal">
       <view class="modal-content" @click.stop>
         <view class="modal-header">
-          <text class="modal-title">{{ isEdit ? 'Edit Device' : 'Add Device' }}</text>
+          <text class="modal-title">{{ isEdit ? 'Edit Config' : 'Add Config' }}</text>
           <text class="modal-close" @click="closeModal">×</text>
         </view>
         <view class="modal-body">
           <view class="form-item">
-            <text class="form-label">Device Code *</text>
-            <input class="n-input" v-model="form.innerCode" placeholder="Enter device code" />
+            <text class="form-label">Config Name *</text>
+            <input class="n-input" v-model="form.configName" placeholder="Enter config name" />
           </view>
           <view class="form-item">
-            <text class="form-label">Node *</text>
-            <picker mode="selector" :range="nodeList" range-key="nodeName" :value="nodeIndex" @change="onNodeChange">
-              <view class="picker-input">{{ form.nodeId ? nodeList[nodeIndex]?.nodeName : 'Select Node' }}</view>
+            <text class="form-label">Config Key *</text>
+            <input class="n-input" v-model="form.configKey" placeholder="Enter config key" />
+          </view>
+          <view class="form-item">
+            <text class="form-label">Config Value *</text>
+            <input class="n-input" v-model="form.configValue" placeholder="Enter config value" />
+          </view>
+          <view class="form-item">
+            <text class="form-label">Config Type *</text>
+            <picker mode="selector" :range="configTypeOptions" :value="configTypeIndex" @change="onConfigTypeChange">
+              <view class="picker-input">{{ configTypeOptions[configTypeIndex] }}</view>
             </picker>
           </view>
           <view class="form-item">
-            <text class="form-label">VM Type *</text>
-            <picker mode="selector" :range="vmTypeList" range-key="name" :value="vmTypeIndex" @change="onVmTypeChange">
-              <view class="picker-input">{{ form.vmTypeId ? vmTypeList[vmTypeIndex]?.name : 'Select VM Type' }}</view>
-            </picker>
+            <text class="form-label">Remark</text>
+            <textarea class="n-textarea" v-model="form.remark" placeholder="Enter remark" />
           </view>
         </view>
         <view class="modal-footer">
@@ -152,37 +139,27 @@
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import TopBar from '@/components/TopBar/index.vue'
-import { listVm, getVm, addVm, updateVm, delVm } from '@/api/manage/vm'
-import { listNode } from '@/api/manage/node'
-import { listVmType } from '@/api/manage/vmType'
-import { listRegion } from '@/api/manage/region'
-import { listPartner } from '@/api/manage/partner'
+import { listConfig, getConfig, addConfig, updateConfig, delConfig } from '@/api/system/config'
 import { hasPermission } from '@/utils/permission'
 
-const vmList = ref([])
+const configList = ref([])
 const loading = ref(false)
 const isRefreshing = ref(false)
 const showDetailModal = ref(false)
 const detailData = ref({
-  innerCode: '',
-  addr: '',
-  nodeName: '',
-  regionName: '',
-  partnerName: '',
-  vmTypeName: '',
-  vmStatus: ''
+  configName: '',
+  configKey: '',
+  configValue: '',
+  configType: '',
+  remark: ''
 })
 
 const queryParams = ref({
   pageNum: 1,
   pageSize: 10,
-  innerCode: '',
-  nodeId: null,
-  regionId: null,
-  partnerId: null,
-  vmTypeId: null,
-  vmStatus: null,
-  policyId: ''
+  configName: '',
+  configKey: '',
+  configType: null
 })
 const total = ref(0)
 const filtersExpanded = ref(false)
@@ -191,35 +168,28 @@ const showModal = ref(false)
 const isEdit = ref(false)
 const isSubmitting = ref(false)
 const form = ref({
-  id: null,
-  innerCode: '',
-  nodeId: '',
-  vmTypeId: ''
+  configId: null,
+  configName: '',
+  configKey: '',
+  configValue: '',
+  configType: 'N',
+  remark: ''
 })
 
-const nodeList = ref([])
-const vmTypeList = ref([])
-const regionList = ref([])
-const partnerList = ref([])
-const nodeIndex = ref(0)
-const vmTypeIndex = ref(0)
-const filterNodeIndex = ref(0)
-const filterRegionIndex = ref(0)
-const filterPartnerIndex = ref(0)
-const filterVmTypeIndex = ref(0)
-const filterVmStatusIndex = ref(0)
-const vmStatusOptions = ['All Status', 'Unoperated', 'Operating', 'Fault']
+const configTypeOptions = ['All Types', 'System', 'User']
+const filterConfigTypeIndex = ref(0)
+const configTypeIndex = ref(2)
 
 const fetchList = async (reset = false) => {
   if (reset) {
     queryParams.value.pageNum = 1
-    vmList.value = []
+    configList.value = []
   }
   try {
     loading.value = true
-    const res = await listVm(queryParams.value)
+    const res = await listConfig(queryParams.value)
     if (res.rows) {
-      vmList.value = [...vmList.value, ...res.rows]
+      configList.value = [...configList.value, ...res.rows]
       total.value = res.total
     }
   } catch (error) {
@@ -232,25 +202,7 @@ const fetchList = async (reset = false) => {
 
 onShow(() => {
   fetchList(true)
-  fetchDropdownData()
 })
-
-const fetchDropdownData = async () => {
-  try {
-    const [nodeRes, vmTypeRes, regionRes, partnerRes] = await Promise.all([
-      listNode({ pageNum: 1, pageSize: 100 }),
-      listVmType({ pageNum: 1, pageSize: 100 }),
-      listRegion({ pageNum: 1, pageSize: 100 }),
-      listPartner({ pageNum: 1, pageSize: 100 })
-    ])
-    nodeList.value = nodeRes.rows || []
-    vmTypeList.value = vmTypeRes.rows || []
-    regionList.value = regionRes.rows || []
-    partnerList.value = partnerRes.rows || []
-  } catch (error) {
-    console.error('Failed to fetch dropdown data', error)
-  }
-}
 
 const handleSearch = () => {
   fetchList(true)
@@ -260,56 +212,54 @@ const toggleFilters = () => {
   filtersExpanded.value = !filtersExpanded.value
 }
 
-const loadMore = () => {
-  if (vmList.value.length < total.value) {
-    queryParams.value.pageNum++
-    fetchList()
+const handleAdd = () => {
+  isEdit.value = false
+  form.value = { configId: null, configName: '', configKey: '', configValue: '', configType: 'N', remark: '' }
+  configTypeIndex.value = 2
+  showModal.value = true
+}
+
+const handleViewDetail = async (item) => {
+  try {
+    const res = await getConfig(item.configId)
+    detailData.value = {
+      configName: res.data.configName,
+      configKey: res.data.configKey,
+      configValue: res.data.configValue,
+      configType: res.data.configType,
+      remark: res.data.remark
+    }
+    showDetailModal.value = true
+  } catch (error) {
+    uni.showToast({ title: 'Failed to load config detail', icon: 'none' })
   }
 }
 
-const onRefresh = () => {
-  isRefreshing.value = true
-  fetchList(true)
-}
-
-const getStatusText = (status) => {
-  if (status === 0) return 'Unoperated'
-  if (status === 1) return 'Operating'
-  if (status === 3) return 'Fault'
-  return 'Unknown'
-}
-
-const handleAdd = () => {
-  isEdit.value = false
-  form.value = { id: null, innerCode: '', nodeId: null, vmTypeId: null }
-  nodeIndex.value = 0
-  vmTypeIndex.value = 0
-  showModal.value = true
+const closeDetailModal = () => {
+  showDetailModal.value = false
+  detailData.value = { configName: '', configKey: '', configValue: '', configType: '', remark: '' }
 }
 
 const handleEdit = async (item) => {
   try {
-    const res = await getVm(item.id)
+    const res = await getConfig(item.configId)
     form.value = res.data
     isEdit.value = true
-    
-    nodeIndex.value = nodeList.value.findIndex(n => n.id === form.value.nodeId)
-    vmTypeIndex.value = vmTypeList.value.findIndex(v => v.id === form.value.vmTypeId)
-    
+    configTypeIndex.value = res.data.configType === 'Y' ? 1 : 2
     showModal.value = true
   } catch (error) {
-    uni.showToast({ title: 'Failed to load device data', icon: 'none' })
+    uni.showToast({ title: 'Failed to load config data', icon: 'none' })
   }
 }
 
 const handleDelete = (item) => {
   uni.showModal({
     title: 'Confirm Delete',
-    content: `Are you sure you want to delete "${item.innerCode}"?`,
+    content: `Are you sure you want to delete "${item.configName}"?`,
     success: async (res) => {
       if (res.confirm) {
         try {
-          await delVm(item.id)
+          await delConfig(item.configId)
           uni.showToast({ title: 'Deleted successfully', icon: 'success' })
           fetchList(true)
         } catch (error) {
@@ -320,98 +270,45 @@ const handleDelete = (item) => {
   })
 }
 
-const onNodeChange = (e) => {
-  nodeIndex.value = e.detail.value
-  form.value.nodeId = nodeList.value[e.detail.value].id
-}
-
-const onVmTypeChange = (e) => {
-  vmTypeIndex.value = e.detail.value
-  form.value.vmTypeId = vmTypeList.value[e.detail.value].id
-}
-
-const onFilterNodeChange = (e) => {
-  filterNodeIndex.value = e.detail.value
-  queryParams.value.nodeId = nodeList.value[e.detail.value]?.id || null
-  handleSearch()
-}
-
-const onFilterRegionChange = (e) => {
-  filterRegionIndex.value = e.detail.value
-  queryParams.value.regionId = regionList.value[e.detail.value]?.id || null
-  handleSearch()
-}
-
-const onFilterPartnerChange = (e) => {
-  filterPartnerIndex.value = e.detail.value
-  queryParams.value.partnerId = partnerList.value[e.detail.value]?.id || null
-  handleSearch()
-}
-
-const onFilterVmTypeChange = (e) => {
-  filterVmTypeIndex.value = e.detail.value
-  queryParams.value.vmTypeId = vmTypeList.value[e.detail.value]?.id || null
-  handleSearch()
-}
-
-const onFilterVmStatusChange = (e) => {
-  filterVmStatusIndex.value = e.detail.value
-  queryParams.value.vmStatus = e.detail.value === 0 ? null : e.detail.value
-  handleSearch()
-}
-
-const handleViewDetail = async (item) => {
-  try {
-    const res = await getVm(item.id)
-    detailData.value = {
-      innerCode: res.data.innerCode,
-      addr: res.data.addr,
-      nodeName: res.data.node?.nodeName || 'Unknown',
-      regionName: res.data.region?.regionName || 'Unknown',
-      partnerName: res.data.partner?.partnerName || 'Unknown',
-      vmTypeName: res.data.vmType?.name || 'Unknown',
-      vmStatus: res.data.vmStatus
-    }
-    showDetailModal.value = true
-  } catch (error) {
-    uni.showToast({ title: 'Failed to load device detail', icon: 'none' })
-  }
-}
-
-const closeDetailModal = () => {
-  showDetailModal.value = false
-  detailData.value = { innerCode: '', addr: '', nodeName: '', regionName: '', partnerName: '', vmTypeName: '', vmStatus: '' }
-}
-
 const closeModal = () => {
   showModal.value = false
-  form.value = { id: null, innerCode: '', nodeId: null, vmTypeId: null }
+  form.value = { configId: null, configName: '', configKey: '', configValue: '', configType: 'N', remark: '' }
+}
+
+const onConfigTypeChange = (e) => {
+  configTypeIndex.value = e.detail.value
+  form.value.configType = e.detail.value === 1 ? 'Y' : 'N'
+}
+
+const onFilterConfigTypeChange = (e) => {
+  filterConfigTypeIndex.value = e.detail.value
+  queryParams.value.configType = e.detail.value === 0 ? null : (e.detail.value === 1 ? 'Y' : 'N')
+  handleSearch()
 }
 
 const submitForm = async () => {
   if (isSubmitting.value) return
   
-  // Validation rules matching webapp
-  if (!form.value.innerCode) {
-    uni.showToast({ title: 'Device Code is required', icon: 'none' })
+  if (!form.value.configName) {
+    uni.showToast({ title: 'Config Name is required', icon: 'none' })
     return
   }
-  if (!form.value.nodeId) {
-    uni.showToast({ title: 'Please select a Node', icon: 'none' })
+  if (!form.value.configKey) {
+    uni.showToast({ title: 'Config Key is required', icon: 'none' })
     return
   }
-  if (!form.value.vmTypeId) {
-    uni.showToast({ title: 'Please select a VM Type', icon: 'none' })
+  if (!form.value.configValue) {
+    uni.showToast({ title: 'Config Value is required', icon: 'none' })
     return
   }
 
   isSubmitting.value = true
   try {
     if (isEdit.value) {
-      await updateVm(form.value)
+      await updateConfig(form.value)
       uni.showToast({ title: 'Updated successfully', icon: 'success' })
     } else {
-      await addVm(form.value)
+      await addConfig(form.value)
       uni.showToast({ title: 'Added successfully', icon: 'success' })
     }
     closeModal()
@@ -421,6 +318,18 @@ const submitForm = async () => {
   } finally {
     isSubmitting.value = false
   }
+}
+
+const loadMore = () => {
+  if (configList.value.length < total.value) {
+    queryParams.value.pageNum++
+    fetchList()
+  }
+}
+
+const onRefresh = () => {
+  isRefreshing.value = true
+  fetchList(true)
 }
 </script>
 
@@ -496,7 +405,7 @@ const submitForm = async () => {
 }
 
 .filters-container.expanded {
-  max-height: 300px;
+  max-height: 200px;
   opacity: 1;
 }
 
@@ -516,25 +425,25 @@ const submitForm = async () => {
   overflow: hidden;
 }
 
-.vm-list {
-  padding: 0 16px 24px;
+.config-list {
+  padding: 0 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.vm-card {
+.config-card {
   @include glass-panel;
   padding: 20px;
   transition: transform 0.2s ease;
 }
 
-.vm-card:active {
+.config-card:active {
   transform: scale(0.98);
   background-color: rgba(255, 255, 255, 0.8);
 }
 
-.vm-card-header {
+.config-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -543,36 +452,31 @@ const submitForm = async () => {
   border-bottom: 1px solid $apple-glass-border;
 }
 
-.vm-code {
+.config-name {
   font-size: 18px;
   font-weight: 700;
   color: $apple-text-primary;
   letter-spacing: -0.5px;
 }
 
-.status-badge {
-  padding: 4px 10px;
+.config-type-badge {
+  padding: 6px 12px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
 }
 
-.status-0 {
-  background-color: rgba(255, 149, 0, 0.15);
-  color: #ff9500;
+.type-system {
+  background-color: rgba(0, 122, 255, 0.15);
+  color: #007aff;
 }
 
-.status-1 {
+.type-user {
   background-color: rgba(52, 199, 89, 0.15);
   color: #34c759;
 }
 
-.status-3 {
-  background-color: rgba(255, 59, 48, 0.15);
-  color: #ff3b30;
-}
-
-.vm-info {
+.config-info {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -592,6 +496,11 @@ const submitForm = async () => {
   font-size: 14px;
   color: $apple-text-primary;
   font-weight: 500;
+  text-align: right;
+  max-width: 60%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .empty-state {
@@ -710,9 +619,22 @@ const submitForm = async () => {
 
 .picker-input {
   @include glass-input;
+  height: 44px;
+  line-height: 44px;
+  padding: 0 16px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.n-textarea {
+  @include glass-input;
+  min-height: 80px;
   padding: 12px 16px;
   font-size: 16px;
-  color: $apple-text-primary;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 12px;
 }
 
 .modal-footer {

@@ -1,19 +1,14 @@
 <template>
-  <TopBar title="Employee Management" :showBack="true" />
+  <TopBar title="User Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.userName" placeholder="Search by Name" @confirm="handleSearch" />
+      <input class="n-input search-input" v-model="queryParams.userName" placeholder="Search by User Name" @confirm="handleSearch" />
       <view class="filter-toggle" @click="toggleFilters">
         <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
         <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
       </view>
       <view class="filters-container" :class="{ expanded: filtersExpanded }">
-        <picker mode="selector" :range="regionList" range-key="regionName" :value="filterRegionIndex" @change="onFilterRegionChange">
-          <view class="filter-picker">{{ queryParams.regionId ? regionList[filterRegionIndex]?.regionName : 'All Regions' }}</view>
-        </picker>
-        <picker mode="selector" :range="roleList" range-key="roleName" :value="filterRoleIndex" @change="onFilterRoleChange">
-          <view class="filter-picker">{{ queryParams.roleId ? roleList[filterRoleIndex]?.roleName : 'All Roles' }}</view>
-        </picker>
+        <input class="n-input search-input" v-model="queryParams.phonenumber" placeholder="Search by Phone" @confirm="handleSearch" />
         <picker mode="selector" :range="statusOptions" :value="filterStatusIndex" @change="onFilterStatusChange">
           <view class="filter-picker">{{ statusOptions[filterStatusIndex] }}</view>
         </picker>
@@ -21,51 +16,54 @@
     </view>
 
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
-      <view class="emp-list">
-        <view class="emp-card" v-for="item in empList" :key="item.id" @click="handleViewDetail(item)">
-          <view class="emp-card-header">
-            <view class="emp-avatar">
-              <image v-if="item.image" :src="item.image" class="avatar-image" mode="aspectFill" />
+      <view class="user-list">
+        <view class="user-card" v-for="item in userList" :key="item.userId" @click="handleViewDetail(item)">
+          <view class="user-card-header">
+            <view class="user-avatar">
+              <image v-if="item.avatar" :src="item.avatar" class="avatar-image" mode="aspectFill" />
               <view v-else class="avatar-placeholder">
                 <text class="avatar-initial">{{ item.userName?.charAt(0)?.toUpperCase() || '?' }}</text>
               </view>
             </view>
-            <view class="emp-info-header">
-              <text class="emp-name">{{ item.userName }}</text>
-              <view class="emp-status" :class="item.status === 1 ? 'status-active' : 'status-inactive'">
-                <text class="status-dot"></text>
-                <text class="status-text">{{ getStatusLabel(item.status) }}</text>
-              </view>
+            <view class="user-info-header">
+              <text class="user-name">{{ item.userName }}</text>
+              <text class="user-nickname">{{ item.nickName }}</text>
+            </view>
+            <view class="status-badge" :class="item.status === '0' ? 'status-active' : 'status-inactive'">
+              {{ item.status === '0' ? 'Active' : 'Inactive' }}
             </view>
           </view>
           
-          <view class="emp-info">
+          <view class="user-info">
             <view class="info-row">
-              <text class="info-label">Region</text>
-              <text class="info-value">{{ item.regionName || 'Unknown' }}</text>
+              <text class="info-label">Department</text>
+              <text class="info-value">{{ item.dept?.deptName || 'N/A' }}</text>
             </view>
             <view class="info-row">
-              <text class="info-label">Role</text>
-              <text class="info-value">{{ item.roleName || 'N/A' }}</text>
+              <text class="info-label">Phone</text>
+              <text class="info-value">{{ item.phonenumber || 'N/A' }}</text>
             </view>
             <view class="info-row">
-              <text class="info-label">Mobile</text>
-              <text class="info-value">{{ item.mobile || 'N/A' }}</text>
+              <text class="info-label">Email</text>
+              <text class="info-value">{{ item.email || 'N/A' }}</text>
             </view>
           </view>
 
           <view class="card-actions">
-            <view class="action-btn" @click="handleEdit(item)" v-if="hasPermission('manage:emp:edit')">
+            <view class="action-btn" @click.stop="handleResetPwd(item)" v-if="item.userId !== 1 && hasPermission('system:user:resetPwd')">
+              <text class="action-text">Reset Pwd</text>
+            </view>
+            <view class="action-btn" @click.stop="handleEdit(item)" v-if="item.userId !== 1 && hasPermission('system:user:edit')">
               <text class="action-text">Edit</text>
             </view>
-            <view class="action-btn delete" @click="handleDelete(item)" v-if="hasPermission('manage:emp:remove')">
+            <view class="action-btn delete" @click.stop="handleDelete(item)" v-if="item.userId !== 1 && hasPermission('system:user:remove')">
               <text class="action-text">Delete</text>
             </view>
           </view>
         </view>
 
-        <view class="empty-state" v-if="empList.length === 0 && !loading">
-          <text class="empty-text">No employees found</text>
+        <view class="empty-state" v-if="userList.length === 0 && !loading">
+          <text class="empty-text">No users found</text>
         </view>
       </view>
     </scroll-view>
@@ -73,13 +71,13 @@
     <view class="modal-overlay" v-if="showDetailModal" @click="closeDetailModal">
       <view class="modal-content detail-modal" @click.stop>
         <view class="modal-header">
-          <text class="modal-title">Employee Detail</text>
+          <text class="modal-title">User Detail</text>
           <text class="modal-close" @click="closeDetailModal">×</text>
         </view>
         <view class="modal-body">
           <view class="detail-avatar-section">
             <view class="detail-avatar">
-              <image v-if="detailData.image" :src="detailData.image" class="detail-avatar-image" mode="aspectFill" />
+              <image v-if="detailData.avatar" :src="detailData.avatar" class="detail-avatar-image" mode="aspectFill" />
               <view v-else class="detail-avatar-placeholder">
                 <text class="detail-avatar-initial">{{ detailData.userName?.charAt(0)?.toUpperCase() || '?' }}</text>
               </view>
@@ -90,20 +88,24 @@
             <text class="detail-value">{{ detailData.userName }}</text>
           </view>
           <view class="detail-info-row">
-            <text class="detail-label">Region:</text>
-            <text class="detail-value">{{ detailData.regionName }}</text>
+            <text class="detail-label">Nickname:</text>
+            <text class="detail-value">{{ detailData.nickName }}</text>
           </view>
           <view class="detail-info-row">
-            <text class="detail-label">Role:</text>
-            <text class="detail-value">{{ detailData.roleName }}</text>
+            <text class="detail-label">Department:</text>
+            <text class="detail-value">{{ detailData.deptName }}</text>
           </view>
           <view class="detail-info-row">
-            <text class="detail-label">Mobile:</text>
-            <text class="detail-value">{{ detailData.mobile }}</text>
+            <text class="detail-label">Phone:</text>
+            <text class="detail-value">{{ detailData.phonenumber }}</text>
+          </view>
+          <view class="detail-info-row">
+            <text class="detail-label">Email:</text>
+            <text class="detail-value">{{ detailData.email }}</text>
           </view>
           <view class="detail-info-row">
             <text class="detail-label">Status:</text>
-            <text class="detail-value">{{ getStatusLabel(detailData.status) }}</text>
+            <text class="detail-value">{{ detailData.status === '0' ? 'Active' : 'Inactive' }}</text>
           </view>
           <view class="detail-info-row">
             <text class="detail-label">Created:</text>
@@ -121,44 +123,40 @@
     <view class="modal-overlay" v-if="showModal" @click="closeModal">
       <view class="modal-content" @click.stop>
         <view class="modal-header">
-          <text class="modal-title">{{ isEdit ? 'Edit Employee' : 'Add Employee' }}</text>
+          <text class="modal-title">{{ isEdit ? 'Edit User' : 'Add User' }}</text>
           <text class="modal-close" @click="closeModal">×</text>
         </view>
         <view class="modal-body">
           <view class="form-item">
             <text class="form-label">User Name *</text>
-            <input class="modal-input" v-model="form.userName" placeholder="Enter user name" />
+            <input class="n-input" v-model="form.userName" placeholder="Enter user name" />
           </view>
           <view class="form-item">
-            <text class="form-label">Region *</text>
-            <picker mode="selector" :range="regionList" range-key="regionName" :value="regionIndex" @change="onRegionChange">
-              <view class="modal-input">{{ form.regionId ? regionList[regionIndex]?.regionName : 'Select Region' }}</view>
+            <text class="form-label">Nickname *</text>
+            <input class="n-input" v-model="form.nickName" placeholder="Enter nickname" />
+          </view>
+          <view class="form-item">
+            <text class="form-label">Department *</text>
+            <picker mode="selector" :range="deptList" range-key="deptName" :value="deptIndex" @change="onDeptChange">
+              <view class="picker-input">{{ form.deptId ? deptList[deptIndex]?.deptName : 'Select Department' }}</view>
             </picker>
           </view>
           <view class="form-item">
-            <text class="form-label">Role *</text>
-            <picker mode="selector" :range="roleList" range-key="roleName" :value="roleIndex" @change="onRoleChange">
-              <view class="modal-input">{{ form.roleId ? roleList[roleIndex]?.roleName : 'Select Role' }}</view>
-            </picker>
+            <text class="form-label">Phone</text>
+            <input class="n-input" v-model="form.phonenumber" placeholder="Enter phone number" />
           </view>
           <view class="form-item">
-            <text class="form-label">Mobile *</text>
-            <input class="modal-input" v-model="form.mobile" type="number" placeholder="Enter mobile number" />
+            <text class="form-label">Email</text>
+            <input class="n-input" v-model="form.email" placeholder="Enter email" />
+          </view>
+          <view class="form-item" v-if="!isEdit">
+            <text class="form-label">Password *</text>
+            <input class="n-input" v-model="form.password" type="password" placeholder="Enter password" />
           </view>
           <view class="form-item">
-            <text class="form-label">Image *</text>
-            <view class="image-upload-container">
-              <image v-if="form.image" :src="form.image" class="preview-image" mode="aspectFill" @click="removeImage" />
-              <view v-else class="upload-placeholder" @click="chooseImage">
-                <text class="upload-icon">+</text>
-                <text class="upload-text">Tap to upload</text>
-              </view>
-            </view>
-          </view>
-          <view class="form-item">
-            <text class="form-label">Status *</text>
+            <text class="form-label">Status</text>
             <picker mode="selector" :range="statusOptions" :value="statusIndex" @change="onStatusChange">
-              <view class="modal-input">{{ statusOptions[statusIndex] }}</view>
+              <view class="picker-input">{{ statusOptions[statusIndex] }}</view>
             </picker>
           </view>
         </view>
@@ -178,25 +176,22 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import { useI18n } from 'vue-i18n'
 import TopBar from '@/components/TopBar/index.vue'
-import { listEmp, getEmp, addEmp, updateEmp, delEmp } from '@/api/manage/emp'
-import { listRegion } from '@/api/manage/region'
-import { listRole } from '@/api/manage/role'
+import { listUser, getUser, addUser, updateUser, delUser, resetUserPwd } from '@/api/system/user'
+import { listDept } from '@/api/system/dept'
 import { hasPermission } from '@/utils/permission'
 
-const { t } = useI18n()
-
-const empList = ref([])
+const userList = ref([])
 const loading = ref(false)
 const isRefreshing = ref(false)
 const showDetailModal = ref(false)
 const detailData = ref({
   userName: '',
-  regionName: '',
-  roleName: '',
-  mobile: '',
-  image: '',
+  nickName: '',
+  deptName: '',
+  phonenumber: '',
+  email: '',
+  avatar: '',
   status: '',
   createTime: ''
 })
@@ -205,8 +200,7 @@ const queryParams = ref({
   pageNum: 1,
   pageSize: 10,
   userName: '',
-  regionId: null,
-  roleId: null,
+  phonenumber: '',
   status: null
 })
 const total = ref(0)
@@ -216,35 +210,32 @@ const showModal = ref(false)
 const isEdit = ref(false)
 const isSubmitting = ref(false)
 const form = ref({
-  id: null,
+  userId: null,
   userName: '',
-  regionId: '',
-  roleId: '',
-  mobile: '',
-  image: '',
-  status: 1
+  nickName: '',
+  deptId: null,
+  phonenumber: '',
+  email: '',
+  password: '',
+  status: '0'
 })
 
-const regionList = ref([])
-const roleList = ref([])
-const regionIndex = ref(0)
-const roleIndex = ref(0)
-const statusIndex = ref(0)
-const filterRegionIndex = ref(0)
-const filterRoleIndex = ref(0)
-const filterStatusIndex = ref(0)
+const deptList = ref([])
+const deptIndex = ref(0)
 const statusOptions = ['All Status', 'Active', 'Inactive']
+const filterStatusIndex = ref(0)
+const statusIndex = ref(1)
 
 const fetchList = async (reset = false) => {
   if (reset) {
     queryParams.value.pageNum = 1
-    empList.value = []
+    userList.value = []
   }
   try {
     loading.value = true
-    const res = await listEmp(queryParams.value)
+    const res = await listUser(queryParams.value)
     if (res.rows) {
-      empList.value = [...empList.value, ...res.rows]
+      userList.value = [...userList.value, ...res.rows]
       total.value = res.total
     }
   } catch (error) {
@@ -255,23 +246,19 @@ const fetchList = async (reset = false) => {
   }
 }
 
-onShow(() => {
-  fetchList(true)
-  fetchDropdownData()
-})
-
-const fetchDropdownData = async () => {
+const fetchDeptList = async () => {
   try {
-    const [regionRes, roleRes] = await Promise.all([
-      listRegion({ pageNum: 1, pageSize: 100 }),
-      listRole({ pageNum: 1, pageSize: 100 })
-    ])
-    regionList.value = regionRes.rows || []
-    roleList.value = roleRes.rows || []
+    const res = await listDept({ pageNum: 1, pageSize: 100 })
+    deptList.value = res.rows || []
   } catch (error) {
-    console.error('Failed to fetch dropdown data', error)
+    console.error('Failed to fetch department list', error)
   }
 }
+
+onShow(() => {
+  fetchList(true)
+  fetchDeptList()
+})
 
 const handleSearch = () => {
   fetchList(true)
@@ -283,26 +270,87 @@ const toggleFilters = () => {
 
 const handleAdd = () => {
   isEdit.value = false
-  form.value = { id: null, userName: '', regionId: null, roleId: null, mobile: '', image: '', status: 1 }
-  regionIndex.value = 0
-  roleIndex.value = 0
-  statusIndex.value = 0
+  form.value = { userId: null, userName: '', nickName: '', deptId: null, phonenumber: '', email: '', password: '', status: '0' }
+  deptIndex.value = 0
+  statusIndex.value = 1
   showModal.value = true
+}
+
+const handleViewDetail = async (item) => {
+  try {
+    const res = await getUser(item.userId)
+    detailData.value = {
+      userName: res.data.userName,
+      nickName: res.data.nickName,
+      deptName: res.data.dept?.deptName || 'Unknown',
+      phonenumber: res.data.phonenumber,
+      email: res.data.email,
+      avatar: res.data.avatar,
+      status: res.data.status,
+      createTime: res.data.createTime
+    }
+    showDetailModal.value = true
+  } catch (error) {
+    uni.showToast({ title: 'Failed to load user detail', icon: 'none' })
+  }
+}
+
+const closeDetailModal = () => {
+  showDetailModal.value = false
+  detailData.value = { userName: '', nickName: '', deptName: '', phonenumber: '', email: '', avatar: '', status: '', createTime: '' }
+}
+
+const handleResetPwd = (item) => {
+  uni.showModal({
+    title: 'Reset Password',
+    content: `Are you sure you want to reset the password for ${item.userName}?`,
+    editable: true,
+    placeholderText: 'Enter new password',
+    success: async (res) => {
+      if (res.confirm && res.content) {
+        try {
+          await resetUserPwd(item.userId, res.content)
+          uni.showToast({ title: 'Password reset successfully', icon: 'success' })
+        } catch (error) {
+          uni.showToast({ title: 'Failed to reset password', icon: 'none' })
+        }
+      }
+    }
+  })
+}
+
+const handleToggleStatus = (item) => {
+  const newStatus = item.status === '0' ? '1' : '0'
+  const text = newStatus === '0' ? 'enable' : 'disable'
+  uni.showModal({
+    title: 'Confirm',
+    content: `Are you sure you want to ${text} "${item.userName}"?`,
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await changeUserStatus(item.userId, newStatus)
+          uni.showToast({ title: 'Status updated successfully', icon: 'success' })
+          fetchList(true)
+        } catch (error) {
+          uni.showToast({ title: 'Failed to update status', icon: 'none' })
+        }
+      }
+    }
+  })
 }
 
 const handleEdit = async (item) => {
   try {
-    const res = await getEmp(item.id)
+    const res = await getUser(item.userId)
     form.value = res.data
     isEdit.value = true
-    
-    regionIndex.value = regionList.value.findIndex(r => r.id === form.value.regionId)
-    roleIndex.value = roleList.value.findIndex(r => r.roleId === form.value.roleId)
-    statusIndex.value = form.value.status === 1 ? 0 : 1
-    
+    statusIndex.value = res.data.status === '0' ? 1 : 2
+    if (res.data.deptId) {
+      deptIndex.value = deptList.value.findIndex(d => d.id === res.data.deptId)
+    }
     showModal.value = true
   } catch (error) {
-    uni.showToast({ title: 'Failed to load employee data', icon: 'none' })
+    uni.showToast({ title: 'Failed to load user data', icon: 'none' })
   }
 }
 
@@ -313,7 +361,7 @@ const handleDelete = (item) => {
     success: async (res) => {
       if (res.confirm) {
         try {
-          await delEmp(item.id)
+          await delUser(item.userId)
           uni.showToast({ title: 'Deleted successfully', icon: 'success' })
           fetchList(true)
         } catch (error) {
@@ -324,103 +372,54 @@ const handleDelete = (item) => {
   })
 }
 
-const onRegionChange = (e) => {
-  regionIndex.value = e.detail.value
-  form.value.regionId = regionList.value[e.detail.value].id
+const closeModal = () => {
+  showModal.value = false
+  form.value = { userId: null, userName: '', nickName: '', deptId: null, phonenumber: '', email: '', password: '', status: '0' }
 }
 
-const onRoleChange = (e) => {
-  roleIndex.value = e.detail.value
-  form.value.roleId = roleList.value[e.detail.value].roleId
+const onDeptChange = (e) => {
+  deptIndex.value = e.detail.value
+  form.value.deptId = deptList.value[e.detail.value].id
 }
 
 const onStatusChange = (e) => {
   statusIndex.value = e.detail.value
-  form.value.status = e.detail.value === 1 ? 1 : 0
-}
-
-const onFilterRegionChange = (e) => {
-  filterRegionIndex.value = e.detail.value
-  queryParams.value.regionId = regionList.value[e.detail.value]?.id || null
-  handleSearch()
-}
-
-const onFilterRoleChange = (e) => {
-  filterRoleIndex.value = e.detail.value
-  queryParams.value.roleId = roleList.value[e.detail.value]?.roleId || null
-  handleSearch()
+  form.value.status = e.detail.value === 1 ? '0' : '1'
 }
 
 const onFilterStatusChange = (e) => {
   filterStatusIndex.value = e.detail.value
-  queryParams.value.status = e.detail.value === 0 ? null : (e.detail.value === 1 ? 1 : 0)
+  queryParams.value.status = e.detail.value === 0 ? null : (e.detail.value === 1 ? '0' : '1')
   handleSearch()
-}
-
-const handleViewDetail = async (item) => {
-  try {
-    const res = await getEmp(item.id)
-    detailData.value = {
-      userName: res.data.userName,
-      regionName: res.data.region?.regionName || 'Unknown',
-      roleName: res.data.role?.roleName || 'Unknown',
-      mobile: res.data.mobile,
-      image: res.data.image,
-      status: res.data.status,
-      createTime: res.data.createTime
-    }
-    showDetailModal.value = true
-  } catch (error) {
-    uni.showToast({ title: 'Failed to load employee detail', icon: 'none' })
-  }
-}
-
-const closeDetailModal = () => {
-  showDetailModal.value = false
-  detailData.value = { userName: '', regionName: '', roleName: '', mobile: '', image: '', status: '', createTime: '' }
-}
-
-const closeModal = () => {
-  showModal.value = false
-  form.value = { id: null, userName: '', regionId: null, roleId: null, mobile: '', image: '', status: 1 }
 }
 
 const submitForm = async () => {
   if (isSubmitting.value) return
   
-  // Validation rules matching webapp
   if (!form.value.userName) {
     uni.showToast({ title: 'User Name is required', icon: 'none' })
     return
   }
-  if (!form.value.regionId) {
-    uni.showToast({ title: 'Please select a Region', icon: 'none' })
+  if (!form.value.nickName) {
+    uni.showToast({ title: 'Nickname is required', icon: 'none' })
     return
   }
-  if (!form.value.roleId) {
-    uni.showToast({ title: 'Please select a Role', icon: 'none' })
+  if (!form.value.deptId) {
+    uni.showToast({ title: 'Department is required', icon: 'none' })
     return
   }
-  if (!form.value.mobile) {
-    uni.showToast({ title: 'Mobile is required', icon: 'none' })
-    return
-  }
-  if (!form.value.image) {
-    uni.showToast({ title: 'Image is required', icon: 'none' })
-    return
-  }
-  if (form.value.status === undefined || form.value.status === null) {
-    uni.showToast({ title: 'Please select a Status', icon: 'none' })
+  if (!isEdit.value && !form.value.password) {
+    uni.showToast({ title: 'Password is required', icon: 'none' })
     return
   }
 
   isSubmitting.value = true
   try {
     if (isEdit.value) {
-      await updateEmp(form.value)
+      await updateUser(form.value)
       uni.showToast({ title: 'Updated successfully', icon: 'success' })
     } else {
-      await addEmp(form.value)
+      await addUser(form.value)
       uni.showToast({ title: 'Added successfully', icon: 'success' })
     }
     closeModal()
@@ -432,49 +431,8 @@ const submitForm = async () => {
   }
 }
 
-const chooseImage = () => {
-  uni.chooseImage({
-    count: 1,
-    sizeType: ['compressed'],
-    sourceType: ['album', 'camera'],
-    success: (res) => {
-      const tempFilePath = res.tempFilePaths[0]
-      uni.uploadFile({
-        url: '/common/upload',
-        filePath: tempFilePath,
-        name: 'file',
-        success: (uploadRes) => {
-          const data = JSON.parse(uploadRes.data)
-          if (data.url) {
-            form.value.image = data.url
-          }
-        },
-        fail: () => {
-          uni.showToast({ title: 'Upload failed', icon: 'none' })
-        }
-      })
-    }
-  })
-}
-
-const removeImage = () => {
-  uni.showModal({
-    title: 'Remove Image',
-    content: 'Are you sure you want to remove this image?',
-    success: (res) => {
-      if (res.confirm) {
-        form.value.image = ''
-      }
-    }
-  })
-}
-
-const getStatusLabel = (status) => {
-  return t(`emp.statusTypes.${status}`) || 'Unknown'
-}
-
 const loadMore = () => {
-  if (empList.value.length < total.value) {
+  if (userList.value.length < total.value) {
     queryParams.value.pageNum++
     fetchList()
   }
@@ -578,25 +536,25 @@ const onRefresh = () => {
   overflow: hidden;
 }
 
-.emp-list {
-  padding: 0 16px 24px;
+.user-list {
+  padding: 0 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.emp-card {
+.user-card {
   @include glass-panel;
   padding: 20px;
   transition: transform 0.2s ease;
 }
 
-.emp-card:active {
+.user-card:active {
   transform: scale(0.98);
   background-color: rgba(255, 255, 255, 0.8);
 }
 
-.emp-card-header {
+.user-card-header {
   display: flex;
   align-items: center;
   margin-bottom: 16px;
@@ -604,14 +562,14 @@ const onRefresh = () => {
   border-bottom: 1px solid $apple-glass-border;
 }
 
-.emp-avatar {
+.user-avatar {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  margin-right: 16px;
-  flex-shrink: 0;
   overflow: hidden;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  margin-right: 16px;
+  flex-shrink: 0;
 }
 
 .avatar-image {
@@ -633,44 +591,44 @@ const onRefresh = () => {
   color: white;
 }
 
-.emp-info-header {
+.user-info-header {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
-.emp-name {
+.user-name {
   font-size: 18px;
   font-weight: 700;
   color: $apple-text-primary;
   letter-spacing: -0.5px;
 }
 
-.emp-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
+.user-nickname {
+  font-size: 14px;
+  color: $apple-text-secondary;
   font-weight: 500;
 }
 
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .status-active {
+  background-color: rgba(52, 199, 89, 0.15);
   color: #34c759;
 }
 
 .status-inactive {
-  color: #8e8e93;
+  background-color: rgba(255, 59, 48, 0.15);
+  color: #ff3b30;
 }
 
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: currentColor;
-}
-
-.emp-info {
+.user-info {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -760,66 +718,12 @@ const onRefresh = () => {
   backdrop-filter: blur(10px);
 }
 
-.modal-input {
-  width: 100%;
-  height: 44px;
-  padding: 0 16px;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: $apple-radius-sm;
-  font-size: 16px;
-  color: $apple-text-primary;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-sizing: border-box;
-}
-
-.image-upload-container {
-  width: 100%;
-  height: 120px;
-  border: 2px dashed rgba(0, 0, 0, 0.15);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  overflow: hidden;
-}
-
-.preview-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.upload-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.upload-icon {
-  font-size: 32px;
-  color: $apple-text-secondary;
-  font-weight: 300;
-}
-
-.upload-text {
-  font-size: 12px;
-  color: $apple-text-secondary;
-  font-weight: 500;
-}
-
 .modal-content {
   background-color: rgba(255, 255, 255, 0.95);
   border-radius: 20px;
   width: 90%;
   max-width: 400px;
-  max-height: 80vh;
-  overflow-y: auto;
+  overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
@@ -867,9 +771,12 @@ const onRefresh = () => {
 
 .picker-input {
   @include glass-input;
-  padding: 12px 16px;
+  height: 44px;
+  line-height: 44px;
+  padding: 0 16px;
   font-size: 16px;
-  color: $apple-text-primary;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .modal-footer {

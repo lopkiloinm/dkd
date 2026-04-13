@@ -1,138 +1,146 @@
 <template>
-  <view class="layout-container">
-    <NavBar class="nav-bar-comp" back breadcrumb="Home" title="Nodes" :showAdd="hasPermission('manage:node:add')" @add="handleAdd" />
-    <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.nodeName" placeholder="Search by Node Name" @confirm="handleSearch" />
-      <picker mode="selector" :range="regionList" range-key="regionName" :value="filterRegionIndex" @change="onFilterRegionChange">
-        <view class="filter-picker">{{ queryParams.regionId ? regionList[filterRegionIndex]?.regionName : 'All Regions' }}</view>
-      </picker>
+  <view class="page">
+    <view class="top-bar">
+      <view class="top-bar-back" @click="goBack">
+        <text class="back-caret">‹</text>
+        <text class="back-text">Back</text>
+      </view>
+      <text class="top-bar-title">Node Management</text>
     </view>
+    <view class="layout-container">
+      <view class="search-bar">
+        <input class="n-input search-input" v-model="queryParams.nodeName" placeholder="Search by Node Name" @confirm="handleSearch" />
+        <picker mode="selector" :range="regionList" range-key="regionName" :value="filterRegionIndex" @change="onFilterRegionChange">
+          <view class="filter-picker">{{ queryParams.regionId ? regionList[filterRegionIndex]?.regionName : 'All Regions' }}</view>
+        </picker>
+      </view>
 
-    <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
-      <view class="node-list">
-        <view class="node-card" v-for="item in nodeList" :key="item.id" @click="handleViewDetail(item)">
-          <view class="node-card-header">
-            <text class="node-name">{{ item.nodeName }}</text>
-            <view class="device-count">
-              <text class="count-number">{{ item.vmCount || 0 }}</text> Devices
+      <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
+        <view class="node-list">
+          <view class="node-card" v-for="item in nodeList" :key="item.id" @click="handleViewDetail(item)">
+            <view class="node-card-header">
+              <text class="node-name">{{ item.nodeName }}</text>
+              <view class="device-count">
+                <text class="count-number">{{ item.vmCount || 0 }}</text> Devices
+              </view>
+            </view>
+
+            <view class="node-info">
+              <view class="info-row">
+                <text class="info-label">Region</text>
+                <text class="info-value">{{ item.region?.regionName || 'Unknown' }}</text>
+              </view>
+              <view class="info-row">
+                <text class="info-label">Business Type</text>
+                <text class="info-value">{{ getBusinessTypeLabel(item.businessType) }}</text>
+              </view>
+              <view class="info-row">
+                <text class="info-label">Partner</text>
+                <text class="info-value">{{ item.partner?.partnerName || 'Unknown' }}</text>
+              </view>
+              <view class="info-row">
+                <text class="info-label">Address</text>
+                <text class="info-value">{{ item.address || 'N/A' }}</text>
+              </view>
+            </view>
+
+            <view class="card-actions">
+              <view class="action-btn" @click="handleEdit(item)" v-if="hasPermission('manage:node:edit')">
+                <text class="action-text">Edit</text>
+              </view>
+              <view class="action-btn delete" @click="handleDelete(item)" v-if="hasPermission('manage:node:remove')">
+                <text class="action-text">Delete</text>
+              </view>
             </view>
           </view>
-          
-          <view class="node-info">
-            <view class="info-row">
-              <text class="info-label">Region</text>
-              <text class="info-value">{{ item.region?.regionName || 'Unknown' }}</text>
-            </view>
-            <view class="info-row">
-              <text class="info-label">Business Type</text>
-              <text class="info-value">{{ getBusinessTypeLabel(item.businessType) }}</text>
-            </view>
-            <view class="info-row">
-              <text class="info-label">Partner</text>
-              <text class="info-value">{{ item.partner?.partnerName || 'Unknown' }}</text>
-            </view>
-            <view class="info-row">
-              <text class="info-label">Address</text>
-              <text class="info-value">{{ item.address || 'N/A' }}</text>
-            </view>
-          </view>
 
-          <view class="card-actions">
-            <view class="action-btn" @click="handleEdit(item)" v-if="hasPermission('manage:node:edit')">
-              <text class="action-text">Edit</text>
-            </view>
-            <view class="action-btn delete" @click="handleDelete(item)" v-if="hasPermission('manage:node:remove')">
-              <text class="action-text">Delete</text>
-            </view>
+          <view class="empty-state" v-if="nodeList.length === 0 && !loading">
+            <text class="empty-text">No nodes found</text>
           </view>
         </view>
+      </scroll-view>
 
-        <view class="empty-state" v-if="nodeList.length === 0 && !loading">
-          <text class="empty-text">No nodes found</text>
+      <view class="modal-overlay" v-if="showDetailModal" @click="closeDetailModal">
+        <view class="modal-content detail-modal" @click.stop>
+          <view class="modal-header">
+            <text class="modal-title">Node Detail</text>
+            <text class="modal-close" @click="closeDetailModal">×</text>
+          </view>
+          <view class="modal-body">
+            <view class="detail-info-row">
+              <text class="detail-label">Node Name:</text>
+              <text class="detail-value">{{ detailData.nodeName }}</text>
+            </view>
+            <view class="detail-info-row">
+              <text class="detail-label">Region:</text>
+              <text class="detail-value">{{ detailData.regionName }}</text>
+            </view>
+            <view class="detail-info-row">
+              <text class="detail-label">Business Type:</text>
+              <text class="detail-value">{{ getBusinessTypeLabel(detailData.businessType) }}</text>
+            </view>
+            <view class="detail-info-row">
+              <text class="detail-label">Partner:</text>
+              <text class="detail-value">{{ detailData.partnerName }}</text>
+            </view>
+            <view class="detail-info-row">
+              <text class="detail-label">Address:</text>
+              <text class="detail-value">{{ detailData.address }}</text>
+            </view>
+            <view class="detail-info-row">
+              <text class="detail-label">Device Count:</text>
+              <text class="detail-value">{{ detailData.vmCount || 0 }}</text>
+            </view>
+          </view>
+          <view class="modal-footer">
+            <view class="modal-btn cancel" @click="closeDetailModal">
+              <text>Close</text>
+            </view>
+          </view>
         </view>
       </view>
-    </scroll-view>
 
-    <view class="modal-overlay" v-if="showDetailModal" @click="closeDetailModal">
-      <view class="modal-content detail-modal" @click.stop>
-        <view class="modal-header">
-          <text class="modal-title">Node Detail</text>
-          <text class="modal-close" @click="closeDetailModal">×</text>
-        </view>
-        <view class="modal-body">
-          <view class="detail-info-row">
-            <text class="detail-label">Node Name:</text>
-            <text class="detail-value">{{ detailData.nodeName }}</text>
+      <view class="modal-overlay" v-if="showModal" @click="closeModal">
+        <view class="modal-content" @click.stop>
+          <view class="modal-header">
+            <text class="modal-title">{{ isEdit ? 'Edit Node' : 'Add Node' }}</text>
+            <text class="modal-close" @click="closeModal">×</text>
           </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Region:</text>
-            <text class="detail-value">{{ detailData.regionName }}</text>
+          <view class="modal-body">
+            <view class="form-item">
+              <text class="form-label">Node Name *</text>
+              <input class="n-input" v-model="form.nodeName" placeholder="Enter node name" />
+            </view>
+            <view class="form-item">
+              <text class="form-label">Region *</text>
+              <picker mode="selector" :range="regionList" range-key="regionName" :value="regionIndex" @change="onRegionChange">
+                <view class="picker-input">{{ form.regionId ? regionList[regionIndex]?.regionName : 'Select Region' }}</view>
+              </picker>
+            </view>
+            <view class="form-item">
+              <text class="form-label">Business Type *</text>
+              <picker mode="selector" :range="businessTypes" :value="businessTypeIndex" @change="onBusinessTypeChange">
+                <view class="picker-input">{{ form.businessType ? businessTypes[businessTypeIndex] : 'Select Business Type' }}</view>
+              </picker>
+            </view>
+            <view class="form-item">
+              <text class="form-label">Partner *</text>
+              <picker mode="selector" :range="partnerList" range-key="partnerName" :value="partnerIndex" @change="onPartnerChange">
+                <view class="picker-input">{{ form.partnerId ? partnerList[partnerIndex]?.partnerName : 'Select Partner' }}</view>
+              </picker>
+            </view>
+            <view class="form-item">
+              <text class="form-label">Address *</text>
+              <textarea class="n-textarea" v-model="form.address" placeholder="Enter address" />
+            </view>
           </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Business Type:</text>
-            <text class="detail-value">{{ getBusinessTypeLabel(detailData.businessType) }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Partner:</text>
-            <text class="detail-value">{{ detailData.partnerName }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Address:</text>
-            <text class="detail-value">{{ detailData.address }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Device Count:</text>
-            <text class="detail-value">{{ detailData.vmCount || 0 }}</text>
-          </view>
-        </view>
-        <view class="modal-footer">
-          <view class="modal-btn cancel" @click="closeDetailModal">
-            <text>Close</text>
-          </view>
-        </view>
-      </view>
-    </view>
-
-    <view class="modal-overlay" v-if="showModal" @click="closeModal">
-      <view class="modal-content" @click.stop>
-        <view class="modal-header">
-          <text class="modal-title">{{ isEdit ? 'Edit Node' : 'Add Node' }}</text>
-          <text class="modal-close" @click="closeModal">×</text>
-        </view>
-        <view class="modal-body">
-          <view class="form-item">
-            <text class="form-label">Node Name *</text>
-            <input class="n-input" v-model="form.nodeName" placeholder="Enter node name" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Region *</text>
-            <picker mode="selector" :range="regionList" range-key="regionName" :value="regionIndex" @change="onRegionChange">
-              <view class="picker-input">{{ form.regionId ? regionList[regionIndex]?.regionName : 'Select Region' }}</view>
-            </picker>
-          </view>
-          <view class="form-item">
-            <text class="form-label">Business Type *</text>
-            <picker mode="selector" :range="businessTypes" :value="businessTypeIndex" @change="onBusinessTypeChange">
-              <view class="picker-input">{{ form.businessType ? businessTypes[businessTypeIndex] : 'Select Business Type' }}</view>
-            </picker>
-          </view>
-          <view class="form-item">
-            <text class="form-label">Partner *</text>
-            <picker mode="selector" :range="partnerList" range-key="partnerName" :value="partnerIndex" @change="onPartnerChange">
-              <view class="picker-input">{{ form.partnerId ? partnerList[partnerIndex]?.partnerName : 'Select Partner' }}</view>
-            </picker>
-          </view>
-          <view class="form-item">
-            <text class="form-label">Address *</text>
-            <textarea class="n-textarea" v-model="form.address" placeholder="Enter address" />
-          </view>
-        </view>
-        <view class="modal-footer">
-          <view class="modal-btn cancel" @click="closeModal">
-            <text>Cancel</text>
-          </view>
-          <view class="modal-btn confirm" :class="{ disabled: isSubmitting }" @click="submitForm">
-            <text>{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</text>
+          <view class="modal-footer">
+            <view class="modal-btn cancel" @click="closeModal">
+              <text>Cancel</text>
+            </view>
+            <view class="modal-btn confirm" :class="{ disabled: isSubmitting }" @click="submitForm">
+              <text>{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</text>
+            </view>
           </view>
         </view>
       </view>
@@ -144,7 +152,10 @@
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { useI18n } from 'vue-i18n'
-import NavBar from '@/components/NavBar/index.vue'
+
+const goBack = () => {
+  uni.navigateBack()
+}
 import { listNode, getNode, addNode, updateNode, delNode } from '@/api/manage/node'
 import { listRegion } from '@/api/manage/region'
 import { listPartner } from '@/api/manage/partner'
@@ -390,19 +401,69 @@ const closeDetailModal = () => {
 <style scoped lang="scss">
 @import "@/styles/apple.scss";
 
-.layout-container {
+.page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  box-sizing: border-box;
 }
 
-.nav-bar-comp {
-  flex-shrink: 0;
+.top-bar {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.top-bar-back {
+  position: absolute;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.back-caret {
+  font-size: 24px;
+  color: #007aff;
+  line-height: 1;
+  font-weight: 300;
+}
+
+.back-text {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-size: 17px;
+  color: #007aff;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+}
+
+.top-bar-title {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1d1d1f;
+  letter-spacing: -0.4px;
+}
+
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  box-sizing: border-box;
+  padding: 60px 0 16px 0;
 }
 
 .search-bar {
-  padding: 16px 20px 16px;
+  padding: 16px;
   z-index: 10;
   display: flex;
   flex-direction: column;
@@ -435,7 +496,7 @@ const closeDetailModal = () => {
 }
 
 .node-list {
-  padding: 0 20px 24px;
+  padding: 0 16px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;

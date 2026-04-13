@@ -1,6 +1,6 @@
 <template>
+  <TopBar title="Region Management" :showBack="true" />
   <view class="layout-container">
-    <NavBar class="nav-bar-comp" back breadcrumb="Home" title="Regions" :showAdd="hasPermission('manage:region:add')" @add="handleAdd" />
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.regionName" placeholder="Search by Region Name" @confirm="handleSearch" />
     </view>
@@ -103,7 +103,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import NavBar from '@/components/NavBar/index.vue'
+import TopBar from '@/components/TopBar/index.vue'
 import { listRegion, getRegion, addRegion, updateRegion, delRegion } from '@/api/manage/region'
 import { listNode } from '@/api/manage/node'
 import { hasPermission } from '@/utils/permission'
@@ -270,14 +270,11 @@ const onRefresh = () => {
   flex-direction: column;
   height: 100vh;
   box-sizing: border-box;
-}
-
-.nav-bar-comp {
-  flex-shrink: 0;
+  padding: 60px 0 16px 0;
 }
 
 .search-bar {
-  padding: 16px 20px 16px;
+  padding: 16px;
   z-index: 10;
 }
 
@@ -297,7 +294,7 @@ const onRefresh = () => {
 }
 
 .region-list {
-  padding: 0 20px 24px;
+  padding: 0 16px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;

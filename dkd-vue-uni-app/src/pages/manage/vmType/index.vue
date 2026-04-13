@@ -1,6 +1,6 @@
 <template>
+  <TopBar title="Device Type Management" :showBack="true" />
   <view class="layout-container">
-    <NavBar class="nav-bar-comp" back breadcrumb="Home" title="VM Types" :showAdd="hasPermission('manage:vmType:add')" @add="handleAdd" />
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.name" placeholder="Search by Name" @confirm="handleSearch" />
       <input class="n-input search-input" v-model="queryParams.model" placeholder="Search by Model" @confirm="handleSearch" />
@@ -106,23 +106,23 @@
         <view class="modal-body">
           <view class="form-item">
             <text class="form-label">Type Name *</text>
-            <input class="n-input" v-model="form.name" placeholder="Enter type name" />
+            <input class="modal-input" v-model="form.name" placeholder="Enter type name" />
           </view>
           <view class="form-item">
             <text class="form-label">Model *</text>
-            <input class="n-input" v-model="form.model" placeholder="Enter model" />
+            <input class="modal-input" v-model="form.model" placeholder="Enter model" />
           </view>
           <view class="form-item">
             <text class="form-label">Rows *</text>
-            <input class="n-input" v-model="form.vmRow" type="number" placeholder="Enter rows (1-10)" />
+            <input class="modal-input" v-model="form.vmRow" type="number" placeholder="Enter rows (1-10)" />
           </view>
           <view class="form-item">
             <text class="form-label">Columns *</text>
-            <input class="n-input" v-model="form.vmCol" type="number" placeholder="Enter columns (1-10)" />
+            <input class="modal-input" v-model="form.vmCol" type="number" placeholder="Enter columns (1-10)" />
           </view>
           <view class="form-item">
             <text class="form-label">Capacity *</text>
-            <input class="n-input" v-model="form.channelMaxCapacity" type="number" placeholder="Enter capacity" />
+            <input class="modal-input" v-model="form.channelMaxCapacity" type="number" placeholder="Enter capacity" />
           </view>
           <view class="form-item">
             <text class="form-label">Image *</text>
@@ -151,7 +151,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import NavBar from '@/components/NavBar/index.vue'
+import TopBar from '@/components/TopBar/index.vue'
 import { listVmType, getVmType, addVmType, updateVmType, delVmType } from '@/api/manage/vmType'
 import { hasPermission } from '@/utils/permission'
 
@@ -402,14 +402,11 @@ const closeDetailModal = () => {
   flex-direction: column;
   height: 100vh;
   box-sizing: border-box;
-}
-
-.nav-bar-comp {
-  flex-shrink: 0;
+  padding: 60px 0 16px 0;
 }
 
 .search-bar {
-  padding: 16px 20px 16px;
+  padding: 16px;
   z-index: 10;
   display: flex;
   flex-direction: column;
@@ -432,7 +429,7 @@ const closeDetailModal = () => {
 }
 
 .vmtype-list {
-  padding: 0 20px 24px;
+  padding: 0 16px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -592,17 +589,18 @@ const closeDetailModal = () => {
   backdrop-filter: blur(10px);
 }
 
-.n-input {
+.modal-input {
   width: 100%;
-  height: 40px;
-  padding: 0 12px;
+  height: 44px;
+  padding: 0 16px;
   background: rgba(255, 255, 255, 0.6);
   border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 10px;
-  font-size: 14px;
+  border-radius: $apple-radius-sm;
+  font-size: 16px;
   color: $apple-text-primary;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  box-sizing: border-box;
 }
 
 .image-upload-container {

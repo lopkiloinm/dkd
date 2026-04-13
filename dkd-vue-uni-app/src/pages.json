@@ -7,6 +7,24 @@
 			}
 		},
 		{
+			"path": "pages/manage/index",
+			"style": {
+				"navigationBarTitleText": "Manage"
+			}
+		},
+		{
+			"path": "pages/data/index",
+			"style": {
+				"navigationBarTitleText": "Data"
+			}
+		},
+		{
+			"path": "pages/mine/index",
+			"style": {
+				"navigationBarTitleText": "Mine"
+			}
+		},
+		{
 			"path": "pages/login/index",
 			"style": {
 				"navigationBarTitleText": "Login"
@@ -25,27 +43,106 @@
 			"pages": [
 				{
 					"path": "node/index",
-					"style": { "navigationBarTitleText": "Node Management" }
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Node Management" }
 				},
 				{
 					"path": "region/index",
-					"style": { "navigationBarTitleText": "Region Management" }
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Region Management" }
 				},
 				{
 					"path": "partner/index",
-					"style": { "navigationBarTitleText": "Partner Management" }
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Partner Management" }
 				},
 				{
 					"path": "vm/index",
-					"style": { "navigationBarTitleText": "Vending Machine Management" }
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Device Management" }
 				},
 				{
 					"path": "vmType/index",
-					"style": { "navigationBarTitleText": "Vending Machine Type Management" }
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Device Type Management" }
 				},
 				{
 					"path": "emp/index",
-					"style": { "navigationBarTitleText": "Employee Management" }
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Employee Management" }
+				}
+			]
+		},
+		{
+			"root": "pages/system",
+			"pages": [
+				{
+					"path": "user/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "User Management" }
+				},
+				{
+					"path": "role/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Role Management" }
+				},
+				{
+					"path": "menu/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Menu Management" }
+				},
+				{
+					"path": "dept/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Department Management" }
+				},
+				{
+					"path": "post/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Post Management" }
+				},
+				{
+					"path": "dict/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Dictionary Management" }
+				},
+				{
+					"path": "config/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Config Management" }
+				},
+				{
+					"path": "notice/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Notice Management" }
+				}
+			]
+		},
+		{
+			"root": "pages/monitor",
+			"pages": [
+				{
+					"path": "online/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Online Users" }
+				},
+				{
+					"path": "logininfor/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Login Logs" }
+				},
+				{
+					"path": "operlog/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Operation Logs" }
+				},
+				{
+					"path": "job/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Job Management" }
+				},
+				{
+					"path": "jobLog/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Job Logs" }
+				},
+				{
+					"path": "server/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Server Monitor" }
+				},
+				{
+					"path": "cache/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Cache Monitor" }
+				}
+			]
+		},
+		{
+			"root": "pages/tool",
+			"pages": [
+				{
+					"path": "gen/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Code Generation" }
 				}
 			]
 		}
@@ -56,25 +153,5 @@
 		"navigationBarTitleText": "DiKeDe",
 		"navigationBarBackgroundColor": "#F8F8F8",
 		"backgroundColor": "#F8F8F8"
-	},
-	"tabBar": {
-		"color": "#999999",
-		"selectedColor": "#007aff",
-		"backgroundColor": "#ffffff99",
-		"borderStyle": "white",
-		"list": [
-			{
-				"pagePath": "pages/index/index",
-				"text": "Home",
-				"iconPath": "static/tabbar/home.png",
-				"selectedIconPath": "static/tabbar/home_active.png"
-			},
-			{
-				"pagePath": "pages/profile/index",
-				"text": "Profile",
-				"iconPath": "static/tabbar/user.png",
-				"selectedIconPath": "static/tabbar/user_active.png"
-			}
-		]
 	}
 }

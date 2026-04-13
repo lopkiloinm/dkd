@@ -1,25 +1,13 @@
 <template>
-  <TopBar title="Device Management" :showBack="true" />
+  <TopBar title="Department Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.innerCode" placeholder="Search by Inner Code" @confirm="handleSearch" />
+      <input class="n-input search-input" v-model="queryParams.deptName" placeholder="Search by Dept Name" @confirm="handleSearch" />
       <view class="filter-toggle" @click="toggleFilters">
         <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
         <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
       </view>
       <view class="filters-container" :class="{ expanded: filtersExpanded }">
-        <picker mode="selector" :range="nodeList" range-key="nodeName" :value="filterNodeIndex" @change="onFilterNodeChange">
-          <view class="filter-picker">{{ queryParams.nodeId ? nodeList[filterNodeIndex]?.nodeName : 'All Nodes' }}</view>
-        </picker>
-        <picker mode="selector" :range="regionList" range-key="regionName" :value="filterRegionIndex" @change="onFilterRegionChange">
-          <view class="filter-picker">{{ queryParams.regionId ? regionList[filterRegionIndex]?.regionName : 'All Regions' }}</view>
-        </picker>
-        <picker mode="selector" :range="partnerList" range-key="partnerName" :value="filterPartnerIndex" @change="onFilterPartnerChange">
-          <view class="filter-picker">{{ queryParams.partnerId ? partnerList[filterPartnerIndex]?.partnerName : 'All Partners' }}</view>
-        </picker>
-        <picker mode="selector" :range="vmTypeList" range-key="typeName" :value="filterVmTypeIndex" @change="onFilterVmTypeChange">
-          <view class="filter-picker">{{ queryParams.vmTypeId ? vmTypeList[filterVmTypeIndex]?.typeName : 'All VM Types' }}</view>
-        </picker>
         <picker mode="selector" :range="statusOptions" :value="filterStatusIndex" @change="onFilterStatusChange">
           <view class="filter-picker">{{ statusOptions[filterStatusIndex] }}</view>
         </picker>
@@ -27,42 +15,45 @@
     </view>
 
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
-      <view class="vm-list">
-        <view class="vm-card" v-for="item in vmList" :key="item.id" @click="handleViewDetail(item)">
-          <view class="vm-card-header">
-            <text class="vm-code">{{ item.innerCode }}</text>
-            <view class="status-badge" :class="'status-' + item.vmStatus">
-              {{ getStatusText(item.vmStatus) }}
+      <view class="dept-list">
+        <view class="dept-card" v-for="item in deptList" :key="item.deptId" @click="handleViewDetail(item)">
+          <view class="dept-card-header">
+            <text class="dept-name">{{ item.deptName }}</text>
+            <view class="status-badge" :class="item.status === '0' ? 'status-active' : 'status-inactive'">
+              {{ item.status === '0' ? 'Active' : 'Inactive' }}
             </view>
           </view>
           
-          <view class="vm-info">
+          <view class="dept-info">
             <view class="info-row">
-              <text class="info-label">Address</text>
-              <text class="info-value">{{ item.addr || 'Unknown' }}</text>
+              <text class="info-label">Order Num</text>
+              <text class="info-value">{{ item.orderNum }}</text>
             </view>
             <view class="info-row">
-              <text class="info-label">Model</text>
-              <text class="info-value">{{ item.vmTypeId || 'Unknown' }}</text>
+              <text class="info-label">Leader</text>
+              <text class="info-value">{{ item.leader || 'N/A' }}</text>
             </view>
             <view class="info-row">
-              <text class="info-label">Partner ID</text>
-              <text class="info-value">{{ item.partnerId || 'N/A' }}</text>
+              <text class="info-label">Phone</text>
+              <text class="info-value">{{ item.phone || 'N/A' }}</text>
             </view>
           </view>
 
           <view class="card-actions">
-            <view class="action-btn" @click="handleEdit(item)" v-if="hasPermission('manage:vm:edit')">
+            <view class="action-btn" @click.stop="handleAdd(item)" v-if="hasPermission('system:dept:add')">
+              <text class="action-text">Add Sub</text>
+            </view>
+            <view class="action-btn" @click.stop="handleEdit(item)" v-if="hasPermission('system:dept:edit')">
               <text class="action-text">Edit</text>
             </view>
-            <view class="action-btn delete" @click="handleDelete(item)" v-if="hasPermission('manage:vm:remove')">
+            <view class="action-btn delete" @click.stop="handleDelete(item)" v-if="item.parentId !== 0 && hasPermission('system:dept:remove')">
               <text class="action-text">Delete</text>
             </view>
           </view>
         </view>
 
-        <view class="empty-state" v-if="vmList.length === 0 && !loading">
-          <text class="empty-text">No devices found</text>
+        <view class="empty-state" v-if="deptList.length === 0 && !loading">
+          <text class="empty-text">No departments found</text>
         </view>
       </view>
     </scroll-view>
@@ -70,37 +61,33 @@
     <view class="modal-overlay" v-if="showDetailModal" @click="closeDetailModal">
       <view class="modal-content detail-modal" @click.stop>
         <view class="modal-header">
-          <text class="modal-title">Device Detail</text>
+          <text class="modal-title">Department Detail</text>
           <text class="modal-close" @click="closeDetailModal">×</text>
         </view>
         <view class="modal-body">
           <view class="detail-info-row">
-            <text class="detail-label">Device Code:</text>
-            <text class="detail-value">{{ detailData.innerCode }}</text>
+            <text class="detail-label">Dept Name:</text>
+            <text class="detail-value">{{ detailData.deptName }}</text>
           </view>
           <view class="detail-info-row">
-            <text class="detail-label">Address:</text>
-            <text class="detail-value">{{ detailData.addr }}</text>
+            <text class="detail-label">Order Num:</text>
+            <text class="detail-value">{{ detailData.orderNum }}</text>
           </view>
           <view class="detail-info-row">
-            <text class="detail-label">Node:</text>
-            <text class="detail-value">{{ detailData.nodeName }}</text>
+            <text class="detail-label">Leader:</text>
+            <text class="detail-value">{{ detailData.leader || 'N/A' }}</text>
           </view>
           <view class="detail-info-row">
-            <text class="detail-label">Region:</text>
-            <text class="detail-value">{{ detailData.regionName }}</text>
+            <text class="detail-label">Phone:</text>
+            <text class="detail-value">{{ detailData.phone || 'N/A' }}</text>
           </view>
           <view class="detail-info-row">
-            <text class="detail-label">Partner:</text>
-            <text class="detail-value">{{ detailData.partnerName }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">VM Type:</text>
-            <text class="detail-value">{{ detailData.vmTypeName }}</text>
+            <text class="detail-label">Email:</text>
+            <text class="detail-value">{{ detailData.email || 'N/A' }}</text>
           </view>
           <view class="detail-info-row">
             <text class="detail-label">Status:</text>
-            <text class="detail-value">{{ getStatusText(detailData.vmStatus) }}</text>
+            <text class="detail-value">{{ detailData.status === '0' ? 'Active' : 'Inactive' }}</text>
           </view>
         </view>
         <view class="modal-footer">
@@ -114,24 +101,40 @@
     <view class="modal-overlay" v-if="showModal" @click="closeModal">
       <view class="modal-content" @click.stop>
         <view class="modal-header">
-          <text class="modal-title">{{ isEdit ? 'Edit Device' : 'Add Device' }}</text>
+          <text class="modal-title">{{ isEdit ? 'Edit Department' : 'Add Department' }}</text>
           <text class="modal-close" @click="closeModal">×</text>
         </view>
         <view class="modal-body">
-          <view class="form-item">
-            <text class="form-label">Device Code *</text>
-            <input class="n-input" v-model="form.innerCode" placeholder="Enter device code" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Node *</text>
-            <picker mode="selector" :range="nodeList" range-key="nodeName" :value="nodeIndex" @change="onNodeChange">
-              <view class="picker-input">{{ form.nodeId ? nodeList[nodeIndex]?.nodeName : 'Select Node' }}</view>
+          <view class="form-item" v-if="form.parentId !== 0">
+            <text class="form-label">Parent Dept</text>
+            <picker mode="selector" :range="parentDeptOptions" range-key="deptName" :value="parentDeptIndex" @change="onParentDeptChange">
+              <view class="picker-input">{{ form.parentId ? parentDeptOptions[parentDeptIndex]?.deptName : 'Select Parent' }}</view>
             </picker>
           </view>
           <view class="form-item">
-            <text class="form-label">VM Type *</text>
-            <picker mode="selector" :range="vmTypeList" range-key="name" :value="vmTypeIndex" @change="onVmTypeChange">
-              <view class="picker-input">{{ form.vmTypeId ? vmTypeList[vmTypeIndex]?.name : 'Select VM Type' }}</view>
+            <text class="form-label">Dept Name *</text>
+            <input class="n-input" v-model="form.deptName" placeholder="Enter dept name" />
+          </view>
+          <view class="form-item">
+            <text class="form-label">Order Num *</text>
+            <input class="n-input" v-model="form.orderNum" type="number" placeholder="Enter order num" />
+          </view>
+          <view class="form-item">
+            <text class="form-label">Leader</text>
+            <input class="n-input" v-model="form.leader" placeholder="Enter leader" />
+          </view>
+          <view class="form-item">
+            <text class="form-label">Phone</text>
+            <input class="n-input" v-model="form.phone" placeholder="Enter phone" />
+          </view>
+          <view class="form-item">
+            <text class="form-label">Email</text>
+            <input class="n-input" v-model="form.email" placeholder="Enter email" />
+          </view>
+          <view class="form-item">
+            <text class="form-label">Status</text>
+            <picker mode="selector" :range="statusOptions" :value="statusIndex" @change="onStatusChange">
+              <view class="picker-input">{{ statusOptions[statusIndex] }}</view>
             </picker>
           </view>
         </view>
@@ -152,37 +155,27 @@
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import TopBar from '@/components/TopBar/index.vue'
-import { listVm, getVm, addVm, updateVm, delVm } from '@/api/manage/vm'
-import { listNode } from '@/api/manage/node'
-import { listVmType } from '@/api/manage/vmType'
-import { listRegion } from '@/api/manage/region'
-import { listPartner } from '@/api/manage/partner'
+import { listDept, getDept, addDept, updateDept, delDept } from '@/api/system/dept'
 import { hasPermission } from '@/utils/permission'
 
-const vmList = ref([])
+const deptList = ref([])
 const loading = ref(false)
 const isRefreshing = ref(false)
 const showDetailModal = ref(false)
 const detailData = ref({
-  innerCode: '',
-  addr: '',
-  nodeName: '',
-  regionName: '',
-  partnerName: '',
-  vmTypeName: '',
-  vmStatus: ''
+  deptName: '',
+  orderNum: '',
+  leader: '',
+  phone: '',
+  email: '',
+  status: ''
 })
 
 const queryParams = ref({
   pageNum: 1,
   pageSize: 10,
-  innerCode: '',
-  nodeId: null,
-  regionId: null,
-  partnerId: null,
-  vmTypeId: null,
-  vmStatus: null,
-  policyId: ''
+  deptName: '',
+  status: null
 })
 const total = ref(0)
 const filtersExpanded = ref(false)
@@ -191,35 +184,32 @@ const showModal = ref(false)
 const isEdit = ref(false)
 const isSubmitting = ref(false)
 const form = ref({
-  id: null,
-  innerCode: '',
-  nodeId: '',
-  vmTypeId: ''
+  deptId: null,
+  parentId: 0,
+  deptName: '',
+  orderNum: 0,
+  leader: '',
+  phone: '',
+  email: '',
+  status: '0'
 })
 
-const nodeList = ref([])
-const vmTypeList = ref([])
-const regionList = ref([])
-const partnerList = ref([])
-const nodeIndex = ref(0)
-const vmTypeIndex = ref(0)
-const filterNodeIndex = ref(0)
-const filterRegionIndex = ref(0)
-const filterPartnerIndex = ref(0)
-const filterVmTypeIndex = ref(0)
-const filterVmStatusIndex = ref(0)
-const vmStatusOptions = ['All Status', 'Unoperated', 'Operating', 'Fault']
+const parentDeptOptions = ref([])
+const parentDeptIndex = ref(0)
+const statusOptions = ['All Status', 'Active', 'Inactive']
+const filterStatusIndex = ref(0)
+const statusIndex = ref(1)
 
 const fetchList = async (reset = false) => {
   if (reset) {
     queryParams.value.pageNum = 1
-    vmList.value = []
+    deptList.value = []
   }
   try {
     loading.value = true
-    const res = await listVm(queryParams.value)
+    const res = await listDept(queryParams.value)
     if (res.rows) {
-      vmList.value = [...vmList.value, ...res.rows]
+      deptList.value = [...deptList.value, ...res.rows]
       total.value = res.total
     }
   } catch (error) {
@@ -230,27 +220,19 @@ const fetchList = async (reset = false) => {
   }
 }
 
-onShow(() => {
-  fetchList(true)
-  fetchDropdownData()
-})
-
-const fetchDropdownData = async () => {
+const fetchParentDepts = async () => {
   try {
-    const [nodeRes, vmTypeRes, regionRes, partnerRes] = await Promise.all([
-      listNode({ pageNum: 1, pageSize: 100 }),
-      listVmType({ pageNum: 1, pageSize: 100 }),
-      listRegion({ pageNum: 1, pageSize: 100 }),
-      listPartner({ pageNum: 1, pageSize: 100 })
-    ])
-    nodeList.value = nodeRes.rows || []
-    vmTypeList.value = vmTypeRes.rows || []
-    regionList.value = regionRes.rows || []
-    partnerList.value = partnerRes.rows || []
+    const res = await listDept({ pageNum: 1, pageSize: 100 })
+    parentDeptOptions.value = res.rows || []
   } catch (error) {
-    console.error('Failed to fetch dropdown data', error)
+    console.error('Failed to fetch parent departments', error)
   }
 }
+
+onShow(() => {
+  fetchList(true)
+  fetchParentDepts()
+})
 
 const handleSearch = () => {
   fetchList(true)
@@ -260,56 +242,63 @@ const toggleFilters = () => {
   filtersExpanded.value = !filtersExpanded.value
 }
 
-const loadMore = () => {
-  if (vmList.value.length < total.value) {
-    queryParams.value.pageNum++
-    fetchList()
+const handleAdd = (parentItem = null) => {
+  isEdit.value = false
+  form.value = { deptId: null, parentId: parentItem ? parentItem.deptId : 0, deptName: '', orderNum: 0, leader: '', phone: '', email: '', status: '0' }
+  if (parentItem) {
+    parentDeptIndex.value = parentDeptOptions.value.findIndex(d => d.deptId === parentItem.deptId)
+  } else {
+    parentDeptIndex.value = 0
+  }
+  statusIndex.value = 1
+  showModal.value = true
+}
+
+const handleViewDetail = async (item) => {
+  try {
+    const res = await getDept(item.deptId)
+    detailData.value = {
+      deptName: res.data.deptName,
+      orderNum: res.data.orderNum,
+      leader: res.data.leader,
+      phone: res.data.phone,
+      email: res.data.email,
+      status: res.data.status
+    }
+    showDetailModal.value = true
+  } catch (error) {
+    uni.showToast({ title: 'Failed to load dept detail', icon: 'none' })
   }
 }
 
-const onRefresh = () => {
-  isRefreshing.value = true
-  fetchList(true)
-}
-
-const getStatusText = (status) => {
-  if (status === 0) return 'Unoperated'
-  if (status === 1) return 'Operating'
-  if (status === 3) return 'Fault'
-  return 'Unknown'
-}
-
-const handleAdd = () => {
-  isEdit.value = false
-  form.value = { id: null, innerCode: '', nodeId: null, vmTypeId: null }
-  nodeIndex.value = 0
-  vmTypeIndex.value = 0
-  showModal.value = true
+const closeDetailModal = () => {
+  showDetailModal.value = false
+  detailData.value = { deptName: '', orderNum: '', leader: '', phone: '', email: '', status: '' }
 }
 
 const handleEdit = async (item) => {
   try {
-    const res = await getVm(item.id)
+    const res = await getDept(item.deptId)
     form.value = res.data
     isEdit.value = true
-    
-    nodeIndex.value = nodeList.value.findIndex(n => n.id === form.value.nodeId)
-    vmTypeIndex.value = vmTypeList.value.findIndex(v => v.id === form.value.vmTypeId)
-    
+    statusIndex.value = res.data.status === '0' ? 1 : 2
+    if (res.data.parentId) {
+      parentDeptIndex.value = parentDeptOptions.value.findIndex(d => d.deptId === res.data.parentId)
+    }
     showModal.value = true
   } catch (error) {
-    uni.showToast({ title: 'Failed to load device data', icon: 'none' })
+    uni.showToast({ title: 'Failed to load dept data', icon: 'none' })
   }
 }
 
 const handleDelete = (item) => {
   uni.showModal({
     title: 'Confirm Delete',
-    content: `Are you sure you want to delete "${item.innerCode}"?`,
+    content: `Are you sure you want to delete "${item.deptName}"?`,
     success: async (res) => {
       if (res.confirm) {
         try {
-          await delVm(item.id)
+          await delDept(item.deptId)
           uni.showToast({ title: 'Deleted successfully', icon: 'success' })
           fetchList(true)
         } catch (error) {
@@ -320,98 +309,46 @@ const handleDelete = (item) => {
   })
 }
 
-const onNodeChange = (e) => {
-  nodeIndex.value = e.detail.value
-  form.value.nodeId = nodeList.value[e.detail.value].id
-}
-
-const onVmTypeChange = (e) => {
-  vmTypeIndex.value = e.detail.value
-  form.value.vmTypeId = vmTypeList.value[e.detail.value].id
-}
-
-const onFilterNodeChange = (e) => {
-  filterNodeIndex.value = e.detail.value
-  queryParams.value.nodeId = nodeList.value[e.detail.value]?.id || null
-  handleSearch()
-}
-
-const onFilterRegionChange = (e) => {
-  filterRegionIndex.value = e.detail.value
-  queryParams.value.regionId = regionList.value[e.detail.value]?.id || null
-  handleSearch()
-}
-
-const onFilterPartnerChange = (e) => {
-  filterPartnerIndex.value = e.detail.value
-  queryParams.value.partnerId = partnerList.value[e.detail.value]?.id || null
-  handleSearch()
-}
-
-const onFilterVmTypeChange = (e) => {
-  filterVmTypeIndex.value = e.detail.value
-  queryParams.value.vmTypeId = vmTypeList.value[e.detail.value]?.id || null
-  handleSearch()
-}
-
-const onFilterVmStatusChange = (e) => {
-  filterVmStatusIndex.value = e.detail.value
-  queryParams.value.vmStatus = e.detail.value === 0 ? null : e.detail.value
-  handleSearch()
-}
-
-const handleViewDetail = async (item) => {
-  try {
-    const res = await getVm(item.id)
-    detailData.value = {
-      innerCode: res.data.innerCode,
-      addr: res.data.addr,
-      nodeName: res.data.node?.nodeName || 'Unknown',
-      regionName: res.data.region?.regionName || 'Unknown',
-      partnerName: res.data.partner?.partnerName || 'Unknown',
-      vmTypeName: res.data.vmType?.name || 'Unknown',
-      vmStatus: res.data.vmStatus
-    }
-    showDetailModal.value = true
-  } catch (error) {
-    uni.showToast({ title: 'Failed to load device detail', icon: 'none' })
-  }
-}
-
-const closeDetailModal = () => {
-  showDetailModal.value = false
-  detailData.value = { innerCode: '', addr: '', nodeName: '', regionName: '', partnerName: '', vmTypeName: '', vmStatus: '' }
-}
-
 const closeModal = () => {
   showModal.value = false
-  form.value = { id: null, innerCode: '', nodeId: null, vmTypeId: null }
+  form.value = { deptId: null, parentId: 0, deptName: '', orderNum: 0, leader: '', phone: '', email: '', status: '0' }
+}
+
+const onParentDeptChange = (e) => {
+  parentDeptIndex.value = e.detail.value
+  form.value.parentId = parentDeptOptions.value[e.detail.value]?.deptId || 0
+}
+
+const onStatusChange = (e) => {
+  statusIndex.value = e.detail.value
+  form.value.status = e.detail.value === 1 ? '0' : '1'
+}
+
+const onFilterStatusChange = (e) => {
+  filterStatusIndex.value = e.detail.value
+  queryParams.value.status = e.detail.value === 0 ? null : (e.detail.value === 1 ? '0' : '1')
+  handleSearch()
 }
 
 const submitForm = async () => {
   if (isSubmitting.value) return
   
-  // Validation rules matching webapp
-  if (!form.value.innerCode) {
-    uni.showToast({ title: 'Device Code is required', icon: 'none' })
+  if (!form.value.deptName) {
+    uni.showToast({ title: 'Dept Name is required', icon: 'none' })
     return
   }
-  if (!form.value.nodeId) {
-    uni.showToast({ title: 'Please select a Node', icon: 'none' })
-    return
-  }
-  if (!form.value.vmTypeId) {
-    uni.showToast({ title: 'Please select a VM Type', icon: 'none' })
+  if (!form.value.orderNum && form.value.orderNum !== 0) {
+    uni.showToast({ title: 'Order Num is required', icon: 'none' })
     return
   }
 
   isSubmitting.value = true
   try {
     if (isEdit.value) {
-      await updateVm(form.value)
+      await updateDept(form.value)
       uni.showToast({ title: 'Updated successfully', icon: 'success' })
     } else {
-      await addVm(form.value)
+      await addDept(form.value)
       uni.showToast({ title: 'Added successfully', icon: 'success' })
     }
     closeModal()
@@ -421,6 +358,18 @@ const submitForm = async () => {
   } finally {
     isSubmitting.value = false
   }
+}
+
+const loadMore = () => {
+  if (deptList.value.length < total.value) {
+    queryParams.value.pageNum++
+    fetchList()
+  }
+}
+
+const onRefresh = () => {
+  isRefreshing.value = true
+  fetchList(true)
 }
 </script>
 
@@ -496,7 +445,7 @@ const submitForm = async () => {
 }
 
 .filters-container.expanded {
-  max-height: 300px;
+  max-height: 150px;
   opacity: 1;
 }
 
@@ -516,25 +465,25 @@ const submitForm = async () => {
   overflow: hidden;
 }
 
-.vm-list {
-  padding: 0 16px 24px;
+.dept-list {
+  padding: 0 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.vm-card {
+.dept-card {
   @include glass-panel;
   padding: 20px;
   transition: transform 0.2s ease;
 }
 
-.vm-card:active {
+.dept-card:active {
   transform: scale(0.98);
   background-color: rgba(255, 255, 255, 0.8);
 }
 
-.vm-card-header {
+.dept-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -543,7 +492,7 @@ const submitForm = async () => {
   border-bottom: 1px solid $apple-glass-border;
 }
 
-.vm-code {
+.dept-name {
   font-size: 18px;
   font-weight: 700;
   color: $apple-text-primary;
@@ -551,28 +500,23 @@ const submitForm = async () => {
 }
 
 .status-badge {
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
 }
 
-.status-0 {
-  background-color: rgba(255, 149, 0, 0.15);
-  color: #ff9500;
-}
-
-.status-1 {
+.status-active {
   background-color: rgba(52, 199, 89, 0.15);
   color: #34c759;
 }
 
-.status-3 {
+.status-inactive {
   background-color: rgba(255, 59, 48, 0.15);
   color: #ff3b30;
 }
 
-.vm-info {
+.dept-info {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -592,6 +536,11 @@ const submitForm = async () => {
   font-size: 14px;
   color: $apple-text-primary;
   font-weight: 500;
+  text-align: right;
+  max-width: 60%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .empty-state {
@@ -710,9 +659,12 @@ const submitForm = async () => {
 
 .picker-input {
   @include glass-input;
-  padding: 12px 16px;
+  height: 44px;
+  line-height: 44px;
+  padding: 0 16px;
   font-size: 16px;
-  color: $apple-text-primary;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .modal-footer {

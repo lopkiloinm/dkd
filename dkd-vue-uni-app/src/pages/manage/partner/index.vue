@@ -1,6 +1,6 @@
 <template>
+  <TopBar title="Partner Management" :showBack="true" />
   <view class="layout-container">
-    <NavBar class="nav-bar-comp" back breadcrumb="Home" title="Partners" :showAdd="hasPermission('manage:partner:add')" @add="handleAdd" />
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.partnerName" placeholder="Search by Partner Name" @confirm="handleSearch" />
     </view>
@@ -144,7 +144,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import NavBar from '@/components/NavBar/index.vue'
+import TopBar from '@/components/TopBar/index.vue'
 import { listPartner, getPartner, addPartner, updatePartner, delPartner, resetPartnerPwd } from '@/api/manage/partner'
 import { hasPermission } from '@/utils/permission'
 
@@ -357,15 +357,15 @@ const onRefresh = () => {
   flex-direction: column;
   height: 100vh;
   box-sizing: border-box;
-}
-
-.nav-bar-comp {
-  flex-shrink: 0;
+  padding: 60px 0 16px 0;
 }
 
 .search-bar {
-  padding: 16px 20px 16px;
+  padding: 16px;
   z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .n-input {
@@ -384,7 +384,7 @@ const onRefresh = () => {
 }
 
 .partner-list {
-  padding: 0 20px 24px;
+  padding: 0 16px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;

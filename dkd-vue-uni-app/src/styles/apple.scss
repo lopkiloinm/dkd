@@ -15,6 +15,13 @@ $apple-red: #ff3b30;
 $apple-green: #34c759;
 $apple-orange: #ff9500;
 
+$top-bar-height: 44px;
+$layout-container-padding-top-with-topbar: 60px;
+$layout-container-padding-top-without-topbar: 0px;
+$layout-container-padding-horizontal: 16px;
+$layout-container-padding-bottom: 16px;
+$layout-container-padding-bottom-with-tabbar: 66px;
+
 @mixin glass-panel {
   background: $apple-glass-bg;
   backdrop-filter: $apple-glass-blur;

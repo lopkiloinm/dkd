@@ -1,4 +1,5 @@
 <template>
+  <TopBar title="Profile" :showBack="true" />
   <view class="layout-container">
     <view class="profile-header">
       <view class="avatar-container">
@@ -11,15 +12,15 @@
     <view class="action-list">
       <view class="n-list-item" hover-class="n-list-item-hover">
         <text class="list-title">Account Settings</text>
-        <text class="list-arrow">></text>
+        <text class="list-arrow">›</text>
       </view>
       <view class="n-list-item" hover-class="n-list-item-hover">
         <text class="list-title">Language</text>
-        <text class="list-arrow">></text>
+        <text class="list-arrow">›</text>
       </view>
       <view class="n-list-item" hover-class="n-list-item-hover">
         <text class="list-title">About</text>
-        <text class="list-arrow">></text>
+        <text class="list-arrow">›</text>
       </view>
     </view>
 
@@ -30,6 +31,7 @@
 </template>
 
 <script setup>
+import TopBar from '@/components/TopBar/index.vue'
 import useUserStore from '@/store/modules/user'
 
 const userStore = useUserStore()
@@ -45,7 +47,7 @@ const logout = () => {
 
 .layout-container {
   min-height: 100vh;
-  padding: 24px 20px;
+  padding: 60px 20px 24px 20px;
   box-sizing: border-box;
 }
 
