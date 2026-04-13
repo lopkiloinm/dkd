@@ -4,6 +4,8 @@
 <script setup>
 import * as echarts from 'echarts';
 import { onMounted } from 'vue';
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 const width = ref('100%');
 const height = ref('300px');
 const chart = ref('chart');
@@ -28,7 +30,7 @@ const setOption = () => {
         // TODO：细节调整，小圈，阴影，线的长度...
         tooltip: {
           trigger: 'item',
-          formatter: '{b}<br />总占比：{d}%',
+          formatter: '{b}<br />' + t('dashboard.totalProportion') + '{d}%',
           backgroundColor: '#FFFFFF',
           borderColor: '#eef3f8',
           borderWidth: 1,

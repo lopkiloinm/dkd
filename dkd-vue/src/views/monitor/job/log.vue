@@ -1,6 +1,6 @@
 <template>
    <div class="app-container">
-      <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
+      <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-position="top">
          <el-form-item label="任务名称" prop="jobName">
             <el-input
                v-model="queryParams.jobName"
@@ -50,7 +50,7 @@
                end-placeholder="结束日期"
             ></el-date-picker>
          </el-form-item>
-         <el-form-item>
+         <el-form-item class="button-item">
             <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
             <el-button icon="Refresh" @click="resetQuery">重置</el-button>
          </el-form-item>

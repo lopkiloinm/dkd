@@ -4,7 +4,8 @@ import Cookies from 'js-cookie'
 
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
-import locale from 'element-plus/es/locale/lang/zh-cn'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
+import enUs from 'element-plus/es/locale/lang/en'
 
 import '@/assets/styles/index.scss' // global css
 
@@ -12,6 +13,7 @@ import App from './App'
 import store from './store'
 import router from './router'
 import directive from './directive' // directive
+import i18n from './i18n' // i18n
 
 // 注册指令
 import plugins from './plugins' // plugins
@@ -70,15 +72,28 @@ app.use(router)
 app.use(store)
 app.use(plugins)
 app.use(elementIcons)
+app.use(i18n)
 app.component('svg-icon', SvgIcon)
 
 directive(app)
 
+// Element Plus locale configuration
+const elementPlusLocales = {
+  'zh-CN': zhCn,
+  'en-US': enUs
+}
+
+// Get saved language from localStorage or default to Chinese
+const savedLanguage = localStorage.getItem('language') || 'zh-CN'
+
 // 使用element-plus 并且设置全局的大小
 app.use(ElementPlus, {
-  locale: locale,
+  locale: elementPlusLocales[savedLanguage] || zhCn,
   // 支持 large、default、small
   size: Cookies.get('size') || 'default'
 })
+
+// Make Element Plus locale globally accessible for dynamic switching
+app.config.globalProperties.$elementPlusLocales = elementPlusLocales
 
 app.mount('#app')

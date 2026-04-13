@@ -1,6 +1,6 @@
 <template>
    <div class="app-container">
-      <el-form :model="queryParams" ref="queryRef" :inline="true">
+      <el-form :model="queryParams" ref="queryRef" :inline="true" label-position="top">
          <el-form-item label="登录地址" prop="ipaddr">
             <el-input
                v-model="queryParams.ipaddr"
@@ -19,7 +19,7 @@
                @keyup.enter="handleQuery"
             />
          </el-form-item>
-         <el-form-item>
+         <el-form-item class="button-item">
             <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
             <el-button icon="Refresh" @click="resetQuery">重置</el-button>
          </el-form-item>

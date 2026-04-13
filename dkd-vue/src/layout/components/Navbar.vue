@@ -18,7 +18,9 @@
 
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
 
-        <el-tooltip content="布局大小" effect="dark" placement="bottom">
+        <locale-select id="locale-select" class="right-menu-item hover-effect" />
+
+        <el-tooltip :content="$t('navbar.layoutSize')" effect="dark" placement="bottom">
           <size-select id="size-select" class="right-menu-item hover-effect" />
         </el-tooltip>
       </template>
@@ -31,13 +33,13 @@
           <template #dropdown>
             <el-dropdown-menu>
               <router-link to="/user/profile">
-                <el-dropdown-item>个人中心</el-dropdown-item>
+                <el-dropdown-item icon="User">{{ $t('navbar.personalCenter') }}</el-dropdown-item>
               </router-link>
-              <el-dropdown-item command="setLayout" v-if="settingsStore.showSettings">
-                <span>布局设置</span>
+              <el-dropdown-item command="setLayout" v-if="settingsStore.showSettings" icon="Setting">
+                <span>{{ $t('navbar.layoutSettings') }}</span>
               </el-dropdown-item>
-              <el-dropdown-item divided command="logout">
-                <span>退出登录</span>
+              <el-dropdown-item divided command="logout" icon="SwitchButton">
+                <span>{{ $t('navbar.logout') }}</span>
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -49,17 +51,21 @@
 
 <script setup>
 import { ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import Breadcrumb from '@/components/Breadcrumb'
 import TopNav from '@/components/TopNav'
 import Hamburger from '@/components/Hamburger'
 import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import HeaderSearch from '@/components/HeaderSearch'
+import LocaleSelect from '@/components/LocaleSelect'
 import RuoYiGit from '@/components/RuoYi/Git'
 import RuoYiDoc from '@/components/RuoYi/Doc'
 import useAppStore from '@/store/modules/app'
 import useUserStore from '@/store/modules/user'
 import useSettingsStore from '@/store/modules/settings'
+
+const { t } = useI18n()
 
 const appStore = useAppStore()
 const userStore = useUserStore()
@@ -83,11 +89,15 @@ function handleCommand(command) {
 }
 
 function logout() {
-  ElMessageBox.confirm('确定注销并退出系统吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
+  ElMessageBox.confirm(
+    t('navbar.logoutConfirm'),
+    t('navbar.logoutTitle'),
+    {
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
+      type: 'warning'
+    }
+  ).then(() => {
     userStore.logOut().then(() => {
       location.href = '/index';
     })

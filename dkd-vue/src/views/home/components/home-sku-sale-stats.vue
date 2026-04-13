@@ -2,7 +2,7 @@
   <div class="box home-sku-sale-stats bgc2">
     <div class="header">
       <div class="title">
-        销售统计<span class="sub-title">{{ start }} ~ {{ end }}</span>
+        {{ t('dashboard.salesStats') }}<span class="sub-title">{{ start }} ~ {{ end }}</span>
       </div>
     </div>
     <div class="body">
@@ -11,7 +11,7 @@
           <div class="num color3 text-shadow2">
             {{ orderCountNum }}
           </div>
-          <div class="text color4">订单量（个）</div>
+          <div class="text color4">{{ t('dashboard.orderCount') }}</div>
         </div>
       </div>
       <div class="stats">
@@ -24,7 +24,7 @@
             }}
           </div>
           <div class="text color4">
-            销售额（{{ orderAmountNum > 10000 ? '万元' : '元' }}）
+            {{ t('dashboard.salesAmount', { unit: orderAmountNum > 10000 ? t('dashboard.unitWan') : t('dashboard.unitYuan') }) }}
           </div>
         </div>
       </div>
@@ -33,6 +33,8 @@
 </template>
 <script setup>
 import dayjs from 'dayjs';
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 // 定义变量
 const repair = ref(false);
 const orderCountNum = ref(7358);
@@ -80,13 +82,16 @@ const orderCount = () => {
         }
 
         .text {
-          height: 17px;
+          min-height: 17px;
           margin-top: 3px;
           font-size: 12px;
           font-family: PingFangSC-Regular, PingFang SC;
           font-weight: 400;
           color: #91a7dc;
           line-height: 17px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .color1 {

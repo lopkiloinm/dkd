@@ -1,28 +1,23 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="点位名称" prop="nodeName">
+    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-position="top">
+      <el-form-item :label="$t('node.nodeName')" prop="nodeName">
         <el-input
           v-model="queryParams.nodeName"
-          placeholder="请输入点位名称"
+          :placeholder="$t('node.nodeNamePlaceholder')"
           clearable
           @keyup.enter="handleQuery"
+          style="width: 200px"
         />
       </el-form-item>
-      <el-form-item label="区域搜索" prop="regionId">
-        <!-- <el-input
-          v-model="queryParams.regionId"
-          placeholder="请输入区域ID"
-          clearable
-          @keyup.enter="handleQuery"
-        /> -->
-        <el-select  v-model="queryParams.regionId" placeholder="请选择区域" clearable>
+      <el-form-item :label="$t('node.regionSearch')" prop="regionId">
+        <el-select  v-model="queryParams.regionId" :placeholder="$t('node.regionPlaceholder')" clearable style="width: 200px">
           <el-option v-for="item in regionList" :key="item.id" :label="item.regionName" :value="item.id"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+      <el-form-item class="button-item">
+        <el-button type="primary" icon="Search" @click="handleQuery">{{ $t('common.search') }}</el-button>
+        <el-button icon="Refresh" @click="resetQuery">{{ $t('common.reset') }}</el-button>
       </el-form-item>
     </el-form>
 
@@ -34,7 +29,7 @@
           icon="Plus"
           @click="handleAdd"
           v-hasPermi="['manage:node:add']"
-        >新增</el-button>
+        >{{ $t('node.addNode') }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -44,7 +39,7 @@
           :disabled="single"
           @click="handleUpdate"
           v-hasPermi="['manage:node:edit']"
-        >修改</el-button>
+        >{{ $t('node.editNode') }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -54,7 +49,7 @@
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['manage:node:remove']"
-        >删除</el-button>
+        >{{ $t('node.deleteNode') }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -63,27 +58,27 @@
           icon="Download"
           @click="handleExport"
           v-hasPermi="['manage:node:export']"
-        >导出</el-button>
+        >{{ $t('node.exportNode') }}</el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
     <el-table v-loading="loading" :data="nodeList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="序号" type="index" width="50" align="center" prop="id" />
-      <el-table-column label="点位名称" align="center" prop="nodeName" />
-      <el-table-column label="所在区域" align="center" prop="region.regionName" />
-      <el-table-column label="商圈类型" align="center" prop="businessType">
+      <el-table-column :label="$t('node.serialNumber')" type="index" width="80" align="center" prop="id" />
+      <el-table-column :label="$t('node.nodeName')" align="center" prop="nodeName" min-width="150" show-overflow-tooltip />
+      <el-table-column :label="$t('node.regionName')" align="center" prop="region.regionName" min-width="150" show-overflow-tooltip />
+      <el-table-column :label="$t('node.businessType')" align="center" prop="businessType" width="150" show-overflow-tooltip>
         <template #default="scope">
           <dict-tag :options="business_type" :value="scope.row.businessType"/>
         </template>
       </el-table-column>
-      <el-table-column label="合作商" align="center" prop="partner.partnerName" />
-      <el-table-column label="详细地址" align="left" prop="address" show-overflow-tooltip/>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('node.partner')" align="center" prop="partner.partnerName" min-width="150" show-overflow-tooltip />
+      <el-table-column :label="$t('node.address')" align="left" prop="address" min-width="200" show-overflow-tooltip/>
+      <el-table-column :label="$t('node.operation')" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="primary"  @click="handleUpdate(scope.row)" v-hasPermi="['manage:node:edit']">修改</el-button>
-          <el-button link type="primary"  @click="handleDelete(scope.row)" v-hasPermi="['manage:node:remove']">删除</el-button>
+          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['manage:node:edit']">{{ $t('node.editNode') }}</el-button>
+          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['manage:node:remove']">{{ $t('node.deleteNode') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -97,19 +92,18 @@
     />
 
     <!-- 添加或修改点位管理对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
-      <el-form ref="nodeRef" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="点位名称" prop="nodeName">
-          <el-input v-model="form.nodeName" placeholder="请输入点位名称" />
+    <el-dialog :title="title" v-model="open" width="700px" append-to-body>
+      <el-form ref="nodeRef" :model="form" :rules="rules" label-width="120px">
+        <el-form-item :label="$t('node.nodeName')" prop="nodeName">
+          <el-input v-model="form.nodeName" :placeholder="$t('node.nodeNamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="所属区域" prop="regionId">
-          <!-- <el-input v-model="form.regionId" placeholder="请输入区域ID" /> -->
-           <el-select v-model="form.regionId" placeholder="请选择区域">
+        <el-form-item :label="$t('node.region')" prop="regionId">
+           <el-select v-model="form.regionId" :placeholder="$t('node.regionPlaceholder')">
             <el-option v-for="item in regionList" :key="item.id" :label="item.regionName" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="商圈类型" prop="businessType">
-          <el-select v-model="form.businessType" placeholder="请选择商圈类型">
+        <el-form-item :label="$t('node.businessType')" prop="businessType">
+          <el-select v-model="form.businessType" :placeholder="$t('node.businessTypePlaceholder')">
             <el-option
               v-for="dict in business_type"
               :key="dict.value"
@@ -118,20 +112,19 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="归属合作商" prop="partnerId">
-          <!-- <el-input v-model="form.partnerId" placeholder="请输入合作商ID" /> -->
-           <el-select v-model="form.partnerId" placeholder="请选择合作商">
+        <el-form-item :label="$t('node.belongPartner')" prop="partnerId">
+           <el-select v-model="form.partnerId" :placeholder="$t('node.partnerPlaceholder')">
             <el-option v-for="item in partnerList" :key="item.id" :label="item.partnerName" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="详细地址" prop="address">
-          <el-input v-model="form.address" type="textarea" placeholder="请输入内容" />
+        <el-form-item :label="$t('node.address')" prop="address">
+          <el-input v-model="form.address" type="textarea" :placeholder="$t('node.addressPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $t('common.confirm') }}</el-button>
+          <el-button @click="cancel">{{ $t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -143,7 +136,9 @@ import { listNode, getNode, delNode, addNode, updateNode } from "@/api/manage/no
 import {listRegion} from "@/api/manage/region";
 import {listPartner} from "@/api/manage/partner";
 import{loadAllParams} from "@/api/page";
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const { proxy } = getCurrentInstance();
 const { business_type } = proxy.useDict('business_type');
 
@@ -168,19 +163,19 @@ const data = reactive({
   },
   rules: {
     nodeName: [
-      { required: true, message: "点位名称不能为空", trigger: "blur" }
+      { required: true, message: t('node.nodeNameRequired'), trigger: "blur" }
     ],
     address: [
-      { required: true, message: "详细地址不能为空", trigger: "blur" }
+      { required: true, message: t('node.addressRequired'), trigger: "blur" }
     ],
     businessType: [
-      { required: true, message: "商圈类型不能为空", trigger: "change" }
+      { required: true, message: t('common.pleaseSelect'), trigger: "change" }
     ],
     regionId: [
-      { required: true, message: "区域ID不能为空", trigger: "blur" }
+      { required: true, message: t('common.pleaseSelect'), trigger: "blur" }
     ],
     partnerId: [
-      { required: true, message: "合作商ID不能为空", trigger: "blur" }
+      { required: true, message: t('common.pleaseSelect'), trigger: "blur" }
     ],
   }
 });
@@ -244,7 +239,7 @@ function handleSelectionChange(selection) {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加点位管理";
+  title.value = t('node.addNodeTitle');
 }
 
 /** 修改按钮操作 */
@@ -254,7 +249,7 @@ function handleUpdate(row) {
   getNode(_id).then(response => {
     form.value = response.data;
     open.value = true;
-    title.value = "修改点位管理";
+    title.value = t('node.editNodeTitle');
   });
 }
 
@@ -264,13 +259,13 @@ function submitForm() {
     if (valid) {
       if (form.value.id != null) {
         updateNode(form.value).then(response => {
-          proxy.$modal.msgSuccess("修改成功");
+          proxy.$modal.msgSuccess(t('node.updateSuccess'));
           open.value = false;
           getList();
         });
       } else {
         addNode(form.value).then(response => {
-          proxy.$modal.msgSuccess("新增成功");
+          proxy.$modal.msgSuccess(t('node.addSuccess'));
           open.value = false;
           getList();
         });
@@ -282,11 +277,11 @@ function submitForm() {
 /** 删除按钮操作 */
 function handleDelete(row) {
   const _ids = row.id || ids.value;
-  proxy.$modal.confirm('是否确认删除点位管理编号为"' + _ids + '"的数据项？').then(function() {
+  proxy.$modal.confirm(t('node.deleteConfirm', [0, _ids])).then(function() {
     return delNode(_ids);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(t('node.deleteSuccess'));
   }).catch(() => {});
 }
 

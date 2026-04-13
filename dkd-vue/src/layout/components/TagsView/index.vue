@@ -12,7 +12,7 @@
         @click.middle="!isAffix(tag) ? closeSelectedTag(tag) : ''"
         @contextmenu.prevent="openMenu(tag, $event)"
       >
-        {{ tag.title }}
+        {{ translateTitle(tag.title) }}
         <span v-if="!isAffix(tag)" @click.prevent.stop="closeSelectedTag(tag)">
           <close class="el-icon-close" style="width: 1em; height: 1em;vertical-align: middle;" />
         </span>
@@ -20,22 +20,22 @@
     </scroll-pane>
     <ul v-show="visible" :style="{ left: left + 'px', top: top + 'px' }" class="contextmenu">
       <li @click="refreshSelectedTag(selectedTag)">
-        <refresh-right style="width: 1em; height: 1em;" /> 刷新页面
+        <refresh-right style="width: 1em; height: 1em;" /> {{ $t('tagsView.refreshPage') }}
       </li>
       <li v-if="!isAffix(selectedTag)" @click="closeSelectedTag(selectedTag)">
-        <close style="width: 1em; height: 1em;" /> 关闭当前
+        <close style="width: 1em; height: 1em;" /> {{ $t('tagsView.closeCurrent') }}
       </li>
       <li @click="closeOthersTags">
-        <circle-close style="width: 1em; height: 1em;" /> 关闭其他
+        <circle-close style="width: 1em; height: 1em;" /> {{ $t('tagsView.closeOthers') }}
       </li>
       <li v-if="!isFirstView()" @click="closeLeftTags">
-        <back style="width: 1em; height: 1em;" /> 关闭左侧
+        <back style="width: 1em; height: 1em;" /> {{ $t('tagsView.closeLeft') }}
       </li>
       <li v-if="!isLastView()" @click="closeRightTags">
-        <right style="width: 1em; height: 1em;" /> 关闭右侧
+        <right style="width: 1em; height: 1em;" /> {{ $t('tagsView.closeRight') }}
       </li>
       <li @click="closeAllTags(selectedTag)">
-        <circle-close style="width: 1em; height: 1em;" /> 全部关闭
+        <circle-close style="width: 1em; height: 1em;" /> {{ $t('tagsView.closeAll') }}
       </li>
     </ul>
   </div>
@@ -47,7 +47,9 @@ import { getNormalPath } from '@/utils/ruoyi'
 import useTagsViewStore from '@/store/modules/tagsView'
 import useSettingsStore from '@/store/modules/settings'
 import usePermissionStore from '@/store/modules/permission'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const visible = ref(false);
 const top = ref(0);
 const left = ref(0);
@@ -58,6 +60,53 @@ const scrollPaneRef = ref(null);
 const { proxy } = getCurrentInstance();
 const route = useRoute();
 const router = useRouter();
+
+// Map Chinese menu titles to i18n keys
+const menuTitleMap = {
+  '首页': 'route.home',
+  '点位管理': 'business.pointManagement',
+  '区域管理': 'business.areaManagement',
+  '合作商管理': 'business.partnerManagement',
+  '设备管理': 'business.deviceManagement',
+  '设备类型管理': 'vmType.title',
+  '人员管理': 'business.personnelManagement',
+  '人员列表': 'emp.personnelList',
+  '系统管理': 'system.title',
+  '系统监控': 'monitor.title',
+  '系统工具': 'tool.title',
+  '若依官网': 'route.officialWebsite',
+  '用户管理': 'user.title',
+  '角色管理': 'role.title',
+  '菜单管理': 'menu.title',
+  '部门管理': 'dept.title',
+  '岗位管理': 'post.title',
+  '字典管理': 'dict.title',
+  '参数设置': 'config.title',
+  '通知公告': 'notice.title',
+  '在线用户': 'monitor.onlineUsers',
+  '定时任务': 'monitor.scheduledTasks',
+  '调度日志': 'monitor.scheduledLog',
+  '服务监控': 'monitor.serverMonitor',
+  '数据监控': 'monitor.dataMonitor',
+  '缓存监控': 'monitor.cacheMonitor',
+  '缓存列表': 'monitor.cacheList',
+  '表单构建': 'tool.formBuild',
+  '代码生成': 'tool.codeGeneration',
+  '系统接口': 'tool.swaggerDoc',
+  '操作日志': 'system.operationLog',
+  '登录日志': 'system.loginLog'
+}
+
+function translateTitle(title) {
+  if (!title) return ''
+  // If it's already an i18n key (contains dots), use it directly
+  if (title.includes('.')) return t(title) || title
+  // Otherwise, check if it's in the Chinese title map
+  const i18nKey = menuTitleMap[title]
+  if (i18nKey) return t(i18nKey)
+  // Fall back to original title
+  return title
+}
 
 const visitedViews = computed(() => useTagsViewStore().visitedViews);
 const routes = computed(() => usePermissionStore().routes);

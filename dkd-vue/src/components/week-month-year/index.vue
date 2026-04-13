@@ -12,11 +12,13 @@
 </template>
 <script setup>
 import { onMounted } from 'vue';
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 // 定义变量
-const groupList = ref([
-  { label: '周', value: 'week' },
-  { label: '月', value: 'month' },
-  { label: '年', value: 'year' },
+const groupList = computed(() => [
+  { label: t('dateRange.week'), value: 'week' },
+  { label: t('dateRange.month'), value: 'month' },
+  { label: t('dateRange.year'), value: 'year' },
 ]);
 //触发日期
 const handleChange = (index)=>{

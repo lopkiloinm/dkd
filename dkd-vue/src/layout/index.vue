@@ -1,8 +1,8 @@
 <template>
   <div :class="classObj" class="app-wrapper" :style="{ '--current-color': theme }">
     <div v-if="device === 'mobile' && sidebar.opened" class="drawer-bg" @click="handleClickOutside"/>
-    <sidebar v-if="!sidebar.hide" class="sidebar-container" />
-    <div :class="{ hasTagsView: needTagsView, sidebarHide: sidebar.hide }" class="main-container">
+    <sidebar v-if="!sidebar.hide" :class="['sidebar-container', localeClass]" />
+    <div :class="{ hasTagsView: needTagsView, sidebarHide: sidebar.hide, [localeClass]: true }" class="main-container">
       <div :class="{ 'fixed-header': fixedHeader }">
         <navbar @setLayout="setLayout" />
         <tags-view v-if="needTagsView" />
@@ -21,14 +21,27 @@ import defaultSettings from '@/settings'
 
 import useAppStore from '@/store/modules/app'
 import useSettingsStore from '@/store/modules/settings'
+import useLocaleStore from '@/store/modules/locale'
 
 const settingsStore = useSettingsStore()
+const localeStore = useLocaleStore()
 const theme = computed(() => settingsStore.theme);
 const sideTheme = computed(() => settingsStore.sideTheme);
 const sidebar = computed(() => useAppStore().sidebar);
 const device = computed(() => useAppStore().device);
 const needTagsView = computed(() => settingsStore.tagsView);
 const fixedHeader = computed(() => settingsStore.fixedHeader);
+
+const localeClass = computed(() => {
+  const lang = localeStore.language;
+  return lang === 'en-US' ? 'locale-en' : 'locale-zh';
+})
+
+// Apply locale class to body element for global CSS targeting
+watch(() => localeStore.language, (lang) => {
+  document.body.classList.remove('locale-zh', 'locale-en');
+  document.body.classList.add(lang === 'en-US' ? 'locale-en' : 'locale-zh');
+}, { immediate: true })
 
 const classObj = computed(() => ({
   hideSidebar: !sidebar.value.opened,
@@ -75,6 +88,14 @@ function setLayout() {
   &.mobile.openSidebar {
     position: fixed;
     top: 0;
+  }
+
+  &.locale-zh .fixed-header {
+    width: calc(100% - #{$base-sidebar-width-zh});
+  }
+
+  &.locale-en .fixed-header {
+    width: calc(100% - #{$base-sidebar-width-en});
   }
 }
 

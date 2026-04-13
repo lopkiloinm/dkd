@@ -11,7 +11,9 @@
 <script setup>
 import * as echarts from 'echarts';
 import { onMounted } from 'vue';
+import { useI18n } from 'vue-i18n'
 import EmptyDataChart from '@/components/empty-data-chart/index.vue';
+const { t } = useI18n()
 const props = defineProps({
   chartOption: {
     type: Object,
@@ -48,7 +50,7 @@ const setOption = () => {
     setTimeout(() => {
       option = {
         title: {
-          text: '销售额趋势图',
+          text: t('dashboard.salesTrend'),
           left: 'center',
           top: '10',
           textStyle: {
@@ -109,7 +111,7 @@ const setOption = () => {
               width: 2,
             },
           },
-          formatter: '销售额：{c}<br />{b}',
+          formatter: t('dashboard.salesAmountLabel') + '{c}<br />{b}',
           backgroundColor: '#FFFFFF',
           borderColor: '#eef3f8',
           borderWidth: 1,

@@ -1,6 +1,6 @@
 <template>
    <div class="app-container">
-      <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
+      <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-position="top">
          <el-form-item label="字典名称" prop="dictType">
             <el-select v-model="queryParams.dictType" style="width: 200px">
                <el-option
@@ -30,7 +30,7 @@
                />
             </el-select>
          </el-form-item>
-         <el-form-item>
+         <el-form-item class="button-item">
             <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
             <el-button icon="Refresh" @click="resetQuery">重置</el-button>
          </el-form-item>

@@ -3,8 +3,8 @@
     <el-dialog v-model="value" width="980px" :close-on-click-modal="false" :modal-append-to-body="false" @open="onOpen"
       @close="onClose">
       <template #header="{ close, titleId, titleClass }">
-        选择图标
-        <el-input v-model="key" size="small" :style="{ width: '260px' }" placeholder="请输入图标名称" prefix-icon="Search"
+        {{ t('build.selectIcon') }}
+        <el-input v-model="key" size="small" :style="{ width: '260px' }" :placeholder="t('build.iconSearchPlaceholder')" prefix-icon="Search"
           clearable />
       </template>
       <ul class="icon-ul">
@@ -23,6 +23,8 @@
 <script setup>
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import { watch } from 'vue';
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 const iconList = ref([])
 const originList = []
 const key = ref('')

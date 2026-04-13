@@ -3,7 +3,7 @@
     <!-- TODO: 分辨大怎么展示问UI -->
     <div class="header">
       <div class="title">
-        商品热榜<span class="sub-title">{{ start }} ~ {{ end }}</span>
+        {{ t('dashboard.hotProducts') }}<span class="sub-title">{{ start }} ~ {{ end }}</span>
       </div>
     </div>
     <div class="body">
@@ -19,7 +19,7 @@
           </div>
         </el-col>
         <el-col :span="6">
-          <div class="count">{{ item.count }}单</div>
+          <div class="count">{{ item.count }} {{ t('dashboard.orderUnit') }}</div>
         </el-col>
       </el-row>
     </div>
@@ -28,6 +28,8 @@
 <script setup>
 import { onMounted } from 'vue';
 import dayjs from 'dayjs';
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 // 定义变量
 const skuSaleRank = ref([
     {

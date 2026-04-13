@@ -1,0 +1,41 @@
+$apple-bg-color: #f5f5f7;
+$apple-glass-bg: rgba(255, 255, 255, 0.65);
+$apple-glass-bg-dark: rgba(0, 0, 0, 0.4);
+$apple-glass-border: rgba(255, 255, 255, 0.4);
+$apple-glass-blur: blur(20px);
+$apple-glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+$apple-radius: 16px;
+$apple-radius-sm: 10px;
+
+$apple-text-primary: #1d1d1f;
+$apple-text-secondary: #86868b;
+$apple-blue: #007aff;
+$apple-blue-pressed: #0056b3;
+$apple-red: #ff3b30;
+$apple-green: #34c759;
+$apple-orange: #ff9500;
+
+@mixin glass-panel {
+  background: $apple-glass-bg;
+  backdrop-filter: $apple-glass-blur;
+  -webkit-backdrop-filter: $apple-glass-blur;
+  border: 1px solid $apple-glass-border;
+  border-radius: $apple-radius;
+  box-shadow: $apple-glass-shadow;
+}
+
+@mixin glass-input {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: $apple-radius-sm;
+  transition: all 0.2s ease-out;
+  color: $apple-text-primary;
+}
+
+@mixin glass-input-focus {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 122, 255, 0.4);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+}

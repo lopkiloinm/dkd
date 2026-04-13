@@ -1,7 +1,7 @@
 <template>
   <div class="box abnormal-equipment">
     <div class="header">
-      <div class="title">异常设备监控</div>
+      <div class="title">{{ t('dashboard.abnormalEquipment') }}</div>
       <el-icon @click="handleMore"><MoreFilled /></el-icon>
     </div>
     <el-scrollbar v-if="listData.length" class="scrollbar body">
@@ -23,17 +23,17 @@
           color: '#999999',
         }"
       >
-        <el-table-column label="故障时间" width="160px">
+        <el-table-column :label="t('dashboard.faultTime')" width="160px">
           <template #default="scope">
             <span>{{ scope.row.updateTime }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="设备地址" show-overflow-tooltip>
+        <el-table-column :label="t('dashboard.equipmentAddress')" show-overflow-tooltip>
           <template #default="scope">
             <span>{{ scope.row.addr }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="设备编号" width="120px">
+        <el-table-column :label="t('dashboard.equipmentCode')" width="120px">
           <template #default="scope">
             <span>{{ scope.row.innerCode }}</span>
           </template>
@@ -43,12 +43,14 @@
     <!-- TODO：一开始显示加载中 -->
     <div v-else class="empty">
       <img src="@/assets/images/empty.png" />
-      <div class="tips">暂无数据</div>
+      <div class="tips">{{ t('dashboard.noData') }}</div>
     </div>
   </div>
 </template>
 <script setup>
 import { onMounted } from 'vue';
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 // 定义变量
 const router = useRouter();
 const listData = ref([

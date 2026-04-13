@@ -2,7 +2,7 @@
   <div class="box sku-sale-collect">
     <div class="header">
       <div class="title">
-        销售数据<span class="sub-title"
+        {{ t('dashboard.salesData') }}<span class="sub-title"
           >{{ datePickerFormat[0] }} ~ {{ datePickerFormat[1] }}</span
         >
       </div>
@@ -11,12 +11,12 @@
     <div class="charts">
       <sku-sale-collect-line-chart
         id="amount-collect"
-        title="销售额趋势图"
+        :title="t('dashboard.salesTrend')"
         :chart-option="lineChartOption"
       />
       <sku-sale-collect-bar-chart
         id="region-collect"
-        title="销售额分布"
+        :title="t('dashboard.salesDistribution')"
         :chart-option="barChartOption"
       />
     </div>
@@ -26,9 +26,11 @@
 import * as echarts from 'echarts';
 import { onMounted } from 'vue';
 import dayjs from 'dayjs';
+import { useI18n } from 'vue-i18n'
 import CommonWeekMonthYear from '@/components/week-month-year/index.vue';
 import SkuSaleCollectLineChart from './sku-sale-collect-line-chart.vue';
 import SkuSaleCollectBarChart from './sku-sale-collect-bar-chart.vue';
+const { t } = useI18n()
 // 定义变量
 const datePickerSel = ref([]);
 const datePickerFormat = ref([]);
@@ -42,13 +44,13 @@ const lineChartOption = ref({
       "2024-05-16"
   ],
   seriesData: [5,10,12,15],
-  yAxisName: '单位：元',
+  yAxisName: t('dashboard.unitYuanAxis'),
 });
 const collectType = ref(1); // 统计时间类型，1:按日统计，2:按月统计
 const barChartOption = ref({
   xAxisData: ["北京平西府街道", "霍营街道"],
   seriesData: [866,523],
-  yAxisName: '单位：元',
+  yAxisName: t('dashboard.unitYuanAxis'),
 });
 onMounted(()=>{
     handleRadioGroupSelChange(radioGroupSel.value)

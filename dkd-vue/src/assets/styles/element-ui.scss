@@ -94,3 +94,19 @@
 .el-dropdown .el-dropdown-link{
   color: var(--el-color-primary) !important;
 }
+
+// Prevent text wrapping in table headers - robust fix
+.el-table .el-table__header-wrapper .el-table__header th.el-table__cell {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+}
+
+.el-table .el-table__header-wrapper .el-table__header th.el-table__cell .cell {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+}
+
+// Prevent text wrapping in form labels - robust fix
+.el-form .el-form-item__label {
+  white-space: nowrap !important;
+}

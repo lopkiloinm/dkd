@@ -1,17 +1,18 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="90px">
-      <el-form-item label="合作商名称" prop="partnerName">
+    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-position="top">
+      <el-form-item :label="$t('partner.partnerName')" prop="partnerName">
         <el-input
           v-model="queryParams.partnerName"
-          placeholder="请输入合作商名称"
+          :placeholder="$t('partner.partnerNamePlaceholder')"
           clearable
           @keyup.enter="handleQuery"
+          style="width: 200px"
         />
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+      <el-form-item class="button-item">
+        <el-button type="primary" icon="Search" @click="handleQuery">{{ $t('common.search') }}</el-button>
+        <el-button icon="Refresh" @click="resetQuery">{{ $t('common.reset') }}</el-button>
       </el-form-item>
     </el-form>
 
@@ -23,7 +24,7 @@
           icon="Plus"
           @click="handleAdd"
           v-hasPermi="['manage:partner:add']"
-        >新增</el-button>
+        >{{ $t('partner.addPartner') }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -33,7 +34,7 @@
           :disabled="single"
           @click="handleUpdate"
           v-hasPermi="['manage:partner:edit']"
-        >修改</el-button>
+        >{{ $t('partner.editPartner') }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -43,7 +44,7 @@
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['manage:partner:remove']"
-        >删除</el-button>
+        >{{ $t('partner.deletePartner') }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -52,28 +53,28 @@
           icon="Download"
           @click="handleExport"
           v-hasPermi="['manage:partner:export']"
-        >导出</el-button>
+        >{{ $t('partner.exportPartner') }}</el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
     <el-table v-loading="loading" :data="partnerList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="序号" type="index" width="50" align="center" prop="id" />
-      <el-table-column label="合作商名称" align="center" prop="partnerName" />
-      <el-table-column label="点位数" align="center" prop="nodeCount" />
-      <el-table-column label="账号" align="center" prop="account" />
-      <el-table-column label="分成比例" align="center" prop="profitRatio" >
+      <el-table-column :label="$t('partner.serialNumber')" type="index" width="80" align="center" prop="id" />
+      <el-table-column :label="$t('partner.partnerName')" align="center" prop="partnerName" min-width="150" show-overflow-tooltip />
+      <el-table-column :label="$t('partner.nodeCount')" align="center" prop="nodeCount" width="100" />
+      <el-table-column :label="$t('partner.account')" align="center" prop="account" width="140" show-overflow-tooltip />
+      <el-table-column :label="$t('partner.profitRatio')" align="center" prop="profitRatio" width="100">
         <template #default="scope">{{ scope.row.profitRatio }}%</template>
       </el-table-column>
-      <el-table-column label="联系人" align="center" prop="contactPerson" />
-      <el-table-column label="联系电话" align="center" prop="contactPhone" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="300px">
+      <el-table-column :label="$t('partner.contactPerson')" align="center" prop="contactPerson" width="120" show-overflow-tooltip />
+      <el-table-column :label="$t('partner.contactPhone')" align="center" prop="contactPhone" width="140" show-overflow-tooltip />
+      <el-table-column :label="$t('partner.operation')" align="center" class-name="small-padding fixed-width" width="300px">
         <template #default="scope">
-          <el-button link type="primary"  @click="resetPwd(scope.row)" v-hasPermi="['manage:partner:edit']">重置密码</el-button>
-          <el-button link type="primary"  @click="getParnterInfo(scope.row)" v-hasPermi="['manage:partner:query']">查看详情</el-button>
-          <el-button link type="primary"  @click="handleUpdate(scope.row)" v-hasPermi="['manage:partner:edit']">修改</el-button>
-          <el-button link type="primary"  @click="handleDelete(scope.row)" v-hasPermi="['manage:partner:remove']">删除</el-button>
+          <el-button link type="primary" icon="Key" @click="resetPwd(scope.row)" v-hasPermi="['manage:partner:edit']">{{ $t('partner.resetPwd') }}</el-button>
+          <el-button link type="primary" icon="View" @click="getParnterInfo(scope.row)" v-hasPermi="['manage:partner:query']">{{ $t('partner.viewDetail') }}</el-button>
+          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['manage:partner:edit']">{{ $t('partner.editPartner') }}</el-button>
+          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['manage:partner:remove']">{{ $t('partner.deletePartner') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -87,46 +88,46 @@
     />
 
     <!-- 添加或修改合作商管理对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
-      <el-form ref="partnerRef" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="合作商名称" prop="partnerName">
-          <el-input v-model="form.partnerName" placeholder="请输入合作商名称" />
+    <el-dialog :title="title" v-model="open" width="700px" append-to-body>
+      <el-form ref="partnerRef" :model="form" :rules="rules" label-width="120px">
+        <el-form-item :label="$t('partner.partnerName')" prop="partnerName">
+          <el-input v-model="form.partnerName" :placeholder="$t('partner.partnerNamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="联系人" prop="contactPerson">
-          <el-input v-model="form.contactPerson" placeholder="请输入联系人" />
+        <el-form-item :label="$t('partner.contactPerson')" prop="contactPerson">
+          <el-input v-model="form.contactPerson" :placeholder="$t('partner.contactPersonPlaceholder')" />
         </el-form-item>
-        <el-form-item label="联系电话" prop="contactPhone">
-          <el-input v-model="form.contactPhone" placeholder="请输入联系电话" />
+        <el-form-item :label="$t('partner.contactPhone')" prop="contactPhone">
+          <el-input v-model="form.contactPhone" :placeholder="$t('partner.contactPhonePlaceholder')" />
         </el-form-item>
-        <el-form-item label="创建时间" prop="createTime" v-if="form.id!=null">
+        <el-form-item :label="$t('partner.createTime')" prop="createTime" v-if="form.id!=null">
           {{form.createTime}}
         </el-form-item>
-        <el-form-item label="分成比例" prop="profitRatio">
-          <el-input v-model="form.profitRatio" placeholder="请输入分成比例" />
+        <el-form-item :label="$t('partner.profitRatio')" prop="profitRatio">
+          <el-input v-model="form.profitRatio" :placeholder="$t('partner.profitRatioPlaceholder')" />
         </el-form-item>
-        <el-form-item label="账号" prop="account" v-if="form.id==null">
-          <el-input v-model="form.account" placeholder="请输入账号" />
+        <el-form-item :label="$t('partner.account')" prop="account" v-if="form.id==null">
+          <el-input v-model="form.account" :placeholder="$t('partner.accountPlaceholder')" />
         </el-form-item>
-        <el-form-item label="密码" prop="password" v-if="form.id==null">
-          <el-input v-model="form.password" type="password" placeholder="请输入密码" />
+        <el-form-item :label="$t('partner.password')" prop="password" v-if="form.id==null">
+          <el-input v-model="form.password" type="password" :placeholder="$t('partner.passwordPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $t('common.confirm') }}</el-button>
+          <el-button @click="cancel">{{ $t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
 
     <!-- 查看合作商详情对话框 -->
-    <el-dialog title="合作商详情" v-model="partnerInfoOpen" width="500px" append-to-body>
+    <el-dialog :title="$t('partner.detailTitle')" v-model="partnerInfoOpen" width="500px" append-to-body>
     <!-- 使用el-descriptions组件以卡片形式展示信息，更加整洁 -->
     <el-descriptions :column="2" border>
-      <el-descriptions-item label="合作商名称">{{ form.partnerName }}</el-descriptions-item>
-      <el-descriptions-item label="联系人">{{ form.contactPerson }}</el-descriptions-item>
-      <el-descriptions-item label="联系电话">{{ form.contactPhone }}</el-descriptions-item>
-      <el-descriptions-item label="分成比例">{{ form.profitRatio }}%</el-descriptions-item>
+      <el-descriptions-item :label="$t('partner.partnerName')">{{ form.partnerName }}</el-descriptions-item>
+      <el-descriptions-item :label="$t('partner.contactPerson')">{{ form.contactPerson }}</el-descriptions-item>
+      <el-descriptions-item :label="$t('partner.contactPhone')">{{ form.contactPhone }}</el-descriptions-item>
+      <el-descriptions-item :label="$t('partner.profitRatio')">{{ form.profitRatio }}%</el-descriptions-item>
     </el-descriptions>
   </el-dialog>
   </div>
@@ -134,7 +135,9 @@
 
 <script setup name="Partner">
 import { listPartner, getPartner, delPartner, addPartner, updatePartner,resetPartnerPwd } from "@/api/manage/partner";
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const { proxy } = getCurrentInstance();
 
 const partnerList = ref([]);
@@ -156,22 +159,22 @@ const data = reactive({
   },
   rules: {
     partnerName: [
-      { required: true, message: "合作商名称不能为空", trigger: "blur" }
+      { required: true, message: t('partner.partnerNameRequired'), trigger: "blur" }
     ],
     contactPerson: [
-      { required: true, message: "联系人不能为空", trigger: "blur" }
+      { required: true, message: t('partner.contactPersonRequired'), trigger: "blur" }
     ],
     contactPhone: [
-      { required: true, message: "联系电话不能为空", trigger: "blur" }
+      { required: true, message: t('partner.contactPhoneRequired'), trigger: "blur" }
     ],
     profitRatio: [
-      { required: true, message: "分成比例不能为空", trigger: "blur" }
+      { required: true, message: t('partner.profitRatioRequired'), trigger: "blur" }
     ],
     account: [
-      { required: true, message: "账号不能为空", trigger: "blur" }
+      { required: true, message: t('partner.accountRequired'), trigger: "blur" }
     ],
     password: [
-      { required: true, message: "密码不能为空", trigger: "blur" }
+      { required: true, message: t('partner.passwordRequired'), trigger: "blur" }
     ],
   }
 });
@@ -236,7 +239,7 @@ function handleSelectionChange(selection) {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加合作商管理";
+  title.value = t('partner.addPartnerTitle');
 }
 
 /** 修改按钮操作 */
@@ -246,7 +249,7 @@ function handleUpdate(row) {
   getPartner(_id).then(response => {
     form.value = response.data;
     open.value = true;
-    title.value = "修改合作商管理";
+    title.value = t('partner.editPartnerTitle');
   });
 }
 /* 查看合作商详情 */
@@ -266,13 +269,13 @@ function submitForm() {
     if (valid) {
       if (form.value.id != null) {
         updatePartner(form.value).then(response => {
-          proxy.$modal.msgSuccess("修改成功");
+          proxy.$modal.msgSuccess(t('partner.updateSuccess'));
           open.value = false;
           getList();
         });
       } else {
         addPartner(form.value).then(response => {
-          proxy.$modal.msgSuccess("新增成功");
+          proxy.$modal.msgSuccess(t('partner.addSuccess'));
           open.value = false;
           getList();
         });
@@ -284,21 +287,21 @@ function submitForm() {
 /** 删除按钮操作 */
 function handleDelete(row) {
   const _ids = row.id || ids.value;
-  proxy.$modal.confirm('是否确认删除合作商管理编号为"' + _ids + '"的数据项？').then(function() {
+  proxy.$modal.confirm(t('partner.deleteConfirm', [0, _ids])).then(function() {
     return delPartner(_ids);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(t('partner.deleteSuccess'));
   }).catch(() => {});
 }
 
 /* 重置合作商密码 */
 function resetPwd(row){
   const _id = row.id
-  proxy.$modal.confirm('你确定要重置该合作商密码吗？').then(function() {
+  proxy.$modal.confirm(t('partner.resetPwdConfirm')).then(function() {
     return resetPartnerPwd(_id);
   }).then(() => {
-    proxy.$modal.msgSuccess("重置密码成功");
+    proxy.$modal.msgSuccess(t('partner.resetPwdSuccess'));
   }).catch(() => {});
 }
 

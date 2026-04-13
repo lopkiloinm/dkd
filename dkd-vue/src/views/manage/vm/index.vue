@@ -1,48 +1,53 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="设备编号" prop="innerCode">
+    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-position="top">
+      <el-form-item :label="$t('vm.innerCode')" prop="innerCode">
         <el-input
           v-model="queryParams.innerCode"
-          placeholder="请输入设备编号"
+          :placeholder="$t('vm.innerCodePlaceholder')"
           clearable
           @keyup.enter="handleQuery"
+          style="width: 200px"
         />
       </el-form-item>
-      <el-form-item label="点位Id" prop="nodeId">
+      <el-form-item :label="$t('vm.nodeId')" prop="nodeId">
         <el-input
           v-model="queryParams.nodeId"
-          placeholder="请输入点位Id"
+          :placeholder="$t('vm.nodeIdPlaceholder')"
           clearable
           @keyup.enter="handleQuery"
+          style="width: 200px"
         />
       </el-form-item>
-      <el-form-item label="区域Id" prop="regionId">
+      <el-form-item :label="$t('vm.regionId')" prop="regionId">
         <el-input
           v-model="queryParams.regionId"
-          placeholder="请输入区域Id"
+          :placeholder="$t('vm.regionIdPlaceholder')"
           clearable
           @keyup.enter="handleQuery"
+          style="width: 200px"
         />
       </el-form-item>
-      <el-form-item label="合作商Id" prop="partnerId">
+      <el-form-item :label="$t('vm.partnerId')" prop="partnerId">
         <el-input
           v-model="queryParams.partnerId"
-          placeholder="请输入合作商Id"
+          :placeholder="$t('vm.partnerIdPlaceholder')"
           clearable
           @keyup.enter="handleQuery"
+          style="width: 200px"
         />
       </el-form-item>
-      <el-form-item label="设备型号" prop="vmTypeId">
+      <el-form-item :label="$t('vm.model')" prop="vmTypeId">
         <el-input
           v-model="queryParams.vmTypeId"
-          placeholder="请输入设备型号"
+          :placeholder="$t('vm.vmTypeIdPlaceholder')"
           clearable
           @keyup.enter="handleQuery"
+          style="width: 200px"
         />
       </el-form-item>
-      <el-form-item label="设备状态，0:未投放;1-运营;3-撤机" prop="vmStatus">
-        <el-select v-model="queryParams.vmStatus" placeholder="请选择设备状态，0:未投放;1-运营;3-撤机" clearable>
+      <el-form-item :label="$t('vm.status')" prop="vmStatus">
+        <el-select v-model="queryParams.vmStatus" :placeholder="$t('vm.statusPlaceholder')" clearable>
           <el-option
             v-for="dict in vm_status"
             :key="dict.value"
@@ -51,17 +56,17 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="策略id" prop="policyId">
+      <el-form-item :label="$t('vm.policyId')" prop="policyId">
         <el-input
           v-model="queryParams.policyId"
-          placeholder="请输入策略id"
+          :placeholder="$t('vm.policyIdPlaceholder')"
           clearable
           @keyup.enter="handleQuery"
         />
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+      <el-form-item class="button-item">
+        <el-button type="primary" icon="Search" @click="handleQuery">{{ $t('common.search') }}</el-button>
+        <el-button icon="Refresh" @click="resetQuery">{{ $t('common.reset') }}</el-button>
       </el-form-item>
     </el-form>
 
@@ -73,7 +78,7 @@
           icon="Plus"
           @click="handleAdd"
           v-hasPermi="['manage:vm:add']"
-        >新增</el-button>
+        >{{ $t('vm.addVm') }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -83,7 +88,7 @@
           :disabled="single"
           @click="handleUpdate"
           v-hasPermi="['manage:vm:edit']"
-        >修改</el-button>
+        >{{ $t('vm.editVm') }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -93,7 +98,7 @@
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['manage:vm:remove']"
-        >删除</el-button>
+        >{{ $t('vm.deleteVm') }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -102,27 +107,27 @@
           icon="Download"
           @click="handleExport"
           v-hasPermi="['manage:vm:export']"
-        >导出</el-button>
+        >{{ $t('vm.exportVm') }}</el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
     <el-table v-loading="loading" :data="vmList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="主键" align="center" prop="id" />
-      <el-table-column label="设备编号" align="center" prop="innerCode" />
-      <el-table-column label="详细地址" align="center" prop="addr" />
-      <el-table-column label="合作商Id" align="center" prop="partnerId" />
-      <el-table-column label="设备型号" align="center" prop="vmTypeId" />
-      <el-table-column label="设备状态，0:未投放;1-运营;3-撤机" align="center" prop="vmStatus">
+      <el-table-column :label="$t('vm.primaryKey')" align="center" prop="id" width="80" show-overflow-tooltip />
+      <el-table-column :label="$t('vm.innerCode')" align="center" prop="innerCode" min-width="150" show-overflow-tooltip />
+      <el-table-column :label="$t('vm.addr')" align="center" prop="addr" min-width="150" show-overflow-tooltip />
+      <el-table-column :label="$t('vm.partnerId')" align="center" prop="partnerId" width="120" show-overflow-tooltip />
+      <el-table-column :label="$t('vm.model')" align="center" prop="vmTypeId" width="120" show-overflow-tooltip />
+      <el-table-column :label="$t('vm.status')" align="center" prop="vmStatus" width="120" show-overflow-tooltip>
         <template #default="scope">
           <dict-tag :options="vm_status" :value="scope.row.vmStatus"/>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('vm.operation')" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['manage:vm:edit']">修改</el-button>
-          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['manage:vm:remove']">删除</el-button>
+          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['manage:vm:edit']">{{ $t('vm.editVm') }}</el-button>
+          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['manage:vm:remove']">{{ $t('vm.deleteVm') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -136,22 +141,22 @@
     />
 
     <!-- 添加或修改设备管理对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
-      <el-form ref="vmRef" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="设备编号" prop="innerCode">
-          <el-input v-model="form.innerCode" placeholder="请输入设备编号" />
+    <el-dialog :title="title" v-model="open" width="700px" append-to-body>
+      <el-form ref="vmRef" :model="form" :rules="rules" label-width="120px">
+        <el-form-item :label="$t('vm.innerCode')" prop="innerCode">
+          <el-input v-model="form.innerCode" :placeholder="$t('vm.innerCodePlaceholder')" />
         </el-form-item>
-        <el-form-item label="点位Id" prop="nodeId">
-          <el-input v-model="form.nodeId" placeholder="请输入点位Id" />
+        <el-form-item :label="$t('vm.nodeId')" prop="nodeId">
+          <el-input v-model="form.nodeId" :placeholder="$t('vm.nodeIdPlaceholder')" />
         </el-form-item>
-        <el-form-item label="设备型号" prop="vmTypeId">
-          <el-input v-model="form.vmTypeId" placeholder="请输入设备型号" />
+        <el-form-item :label="$t('vm.model')" prop="vmTypeId">
+          <el-input v-model="form.vmTypeId" :placeholder="$t('vm.vmTypeIdPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $t('common.confirm') }}</el-button>
+          <el-button @click="cancel">{{ $t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -160,7 +165,9 @@
 
 <script setup name="Vm">
 import { listVm, getVm, delVm, addVm, updateVm } from "@/api/manage/vm";
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const { proxy } = getCurrentInstance();
 const { vm_status } = proxy.useDict('vm_status');
 
@@ -191,10 +198,10 @@ const data = reactive({
   },
   rules: {
     nodeId: [
-      { required: true, message: "点位Id不能为空", trigger: "blur" }
+      { required: true, message: t('vm.nodeIdRequired'), trigger: "blur" }
     ],
     vmTypeId: [
-      { required: true, message: "设备型号不能为空", trigger: "blur" }
+      { required: true, message: t('vm.vmTypeIdRequired'), trigger: "blur" }
     ],
   }
 });
@@ -265,7 +272,7 @@ function handleSelectionChange(selection) {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加设备管理";
+  title.value = t('vm.addVmTitle');
 }
 
 /** 修改按钮操作 */
@@ -275,7 +282,7 @@ function handleUpdate(row) {
   getVm(_id).then(response => {
     form.value = response.data;
     open.value = true;
-    title.value = "修改设备管理";
+    title.value = t('vm.editVmTitle');
   });
 }
 
@@ -285,13 +292,13 @@ function submitForm() {
     if (valid) {
       if (form.value.id != null) {
         updateVm(form.value).then(response => {
-          proxy.$modal.msgSuccess("修改成功");
+          proxy.$modal.msgSuccess(t('vm.updateSuccess'));
           open.value = false;
           getList();
         });
       } else {
         addVm(form.value).then(response => {
-          proxy.$modal.msgSuccess("新增成功");
+          proxy.$modal.msgSuccess(t('vm.addSuccess'));
           open.value = false;
           getList();
         });
@@ -303,11 +310,11 @@ function submitForm() {
 /** 删除按钮操作 */
 function handleDelete(row) {
   const _ids = row.id || ids.value;
-  proxy.$modal.confirm('是否确认删除设备管理编号为"' + _ids + '"的数据项？').then(function() {
+  proxy.$modal.confirm(t('vm.deleteConfirm', [0, _ids])).then(function() {
     return delVm(_ids);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(t('vm.deleteSuccess'));
   }).catch(() => {});
 }
 

@@ -1,17 +1,18 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="型号名称" prop="name">
+    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-position="top">
+      <el-form-item :label="$t('vmType.name')" prop="name">
         <el-input
           v-model="queryParams.name"
-          placeholder="请输入型号名称"
+          :placeholder="$t('vmType.namePlaceholder')"
           clearable
           @keyup.enter="handleQuery"
+          style="width: 200px"
         />
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+      <el-form-item class="button-item">
+        <el-button type="primary" icon="Search" @click="handleQuery">{{ $t('common.search') }}</el-button>
+        <el-button icon="Refresh" @click="resetQuery">{{ $t('common.reset') }}</el-button>
       </el-form-item>
     </el-form>
 
@@ -23,7 +24,7 @@
           icon="Plus"
           @click="handleAdd"
           v-hasPermi="['manage:vmType:add']"
-        >新增</el-button>
+        >{{ $t('vmType.addVmType') }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -33,7 +34,7 @@
           :disabled="single"
           @click="handleUpdate"
           v-hasPermi="['manage:vmType:edit']"
-        >修改</el-button>
+        >{{ $t('vmType.editVmType') }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -43,7 +44,7 @@
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['manage:vmType:remove']"
-        >删除</el-button>
+        >{{ $t('vmType.deleteVmType') }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -52,27 +53,27 @@
           icon="Download"
           @click="handleExport"
           v-hasPermi="['manage:vmType:export']"
-        >导出</el-button>
+        >{{ $t('vmType.exportVmType') }}</el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
     <el-table v-loading="loading" :data="vmTypeList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="型号名称" align="center" prop="name" />
-      <el-table-column label="型号编码" align="center" prop="model" />
-      <el-table-column label="设备图片" align="center" prop="image" width="100">
+      <el-table-column :label="$t('vmType.name')" align="center" prop="name" min-width="150" show-overflow-tooltip />
+      <el-table-column :label="$t('vmType.model')" align="center" prop="model" min-width="150" show-overflow-tooltip />
+      <el-table-column :label="$t('vmType.image')" align="center" prop="image" width="120" show-overflow-tooltip>
         <template #default="scope">
           <image-preview :src="scope.row.image" :width="50" :height="50"/>
         </template>
       </el-table-column>
-      <el-table-column label="货道行" align="center" prop="vmRow" />
-      <el-table-column label="货道列" align="center" prop="vmCol" />
-      <el-table-column label="设备容量" align="center" prop="channelMaxCapacity" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('vmType.vmRow')" align="center" prop="vmRow" width="100" />
+      <el-table-column :label="$t('vmType.vmCol')" align="center" prop="vmCol" width="100" />
+      <el-table-column :label="$t('vmType.channelMaxCapacity')" align="center" prop="channelMaxCapacity" width="150" show-overflow-tooltip />
+      <el-table-column :label="$t('vmType.operation')" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="primary"  @click="handleUpdate(scope.row)" v-hasPermi="['manage:vmType:edit']">修改</el-button>
-          <el-button link type="primary"  @click="handleDelete(scope.row)" v-hasPermi="['manage:vmType:remove']">删除</el-button>
+          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['manage:vmType:edit']">{{ $t('vmType.editVmType') }}</el-button>
+          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['manage:vmType:remove']">{{ $t('vmType.deleteVmType') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -86,34 +87,36 @@
     />
 
     <!-- 添加或修改设备类型管理对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
-      <el-form ref="vmTypeRef" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="型号名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入型号名称" />
+    <el-dialog :title="title" v-model="open" width="700px" append-to-body>
+      <el-form ref="vmTypeRef" :model="form" :rules="rules" label-width="120px">
+        <el-form-item :label="$t('vmType.name')" prop="name">
+          <el-input v-model="form.name" :placeholder="$t('vmType.namePlaceholder')" />
         </el-form-item>
-        <el-form-item label="型号编码" prop="model">
-          <el-input v-model="form.model" placeholder="请输入型号编码" />
+        <el-form-item :label="$t('vmType.model')" prop="model">
+          <el-input v-model="form.model" :placeholder="$t('vmType.modelPlaceholder')" />
         </el-form-item>
-        <el-form-item label="货道数" prop="vmRow">
-          <el-input-number :min="1" :max="10" v-model="form.vmRow" placeholder="请输入货道行" /> 行 &nbsp;&nbsp;
-          <el-input-number :min="1" :max="10" v-model="form.vmCol" placeholder="请输入货道列" /> 列
+        <el-form-item :label="$t('vmType.vmRow')" prop="vmRow">
+          <el-input-number :min="1" :max="10" v-model="form.vmRow" :placeholder="$t('vmType.vmRowPlaceholder')" />
         </el-form-item>
-        <el-form-item label="设备容量" prop="channelMaxCapacity">
+        <el-form-item :label="$t('vmType.vmCol')" prop="vmCol">
+          <el-input-number :min="1" :max="10" v-model="form.vmCol" :placeholder="$t('vmType.vmColPlaceholder')" />
+        </el-form-item>
+        <el-form-item :label="$t('vmType.channelMaxCapacity')" prop="channelMaxCapacity">
           <el-input-number
             v-model="form.channelMaxCapacity"
             :min="1"
             :max="10"
-            placeholder="请输入设备容量"
+            :placeholder="$t('vmType.channelMaxCapacityPlaceholder')"
           />
         </el-form-item>
-        <el-form-item label="设备图片" prop="image">
+        <el-form-item :label="$t('vmType.image')" prop="image">
           <image-upload v-model="form.image"/>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $t('common.confirm') }}</el-button>
+          <el-button @click="cancel">{{ $t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -122,7 +125,9 @@
 
 <script setup name="VmType">
 import { listVmType, getVmType, delVmType, addVmType, updateVmType } from "@/api/manage/vmType";
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const { proxy } = getCurrentInstance();
 
 const vmTypeList = ref([]);
@@ -145,22 +150,22 @@ const data = reactive({
   },
   rules: {
     name: [
-      { required: true, message: "型号名称不能为空", trigger: "blur" }
+      { required: true, message: t('vmType.nameRequired'), trigger: "blur" }
     ],
     model: [
-      { required: true, message: "型号编码不能为空", trigger: "blur" }
+      { required: true, message: t('vmType.modelRequired'), trigger: "blur" }
     ],
     image: [
-      { required: true, message: "设备图片不能为空", trigger: "blur" }
+      { required: true, message: t('common.pleaseInput'), trigger: "blur" }
     ],
     vmRow: [
-      { required: true, message: "货道行不能为空", trigger: "blur" }
+      { required: true, message: t('common.pleaseInput'), trigger: "blur" }
     ],
     vmCol: [
-      { required: true, message: "货道列不能为空", trigger: "blur" }
+      { required: true, message: t('common.pleaseInput'), trigger: "blur" }
     ],
     channelMaxCapacity: [
-      { required: true, message: "设备容量不能为空", trigger: "blur" }
+      { required: true, message: t('common.pleaseInput'), trigger: "blur" }
     ]
   }
 });
@@ -220,7 +225,7 @@ function handleSelectionChange(selection) {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加设备类型管理";
+  title.value = t('vmType.addVmTypeTitle');
 }
 
 /** 修改按钮操作 */
@@ -230,7 +235,7 @@ function handleUpdate(row) {
   getVmType(_id).then(response => {
     form.value = response.data;
     open.value = true;
-    title.value = "修改设备类型管理";
+    title.value = t('vmType.editVmTypeTitle');
   });
 }
 
@@ -240,13 +245,13 @@ function submitForm() {
     if (valid) {
       if (form.value.id != null) {
         updateVmType(form.value).then(response => {
-          proxy.$modal.msgSuccess("修改成功");
+          proxy.$modal.msgSuccess(t('vmType.updateSuccess'));
           open.value = false;
           getList();
         });
       } else {
         addVmType(form.value).then(response => {
-          proxy.$modal.msgSuccess("新增成功");
+          proxy.$modal.msgSuccess(t('vmType.addSuccess'));
           open.value = false;
           getList();
         });
@@ -258,11 +263,11 @@ function submitForm() {
 /** 删除按钮操作 */
 function handleDelete(row) {
   const _ids = row.id || ids.value;
-  proxy.$modal.confirm('是否确认删除设备类型管理编号为"' + _ids + '"的数据项？').then(function() {
+  proxy.$modal.confirm(t('vmType.deleteConfirm', [0, _ids])).then(function() {
     return delVmType(_ids);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(t('vmType.deleteSuccess'));
   }).catch(() => {});
 }
 

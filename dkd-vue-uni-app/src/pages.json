@@ -1,0 +1,80 @@
+{
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "Home"
+			}
+		},
+		{
+			"path": "pages/login/index",
+			"style": {
+				"navigationBarTitleText": "Login"
+			}
+		},
+		{
+			"path": "pages/profile/index",
+			"style": {
+				"navigationBarTitleText": "Profile"
+			}
+		}
+	],
+	"subPackages": [
+		{
+			"root": "pages/manage",
+			"pages": [
+				{
+					"path": "node/index",
+					"style": { "navigationBarTitleText": "Node Management" }
+				},
+				{
+					"path": "region/index",
+					"style": { "navigationBarTitleText": "Region Management" }
+				},
+				{
+					"path": "partner/index",
+					"style": { "navigationBarTitleText": "Partner Management" }
+				},
+				{
+					"path": "vm/index",
+					"style": { "navigationBarTitleText": "Vending Machine Management" }
+				},
+				{
+					"path": "vmType/index",
+					"style": { "navigationBarTitleText": "Vending Machine Type Management" }
+				},
+				{
+					"path": "emp/index",
+					"style": { "navigationBarTitleText": "Employee Management" }
+				}
+			]
+		}
+	],
+	"globalStyle": {
+		"navigationStyle": "custom",
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "DiKeDe",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+		"color": "#999999",
+		"selectedColor": "#007aff",
+		"backgroundColor": "#ffffff99",
+		"borderStyle": "white",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"text": "Home",
+				"iconPath": "static/tabbar/home.png",
+				"selectedIconPath": "static/tabbar/home_active.png"
+			},
+			{
+				"pagePath": "pages/profile/index",
+				"text": "Profile",
+				"iconPath": "static/tabbar/user.png",
+				"selectedIconPath": "static/tabbar/user_active.png"
+			}
+		]
+	}
+}

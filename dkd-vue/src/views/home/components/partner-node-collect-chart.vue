@@ -1,7 +1,7 @@
 <template>
   <div class="box partner-node-collect">
     <div class="header">
-      <div class="title">合作商点位数Top5</div>
+      <div class="title">{{ t('dashboard.partnerNodeTop5') }}</div>
       <svg-icon name="more" class="more" @click="handleMoreClick" />
     </div>
     <el-row :gutter="20" type="flex" align="middle" class="body">
@@ -13,11 +13,11 @@
           <div class="count">
             16
           </div>
-          <div class="name">点位数</div>
+          <div class="name">{{ t('dashboard.nodeCountLabel') }}</div>
           <div class="count count2">
             5
           </div>
-          <div class="name">合作商数</div>
+          <div class="name">{{ t('dashboard.partnerCountLabel') }}</div>
         </div>
       </el-col>
     </el-row>
@@ -25,6 +25,8 @@
 </template>
 <script setup>
 import PartnerNodeCollectPieChart from './partner-node-collect-pie-chart.vue'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 // 定义变量
 const pieChartOption = ref({
   seriesData: [

@@ -1,4 +1,4 @@
-#app {
+.app-wrapper {
 
   .main-container {
     // height: 100%;
@@ -110,6 +110,14 @@
         background-color: $base-sub-menu-hover !important;
       }
     }
+  }
+
+  &.locale-zh .sidebar-container {
+    width: 200px !important;
+  }
+
+  &.locale-en .sidebar-container {
+    width: 280px !important;
   }
 
   .hideSidebar {
@@ -236,4 +244,21 @@
       border-radius: 20px;
     }
   }
+}
+
+// Locale-specific sidebar widths
+body.locale-zh .app-wrapper .main-container {
+  margin-left: 200px !important;
+}
+
+body.locale-en .app-wrapper .main-container {
+  margin-left: 280px !important;
+}
+
+body.locale-zh .app-wrapper .sidebar-container {
+  width: 200px !important;
+}
+
+body.locale-en .app-wrapper .sidebar-container {
+  width: 280px !important;
 }

@@ -2,7 +2,7 @@
   <div class="box home-user-task-stats bgc1">
     <div class="header">
       <div class="title">
-        工单统计<span class="sub-title">{{ start }} ~ {{ end }}</span>
+        {{ t('dashboard.workOrderStats') }}<span class="sub-title">{{ start }} ~ {{ end }}</span>
       </div>
     </div>
     <div v-if="userTaskStats.length" class="body">
@@ -11,7 +11,7 @@
           <div class="num color1 text-shadow1">
             {{ userTaskStats[0].total + userTaskStats[1].total }}
           </div>
-          <div class="text color2">工单总数（个）</div>
+          <div class="text color2">{{ t('dashboard.totalOrders') }}</div>
         </div>
       </div>
       <div class="stats">
@@ -21,7 +21,7 @@
               userTaskStats[0].completedTotal + userTaskStats[1].completedTotal
             }}
           </div>
-          <div class="text color2">完成工单（个）</div>
+          <div class="text color2">{{ t('dashboard.completedOrders') }}</div>
         </div>
       </div>
       <div class="stats">
@@ -31,7 +31,7 @@
               userTaskStats[0].progressTotal + userTaskStats[1].progressTotal
             }}
           </div>
-          <div class="text color2">进行工单（个）</div>
+          <div class="text color2">{{ t('dashboard.inProgressOrders') }}</div>
         </div>
       </div>
       <div class="stats">
@@ -39,7 +39,7 @@
           <div class="num color1 text-shadow1">
             {{ userTaskStats[0].cancelTotal + userTaskStats[1].cancelTotal }}
           </div>
-          <div class="text color2">取消工单（个）</div>
+          <div class="text color2">{{ t('dashboard.cancelledOrders') }}</div>
         </div>
       </div>
     </div>
@@ -47,6 +47,8 @@
 </template>
 <script setup>
 import dayjs from 'dayjs';
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 // 定义变量
 const repair = ref(false);
 const orderCountNum = ref(0);
@@ -115,13 +117,16 @@ const orderCount = () => {
         }
 
         .text {
-          height: 17px;
+          min-height: 17px;
           margin-top: 3px;
           font-size: 12px;
           font-family: PingFangSC-Regular, PingFang SC;
           font-weight: 400;
           color: #91a7dc;
           line-height: 17px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .color1 {

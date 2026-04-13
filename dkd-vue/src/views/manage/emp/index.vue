@@ -1,17 +1,18 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="人员名称" prop="userName">
+    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-position="top">
+      <el-form-item :label="$t('emp.userName')" prop="userName">
         <el-input
           v-model="queryParams.userName"
-          placeholder="请输入人员名称"
+          :placeholder="$t('emp.userNamePlaceholder')"
           clearable
           @keyup.enter="handleQuery"
+          style="width: 200px"
         />
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+      <el-form-item class="button-item">
+        <el-button type="primary" icon="Search" @click="handleQuery">{{ $t('common.search') }}</el-button>
+        <el-button icon="Refresh" @click="resetQuery">{{ $t('common.reset') }}</el-button>
       </el-form-item>
     </el-form>
 
@@ -23,7 +24,7 @@
           icon="Plus"
           @click="handleAdd"
           v-hasPermi="['manage:emp:add']"
-        >新增</el-button>
+        >{{ $t('emp.addEmp') }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -33,7 +34,7 @@
           :disabled="single"
           @click="handleUpdate"
           v-hasPermi="['manage:emp:edit']"
-        >修改</el-button>
+        >{{ $t('emp.editEmp') }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -43,7 +44,7 @@
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['manage:emp:remove']"
-        >删除</el-button>
+        >{{ $t('emp.deleteEmp') }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -52,22 +53,22 @@
           icon="Download"
           @click="handleExport"
           v-hasPermi="['manage:emp:export']"
-        >导出</el-button>
+        >{{ $t('emp.exportEmp') }}</el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
     <el-table v-loading="loading" :data="empList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="序号" type="index" width="50" align="center" prop="id" />
-      <el-table-column label="人员名称" align="center" prop="userName" />
-      <el-table-column label="归属区域" align="center" prop="regionName" />
-      <el-table-column label="角色名称" align="center" prop="roleName" />
-      <el-table-column label="联系电话" align="center" prop="mobile" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('emp.serialNumber')" type="index" width="80" align="center" prop="id" />
+      <el-table-column :label="$t('emp.userName')" align="center" prop="userName" min-width="150" show-overflow-tooltip />
+      <el-table-column :label="$t('emp.regionName')" align="center" prop="regionName" min-width="150" show-overflow-tooltip />
+      <el-table-column :label="$t('emp.roleName')" align="center" prop="roleName" width="100" />
+      <el-table-column :label="$t('emp.mobile')" align="center" prop="mobile" width="140" show-overflow-tooltip />
+      <el-table-column :label="$t('emp.operation')" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="primary"  @click="handleUpdate(scope.row)" v-hasPermi="['manage:emp:edit']">修改</el-button>
-          <el-button link type="primary"  @click="handleDelete(scope.row)" v-hasPermi="['manage:emp:remove']">删除</el-button>
+          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['manage:emp:edit']">{{ $t('emp.editEmp') }}</el-button>
+          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['manage:emp:remove']">{{ $t('emp.deleteEmp') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -81,14 +82,13 @@
     />
 
     <!-- 添加或修改人员列表对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
-      <el-form ref="empRef" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="人员名称" prop="userName">
-          <el-input v-model="form.userName" placeholder="请输入人员名称" />
+    <el-dialog :title="title" v-model="open" width="700px" append-to-body>
+      <el-form ref="empRef" :model="form" :rules="rules" label-width="120px">
+        <el-form-item :label="$t('emp.userName')" prop="userName">
+          <el-input v-model="form.userName" :placeholder="$t('emp.userNamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="角色" prop="roleId">
-          <!-- <el-input v-model="form.roleId" placeholder="请输入角色id" /> -->
-           <el-select v-model="form.roleId" placeholder="请选择角色">
+        <el-form-item :label="$t('emp.role')" prop="roleId">
+           <el-select v-model="form.roleId" :placeholder="$t('emp.rolePlaceholder')">
             <el-option
               v-for="item in roleList"
               :key="item.roleId"
@@ -97,15 +97,14 @@
             />
            </el-select>
         </el-form-item>
-        <el-form-item label="联系电话" prop="mobile">
-          <el-input v-model="form.mobile" placeholder="请输入联系电话" />
+        <el-form-item :label="$t('emp.mobile')" prop="mobile">
+          <el-input v-model="form.mobile" :placeholder="$t('emp.mobilePlaceholder')" />
         </el-form-item>
-        <el-form-item label="创建时间" prop="mobile" v-if="form.id!=null">
+        <el-form-item :label="$t('emp.createTime')" prop="mobile" v-if="form.id!=null">
           {{form.createTime}}
         </el-form-item>
-        <el-form-item label="负责区域" prop="regionId">
-          <!-- <el-input v-model="form.regionId" placeholder="请输入所属区域Id" /> -->
-           <el-select v-model="form.regionId" placeholder="请选择负责区域">
+        <el-form-item :label="$t('emp.region')" prop="regionId">
+           <el-select v-model="form.regionId" :placeholder="$t('emp.regionPlaceholder')">
             <el-option
               v-for="item in regionList"
               :key="item.id"
@@ -114,10 +113,10 @@
             />
            </el-select>
         </el-form-item>
-        <el-form-item label="员工头像" prop="image">
+        <el-form-item :label="$t('emp.image')" prop="image">
           <image-upload v-model="form.image"/>
         </el-form-item>
-        <el-form-item label="是否启用" prop="status">
+        <el-form-item :label="$t('emp.enabled')" prop="status">
           <el-radio-group v-model="form.status">
             <el-radio
               v-for="dict in emp_status"
@@ -129,8 +128,8 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $t('common.confirm') }}</el-button>
+          <el-button @click="cancel">{{ $t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -142,7 +141,9 @@ import { listEmp, getEmp, delEmp, addEmp, updateEmp } from "@/api/manage/emp";
 import{listRole} from "@/api/manage/role";
 import{loadAllParams} from "@/api/page";
 import{listRegion} from "@/api/manage/region";
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const { proxy } = getCurrentInstance();
 const { emp_status } = proxy.useDict('emp_status');
 
@@ -169,22 +170,22 @@ const data = reactive({
   },
   rules: {
     userName: [
-      { required: true, message: "人员名称不能为空", trigger: "blur" }
+      { required: true, message: t('emp.userNameRequired'), trigger: "blur" }
     ],
     regionId: [
-      { required: true, message: "所属区域Id不能为空", trigger: "blur" }
+      { required: true, message: t('common.pleaseSelect'), trigger: "blur" }
     ],
     roleId: [
-      { required: true, message: "角色id不能为空", trigger: "blur" }
+      { required: true, message: t('common.pleaseSelect'), trigger: "blur" }
     ],
     mobile: [
-      { required: true, message: "联系电话不能为空", trigger: "blur" }
+      { required: true, message: t('emp.mobileRequired'), trigger: "blur" }
     ],
     image: [
-      { required: true, message: "员工头像不能为空", trigger: "blur" }
+      { required: true, message: t('common.pleaseInput'), trigger: "blur" }
     ],
     status: [
-      { required: true, message: "是否启用不能为空", trigger: "change" }
+      { required: true, message: t('common.pleaseSelect'), trigger: "change" }
     ],
   }
 });
@@ -249,7 +250,7 @@ function handleSelectionChange(selection) {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加人员列表";
+  title.value = t('emp.addEmpTitle');
 }
 
 /** 修改按钮操作 */
@@ -259,7 +260,7 @@ function handleUpdate(row) {
   getEmp(_id).then(response => {
     form.value = response.data;
     open.value = true;
-    title.value = "修改人员列表";
+    title.value = t('emp.editEmpTitle');
   });
 }
 
@@ -269,13 +270,13 @@ function submitForm() {
     if (valid) {
       if (form.value.id != null) {
         updateEmp(form.value).then(response => {
-          proxy.$modal.msgSuccess("修改成功");
+          proxy.$modal.msgSuccess(t('emp.updateSuccess'));
           open.value = false;
           getList();
         });
       } else {
         addEmp(form.value).then(response => {
-          proxy.$modal.msgSuccess("新增成功");
+          proxy.$modal.msgSuccess(t('emp.addSuccess'));
           open.value = false;
           getList();
         });
@@ -287,11 +288,11 @@ function submitForm() {
 /** 删除按钮操作 */
 function handleDelete(row) {
   const _ids = row.id || ids.value;
-  proxy.$modal.confirm('是否确认删除人员列表编号为"' + _ids + '"的数据项？').then(function() {
+  proxy.$modal.confirm(t('emp.deleteConfirm', [0, _ids])).then(function() {
     return delEmp(_ids);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(t('emp.deleteSuccess'));
   }).catch(() => {});
 }
 

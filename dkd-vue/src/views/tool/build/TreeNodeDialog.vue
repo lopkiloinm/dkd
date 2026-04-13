@@ -1,16 +1,16 @@
 <template>
   <div>
-    <el-dialog title="添加选项" v-model="open" width="800px" :close-on-click-modal="false" :modal-append-to-body="false"
+    <el-dialog :title="t('build.addOption')" v-model="open" width="800px" :close-on-click-modal="false" :modal-append-to-body="false"
       @open="onOpen" @close="onClose">
       <el-form ref="treeNodeForm" :model="formData" :rules="rules" label-width="100px">
         <el-col :span="24">
-          <el-form-item label="选项名" prop="label">
-            <el-input v-model="formData.label" placeholder="请输入选项名" clearable />
+          <el-form-item :label="t('build.optionName')" prop="label">
+            <el-input v-model="formData.label" :placeholder="t('build.optionNamePlaceholder')" clearable />
           </el-form-item>
         </el-col>
         <el-col :span="24">
-          <el-form-item label="选项值" prop="value">
-            <el-input v-model="formData.value" placeholder="请输入选项值" clearable>
+          <el-form-item :label="t('build.optionValue')" prop="value">
+            <el-input v-model="formData.value" :placeholder="t('build.optionValuePlaceholder')" clearable>
               <template #append>
                 <el-select v-model="dataType" :style="{ width: '100px' }">
                   <el-option v-for="(item, index) in dataTypeOptions" :key="index" :label="item.label" :value="item.value"
@@ -24,16 +24,18 @@
       </el-form>
       <div slot="footer">
         <el-button type="primary" @click="handelConfirm">
-          确定
+          {{ t('common.confirm') }}
         </el-button>
         <el-button @click="onClose">
-          取消
+          {{ t('common.cancel') }}
         </el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 <script setup>
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 const open = defineModel()
 const emit = defineEmits(['confirm'])
 const formData = ref({
@@ -44,14 +46,14 @@ const rules = {
   label: [
     {
       required: true,
-      message: '请输入选项名',
+      message: t('build.optionNameRequired'),
       trigger: 'blur'
     }
   ],
   value: [
     {
       required: true,
-      message: '请输入选项值',
+      message: t('build.optionValueRequired'),
       trigger: 'blur'
     }
   ]
@@ -59,11 +61,11 @@ const rules = {
 const dataType = ref('string')
 const dataTypeOptions = ref([
   {
-    label: '字符串',
+    label: t('build.stringType'),
     value: 'string'
   },
   {
-    label: '数字',
+    label: t('build.numberType'),
     value: 'number'
   }
 ])
