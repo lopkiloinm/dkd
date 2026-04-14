@@ -1,5 +1,5 @@
 <template>
-  <wd-navbar title="Dictionary Management" fixed placeholder safe-area-inset-top left-arrow />
+  <TopBar title="Dictionary Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.dictName" placeholder="Search by Dict Name" @confirm="handleSearch" />
@@ -130,6 +130,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import TopBar from '@/components/TopBar/index.vue'
 import { listType, getType, addType, updateType, delType, refreshCache } from '@/api/system/dict/type'
 import { hasPermission } from '@/utils/permission'
 

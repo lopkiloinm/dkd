@@ -1,63 +1,64 @@
 <template>
-  <wd-navbar title="Work Orders" fixed placeholder safe-area-inset-top left-arrow />
+  <TopBar title="Task Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.taskCode" placeholder="Search by Order No." @confirm="handleSearch" />
       <view class="filter-toggle" @click="toggleFilters">
         <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
         <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
-      </wd-button>
+      </view>
       <view class="filters-container" :class="{ expanded: filtersExpanded }">
         <picker mode="selector" :range="statusOptions" :value="filterStatusIndex" @change="onFilterStatusChange">
-          <view class="filter-picker">{{ statusOptions[filterStatusIndex] }}</wd-button>
+          <view class="filter-picker">{{ statusOptions[filterStatusIndex] }}</view>
         </picker>
         <picker mode="selector" :range="typeOptions" :value="filterTypeIndex" @change="onFilterTypeChange">
-          <view class="filter-picker">{{ typeOptions[filterTypeIndex] }}</wd-button>
+          <view class="filter-picker">{{ typeOptions[filterTypeIndex] }}</view>
         </picker>
-      </wd-button>
-    </wd-button>
+      </view>
+    </view>
 
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
       <view class="card-list">
         <view class="glass-card" v-for="item in taskList" :key="item.taskId">
           <view class="card-header">
             <text class="card-title">{{ item.taskCode }}</text>
-            <wd-tag :class="'status-' + item.taskStatus">
+            <view class="status-badge" :class="'status-' + item.taskStatus">
               {{ getStatusText(item.taskStatus) }}
-            </wd-button>
-          </wd-button>
+            </view>
+          </view>
           
           <view class="info-section">
             <view class="info-row">
               <text class="info-label">Type</text>
               <text class="info-value">{{ getTypeText(item.productTypeId) }}</text>
-            </wd-button>
+            </view>
             <view class="info-row">
               <text class="info-label">Device Code</text>
               <text class="info-value">{{ item.innerCode }}</text>
-            </wd-button>
+            </view>
             <view class="info-row">
               <text class="info-label">Operator</text>
               <text class="info-value">{{ item.userName || 'Unassigned' }}</text>
-            </wd-button>
+            </view>
             <view class="info-row">
               <text class="info-label">Created</text>
               <text class="info-value">{{ item.createTime }}</text>
-            </wd-button>
-          </wd-button>
-        </wd-button>
+            </view>
+          </view>
+        </view>
 
         <view class="empty-state" v-if="taskList.length === 0 && !loading">
           <text class="empty-text">No work orders found</text>
-        </wd-button>
-      </wd-button>
+        </view>
+      </view>
     </scroll-view>
-  </wd-button>
+  </view>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import TopBar from '@/components/TopBar/index.vue'
 import { listTask } from '@/api/manage/task'
 
 const taskList = ref([])

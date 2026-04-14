@@ -1,5 +1,5 @@
 <template>
-  <wd-navbar title="Cache Monitor" fixed placeholder safe-area-inset-top left-arrow />
+  <TopBar title="Cache Monitor" :showBack="true" />
   <view class="layout-container">
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
       <view class="cache-info">
@@ -79,6 +79,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import TopBar from '@/components/TopBar/index.vue'
 import { getCache, listCacheName, listCacheKey, getCacheValue, clearCacheName, clearCacheKey, clearCacheAll } from '@/api/monitor/cache'
 
 const cacheInfo = ref({

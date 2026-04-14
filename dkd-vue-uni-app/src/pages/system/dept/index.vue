@@ -1,5 +1,5 @@
 <template>
-  <wd-navbar title="Department Management" fixed placeholder safe-area-inset-top left-arrow />
+  <TopBar title="Department Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.deptName" placeholder="Search by Dept Name" @confirm="handleSearch" />
@@ -154,6 +154,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import TopBar from '@/components/TopBar/index.vue'
 import { listDept, getDept, addDept, updateDept, delDept } from '@/api/system/dept'
 import { hasPermission } from '@/utils/permission'
 

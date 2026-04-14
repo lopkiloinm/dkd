@@ -1,5 +1,5 @@
 <template>
-  <wd-navbar title="Job Management" fixed placeholder safe-area-inset-top left-arrow />
+  <TopBar title="Job Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.jobName" placeholder="Search by Job Name" @confirm="handleSearch" />
@@ -73,7 +73,8 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import { listJob, getJob, addJob, updateJob, delJob, executeJob } from '@/api/monitor/job'
+import TopBar from '@/components/TopBar/index.vue'
+import { listJob, getJob, addJob, updateJob, delJob, executeJob, changeJobStatus } from '@/api/monitor/job'
 import { hasPermission } from '@/utils/permission'
 
 const jobList = ref([])

@@ -1,5 +1,5 @@
 <template>
-  <wd-navbar title="Device Management" fixed placeholder safe-area-inset-top left-arrow />
+  <TopBar title="VM Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.innerCode" placeholder="Search by Inner Code" @confirm="handleSearch" />
@@ -151,6 +151,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import TopBar from '@/components/TopBar/index.vue'
 import { listVm, getVm, addVm, updateVm, delVm } from '@/api/manage/vm'
 import { listNode } from '@/api/manage/node'
 import { listVmType } from '@/api/manage/vmType'

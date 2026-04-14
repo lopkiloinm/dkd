@@ -1,5 +1,5 @@
 <template>
-  <wd-navbar title="Post Management" fixed placeholder safe-area-inset-top left-arrow />
+  <TopBar title="Post Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.postCode" placeholder="Search by Post Code" @confirm="handleSearch" />
@@ -138,6 +138,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import TopBar from '@/components/TopBar/index.vue'
 import { listPost, getPost, addPost, updatePost, delPost } from '@/api/system/post'
 import { hasPermission } from '@/utils/permission'
 

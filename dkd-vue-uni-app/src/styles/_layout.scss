@@ -10,28 +10,15 @@
    <style> blocks.
    ============================================ */
 
-/* --- Scrollbar: thin overlay, never affects layout --- */
-page {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
-}
-
+/* --- Scrollbar: hidden, rely on touch scrolling --- */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  display: none;
+  width: 0;
+  height: 0;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 2px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
+scroll-view {
+  -webkit-overflow-scrolling: touch;
 }
 
 /* --- Page Layout --- */

@@ -1,119 +1,123 @@
 <template>
   <TopBar title="Home" />
   <view class="layout-container">
-    <view class="header-section">
-      <view class="welcome-box">
-        <text class="title">DiKeDe</text>
-        <text class="subtitle">Overview and quick access</text>
-      </view>
-    </view>
-    
-    <!-- Work Order Stats -->
-    <view class="stats-card work-order-stats">
-      <view class="stats-header">
-        <text class="stats-title">Work Order Stats</text>
-        <text class="stats-subtitle">{{ dateRange }}</text>
-      </view>
-      <view class="stats-grid">
-        <view class="stat-item">
-          <text class="stat-num">{{ totalOrders }}</text>
-          <text class="stat-label">Total Orders</text>
+    <scroll-view class="scroll-area" scroll-y>
+      <view class="content-wrapper">
+        <view class="header-section">
+          <view class="welcome-box">
+            <text class="title">DiKeDe</text>
+            <text class="subtitle">Overview and quick access</text>
+          </view>
         </view>
-        <view class="stat-item">
-          <text class="stat-num">{{ completedOrders }}</text>
-          <text class="stat-label">Completed</text>
+        
+        <!-- Work Order Stats -->
+        <view class="stats-card work-order-stats">
+          <view class="stats-header">
+            <text class="stats-title">Work Order Stats</text>
+            <text class="stats-subtitle">{{ dateRange }}</text>
+          </view>
+          <view class="stats-grid">
+            <view class="stat-item">
+              <text class="stat-num">{{ totalOrders }}</text>
+              <text class="stat-label">Total Orders</text>
+            </view>
+            <view class="stat-item">
+              <text class="stat-num">{{ completedOrders }}</text>
+              <text class="stat-label">Completed</text>
+            </view>
+            <view class="stat-item">
+              <text class="stat-num">{{ inProgressOrders }}</text>
+              <text class="stat-label">In Progress</text>
+            </view>
+            <view class="stat-item">
+              <text class="stat-num">{{ cancelledOrders }}</text>
+              <text class="stat-label">Cancelled</text>
+            </view>
+          </view>
         </view>
-        <view class="stat-item">
-          <text class="stat-num">{{ inProgressOrders }}</text>
-          <text class="stat-label">In Progress</text>
-        </view>
-        <view class="stat-item">
-          <text class="stat-num">{{ cancelledOrders }}</text>
-          <text class="stat-label">Cancelled</text>
-        </view>
-      </view>
-    </view>
 
-    <!-- Sales Stats -->
-    <view class="stats-card sales-stats">
-      <view class="stats-header">
-        <text class="stats-title">Sales Stats</text>
-        <text class="stats-subtitle">{{ dateRange }}</text>
-      </view>
-      <view class="stats-grid">
-        <view class="stat-item">
-          <text class="stat-num">{{ orderCount }}</text>
-          <text class="stat-label">Order Count</text>
+        <!-- Sales Stats -->
+        <view class="stats-card sales-stats">
+          <view class="stats-header">
+            <text class="stats-title">Sales Stats</text>
+            <text class="stats-subtitle">{{ dateRange }}</text>
+          </view>
+          <view class="stats-grid">
+            <view class="stat-item">
+              <text class="stat-num">{{ orderCount }}</text>
+              <text class="stat-label">Order Count</text>
+            </view>
+            <view class="stat-item">
+              <text class="stat-num">{{ salesAmount }}</text>
+              <text class="stat-label">Sales Amount</text>
+            </view>
+          </view>
         </view>
-        <view class="stat-item">
-          <text class="stat-num">{{ salesAmount }}</text>
-          <text class="stat-label">Sales Amount</text>
+
+        <!-- Dashboard Cards -->
+        <view class="section-title">Management</view>
+        <view class="dashboard-grid">
+          <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/node/index')">
+            <image class="card-icon" src="/static/icons/node.svg"></image>
+            <text class="card-value">{{ nodeCount }}</text>
+            <text class="card-label">Nodes</text>
+          </view>
+          
+          <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/vm/index')">
+            <image class="card-icon" src="/static/icons/device.svg"></image>
+            <text class="card-value">{{ deviceCount }}</text>
+            <text class="card-label">Devices</text>
+          </view>
+          
+          <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/emp/index')">
+            <image class="card-icon" src="/static/icons/employee.svg"></image>
+            <text class="card-value">{{ empCount }}</text>
+            <text class="card-label">Employees</text>
+          </view>
+          
+          <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/region/index')">
+            <image class="card-icon" src="/static/icons/region.svg"></image>
+            <text class="card-value">{{ regionCount }}</text>
+            <text class="card-label">Regions</text>
+          </view>
+          
+          <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/partner/index')">
+            <image class="card-icon" src="/static/icons/partner.svg"></image>
+            <text class="card-value">{{ partnerCount }}</text>
+            <text class="card-label">Partners</text>
+          </view>
+          
+          <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/vmType/index')">
+            <image class="card-icon" src="/static/icons/vmtype.svg"></image>
+            <text class="card-value">{{ vmTypeCount }}</text>
+            <text class="card-label">VM Types</text>
+          </view>
+        </view>
+
+        <!-- Hot Products Ranking -->
+        <view class="section-title">Hot Products</view>
+        <view class="ranking-card">
+          <view class="ranking-item" v-for="(item, index) in hotProducts" :key="index">
+            <view class="rank-badge" :class="'rank-' + (index + 1)">{{ index + 1 }}</view>
+            <text class="product-name">{{ item.skuName }}</text>
+            <text class="product-count">{{ item.count }} orders</text>
+          </view>
+        </view>
+
+        <!-- Abnormal Equipment -->
+        <view class="section-title">Abnormal Equipment</view>
+        <view class="equipment-list">
+          <view class="equipment-item" v-for="(item, index) in abnormalEquipment" :key="index" @click="goTo('/pages/manage/vm/index')">
+            <text class="equipment-time">{{ item.updateTime }}</text>
+            <text class="equipment-addr">{{ item.addr }}</text>
+            <text class="equipment-code">{{ item.innerCode }}</text>
+          </view>
+          <view class="empty-state" v-if="abnormalEquipment.length === 0">
+            <text class="empty-text">No abnormal equipment</text>
+          </view>
         </view>
       </view>
-    </view>
-
-    <!-- Dashboard Cards -->
-    <view class="section-title">Management</view>
-    <view class="dashboard-grid">
-      <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/node/index')">
-        <image class="card-icon" src="/static/icons/node.svg"></image>
-        <text class="card-value">{{ nodeCount }}</text>
-        <text class="card-label">Nodes</text>
-      </view>
-      
-      <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/vm/index')">
-        <image class="card-icon" src="/static/icons/device.svg"></image>
-        <text class="card-value">{{ deviceCount }}</text>
-        <text class="card-label">Devices</text>
-      </view>
-      
-      <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/emp/index')">
-        <image class="card-icon" src="/static/icons/employee.svg"></image>
-        <text class="card-value">{{ empCount }}</text>
-        <text class="card-label">Employees</text>
-      </view>
-      
-      <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/region/index')">
-        <image class="card-icon" src="/static/icons/region.svg"></image>
-        <text class="card-value">{{ regionCount }}</text>
-        <text class="card-label">Regions</text>
-      </view>
-      
-      <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/partner/index')">
-        <image class="card-icon" src="/static/icons/partner.svg"></image>
-        <text class="card-value">{{ partnerCount }}</text>
-        <text class="card-label">Partners</text>
-      </view>
-      
-      <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/vmType/index')">
-        <image class="card-icon" src="/static/icons/vmtype.svg"></image>
-        <text class="card-value">{{ vmTypeCount }}</text>
-        <text class="card-label">VM Types</text>
-      </view>
-    </view>
-
-    <!-- Hot Products Ranking -->
-    <view class="section-title">Hot Products</view>
-    <view class="ranking-card">
-      <view class="ranking-item" v-for="(item, index) in hotProducts" :key="index">
-        <view class="rank-badge" :class="'rank-' + (index + 1)">{{ index + 1 }}</view>
-        <text class="product-name">{{ item.skuName }}</text>
-        <text class="product-count">{{ item.count }} orders</text>
-      </view>
-    </view>
-
-    <!-- Abnormal Equipment -->
-    <view class="section-title">Abnormal Equipment</view>
-    <view class="equipment-list">
-      <view class="equipment-item" v-for="(item, index) in abnormalEquipment" :key="index" @click="goTo('/pages/manage/vm/index')">
-        <text class="equipment-time">{{ item.updateTime }}</text>
-        <text class="equipment-addr">{{ item.addr }}</text>
-        <text class="equipment-code">{{ item.innerCode }}</text>
-      </view>
-      <view class="empty-state" v-if="abnormalEquipment.length === 0">
-        <text class="empty-text">No abnormal equipment</text>
-      </view>
-    </view>
+    </scroll-view>
   </view>
   <BottomBar />
 </template>
@@ -225,10 +229,20 @@ const goTo = (url) => {
 @import "@/styles/apple.scss";
 
 .layout-container {
-  min-height: 100vh;
-  padding: 60px 16px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   box-sizing: border-box;
-  padding-bottom: 66px;
+  padding: $top-bar-height + 16px 0 0 0;
+}
+
+.scroll-area {
+  flex: 1;
+  overflow: hidden;
+}
+
+.content-wrapper {
+  padding: 0 16px 80px 16px;
 }
 
 .header-section {

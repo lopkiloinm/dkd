@@ -1,5 +1,5 @@
 <template>
-  <wd-navbar title="Region Management" fixed placeholder safe-area-inset-top left-arrow />
+  <TopBar title="Region Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.regionName" placeholder="Search by Region Name" @confirm="handleSearch" />
@@ -103,6 +103,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import TopBar from '@/components/TopBar/index.vue'
 import { listRegion, getRegion, addRegion, updateRegion, delRegion } from '@/api/manage/region'
 import { listNode } from '@/api/manage/node'
 import { hasPermission } from '@/utils/permission'

@@ -1,5 +1,5 @@
 <template>
-  <wd-navbar title="Job Logs" fixed placeholder safe-area-inset-top left-arrow />
+  <TopBar title="Job Logs" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.jobName" placeholder="Search by Job Name" @confirm="handleSearch" />
@@ -59,8 +59,9 @@
 
 <script setup>
 import { ref } from 'vue'
-import { onShow, onLoad } from '@dcloudio/uni-app'
-import { listJobLog, delJobLog, cleanJobLog } from '@/api/monitor/jobLog'
+import { onShow } from '@dcloudio/uni-app'
+import TopBar from '@/components/TopBar/index.vue'
+import { listJobLog } from '@/api/monitor/jobLog'
 
 const logList = ref([])
 const loading = ref(false)

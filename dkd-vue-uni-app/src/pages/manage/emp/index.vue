@@ -1,5 +1,5 @@
 <template>
-  <wd-navbar title="Employee Management" fixed placeholder safe-area-inset-top left-arrow />
+  <TopBar title="Employee Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.userName" placeholder="Search by Name" @confirm="handleSearch" />
@@ -178,6 +178,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import TopBar from '@/components/TopBar/index.vue'
 import { useI18n } from 'vue-i18n'
 import { listEmp, getEmp, addEmp, updateEmp, delEmp } from '@/api/manage/emp'
 import { listRegion } from '@/api/manage/region'

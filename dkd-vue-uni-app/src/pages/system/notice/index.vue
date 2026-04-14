@@ -1,5 +1,5 @@
 <template>
-  <wd-navbar title="Notice Management" fixed placeholder safe-area-inset-top left-arrow />
+  <TopBar title="Notice Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.noticeTitle" placeholder="Search by Title" @confirm="handleSearch" />
@@ -139,6 +139,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import TopBar from '@/components/TopBar/index.vue'
 import { listNotice, getNotice, addNotice, updateNotice, delNotice } from '@/api/system/notice'
 import { hasPermission } from '@/utils/permission'
 
