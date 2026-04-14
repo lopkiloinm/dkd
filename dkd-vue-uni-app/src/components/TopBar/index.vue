@@ -50,15 +50,17 @@ const goBack = () => {
   left: 16px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 1px;
   cursor: pointer;
 }
 
 .back-caret {
-  font-size: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-size: 22px;
   color: #007aff;
   line-height: 1;
   font-weight: 300;
+  margin-bottom: 1px;
 }
 
 .back-text {

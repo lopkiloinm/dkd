@@ -1,5 +1,5 @@
 <template>
-  <TopBar title="Profile" :showBack="true" />
+  <wd-navbar title="Profile" fixed placeholder safe-area-inset-top left-arrow />
   <view class="layout-container">
     <view class="profile-header">
       <view class="avatar-container">
@@ -31,7 +31,6 @@
 </template>
 
 <script setup>
-import TopBar from '@/components/TopBar/index.vue'
 import useUserStore from '@/store/modules/user'
 
 const userStore = useUserStore()

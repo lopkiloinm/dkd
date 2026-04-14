@@ -64,6 +64,10 @@
 				{
 					"path": "emp/index",
 					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Employee Management" }
+				},
+				{
+					"path": "task/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Work Orders" }
 				}
 			]
 		},

@@ -1,5 +1,5 @@
 <template>
-  <TopBar title="Partner Management" :showBack="true" />
+  <wd-navbar title="Partner Management" fixed placeholder safe-area-inset-top left-arrow />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.partnerName" placeholder="Search by Partner Name" @confirm="handleSearch" />
@@ -144,7 +144,6 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
 import { listPartner, getPartner, addPartner, updatePartner, delPartner, resetPartnerPwd } from '@/api/manage/partner'
 import { hasPermission } from '@/utils/permission'
 

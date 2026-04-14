@@ -1,5 +1,5 @@
 <template>
-  <TopBar title="User Management" :showBack="true" />
+  <wd-navbar title="User Management" fixed placeholder safe-area-inset-top left-arrow />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.userName" placeholder="Search by User Name" @confirm="handleSearch" />
@@ -176,7 +176,6 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
 import { listUser, getUser, addUser, updateUser, delUser, resetUserPwd } from '@/api/system/user'
 import { listDept } from '@/api/system/dept'
 import { hasPermission } from '@/utils/permission'

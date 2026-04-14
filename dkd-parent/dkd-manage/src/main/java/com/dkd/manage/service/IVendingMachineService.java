@@ -28,6 +28,14 @@ public interface IVendingMachineService
     public List<VendingMachine> selectVendingMachineList(VendingMachine vendingMachine);
 
     /**
+     * 通过设备编号查询设备信息
+     *
+     * @param innerCode 设备编号
+     * @return 设备信息
+     */
+    public VendingMachine selectVendingMachineByInnerCode(String innerCode);
+
+    /**
      * 新增设备管理
      * 
      * @param vendingMachine 设备管理

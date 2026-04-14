@@ -1,5 +1,5 @@
 <template>
-  <TopBar title="Job Logs" :showBack="true" />
+  <wd-navbar title="Job Logs" fixed placeholder safe-area-inset-top left-arrow />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.jobName" placeholder="Search by Job Name" @confirm="handleSearch" />
@@ -60,7 +60,6 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow, onLoad } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
 import { listJobLog, delJobLog, cleanJobLog } from '@/api/monitor/jobLog'
 
 const logList = ref([])
@@ -148,7 +147,7 @@ const onRefresh = () => {
   flex-direction: column;
   height: 100vh;
   box-sizing: border-box;
-  padding: 60px 16px 16px 16px;
+  padding: 16px;
 }
 
 .search-bar {

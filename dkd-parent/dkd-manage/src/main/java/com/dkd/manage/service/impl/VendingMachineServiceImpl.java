@@ -45,6 +45,23 @@ public class VendingMachineServiceImpl implements IVendingMachineService
     }
 
     /**
+     * 通过设备编号查询设备信息
+     *
+     * @param innerCode 设备编号
+     * @return 设备信息
+     */
+    @Override
+    public VendingMachine selectVendingMachineByInnerCode(String innerCode) {
+        VendingMachine vm = new VendingMachine();
+        vm.setInnerCode(innerCode);
+        List<VendingMachine> list = vendingMachineMapper.selectVendingMachineList(vm);
+        if (list != null && !list.isEmpty()) {
+            return list.get(0);
+        }
+        return null;
+    }
+
+    /**
      * 新增设备管理
      * 
      * @param vendingMachine 设备管理

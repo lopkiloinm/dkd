@@ -1,5 +1,5 @@
 <template>
-  <TopBar title="Server Monitor" :showBack="true" />
+  <wd-navbar title="Server Monitor" fixed placeholder safe-area-inset-top left-arrow />
   <view class="layout-container">
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
       <view class="server-info">
@@ -163,7 +163,6 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
 import { getServer } from '@/api/monitor/server'
 
 const server = ref({
@@ -203,7 +202,7 @@ const onRefresh = () => {
   flex-direction: column;
   height: 100vh;
   box-sizing: border-box;
-  padding: 60px 16px 16px 16px;
+  padding: 16px;
 }
 
 .scroll-area {

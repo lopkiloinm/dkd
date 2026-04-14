@@ -1,0 +1,450 @@
+@import "./apple.scss";
+
+/* ============================================
+   Shared Design Library — Apple Glassmorphism
+   ============================================
+   All repeated layout patterns extracted into
+   reusable classes. Import once in App.vue.
+   Pages should use these class names directly
+   and only keep page-specific styles in scoped
+   <style> blocks.
+   ============================================ */
+
+/* --- Scrollbar: thin overlay, never affects layout --- */
+page {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* --- Page Layout --- */
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: $top-bar-height + 16px 0 0 0;
+}
+
+/* --- Search Bar --- */
+.search-bar {
+  padding: 16px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* --- Inputs --- */
+.n-input {
+  @include glass-input;
+  height: 44px;
+  line-height: 44px;
+  padding: 0 16px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  color: $apple-text-primary;
+
+  &::placeholder {
+    color: $apple-text-secondary;
+  }
+}
+
+.n-textarea {
+  @include glass-input;
+  min-height: 100px;
+  padding: 12px 16px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 12px;
+  color: $apple-text-primary;
+}
+
+/* --- Filter Toggle --- */
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: rgba(0, 122, 255, 0.1);
+  border-radius: $apple-radius-sm;
+  transition: background-color 0.2s;
+
+  &:active {
+    background-color: rgba(0, 122, 255, 0.2);
+  }
+}
+
+.filter-toggle-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: $apple-blue;
+}
+
+.filter-toggle-icon {
+  font-size: 12px;
+  color: $apple-blue;
+  transition: transform 0.2s;
+}
+
+/* --- Collapsible Filters --- */
+.filters-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+  opacity: 0;
+
+  &.expanded {
+    max-height: 200px;
+    opacity: 1;
+  }
+}
+
+.filter-picker {
+  @include glass-input;
+  height: 44px;
+  line-height: 44px;
+  padding: 0 16px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  color: $apple-text-primary;
+}
+
+/* --- Scroll Area --- */
+.scroll-area {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* --- Card List --- */
+.card-list {
+  padding: 0 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* --- Glass Card --- */
+.glass-card {
+  @include glass-panel;
+  padding: 20px;
+  transition: transform 0.2s ease;
+
+  &:active {
+    transform: scale(0.98);
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+/* --- Card Header --- */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid $apple-glass-border;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: $apple-text-primary;
+  letter-spacing: -0.5px;
+}
+
+/* --- Info Section (key-value rows inside cards) --- */
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.info-label {
+  font-size: 14px;
+  color: $apple-text-secondary;
+}
+
+.info-value {
+  font-size: 14px;
+  color: $apple-text-primary;
+  font-weight: 500;
+  text-align: right;
+  max-width: 60%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Status Badges --- */
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-active {
+  background-color: rgba(52, 199, 89, 0.15);
+  color: $apple-green;
+}
+
+.status-inactive {
+  background-color: rgba(255, 59, 48, 0.15);
+  color: $apple-red;
+}
+
+/* --- Card Actions --- */
+.card-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid $apple-glass-border;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background-color: rgba(0, 122, 255, 0.1);
+  text-align: center;
+  transition: background-color 0.2s;
+
+  &:active {
+    background-color: rgba(0, 122, 255, 0.2);
+  }
+
+  &.delete {
+    background-color: rgba(255, 59, 48, 0.1);
+
+    &:active {
+      background-color: rgba(255, 59, 48, 0.2);
+    }
+  }
+}
+
+.action-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: $apple-blue;
+}
+
+.action-btn.delete .action-text {
+  color: $apple-red;
+}
+
+/* --- Empty State --- */
+.empty-state {
+  padding: 40px 0;
+  text-align: center;
+}
+
+.empty-text {
+  color: $apple-text-secondary;
+  font-size: 15px;
+}
+
+/* --- Avatar --- */
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  margin-right: 16px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-initial {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+}
+
+/* --- Modal --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.modal-content {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid $apple-glass-border;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: $apple-text-primary;
+  letter-spacing: -0.5px;
+}
+
+.modal-close {
+  font-size: 32px;
+  color: $apple-text-secondary;
+  line-height: 1;
+  padding: 0 8px;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px 24px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  transition: opacity 0.2s;
+
+  &:active {
+    opacity: 0.7;
+  }
+
+  &.cancel {
+    background-color: rgba(118, 118, 128, 0.1);
+    color: $apple-text-primary;
+  }
+
+  &.confirm {
+    background-color: $apple-blue;
+    color: white;
+  }
+
+  &.confirm.disabled {
+    background-color: rgba(0, 122, 255, 0.5);
+    opacity: 0.7;
+    pointer-events: none;
+  }
+}
+
+/* --- Detail Modal --- */
+.detail-modal {
+  max-width: 500px;
+}
+
+.detail-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.detail-label {
+  font-size: 14px;
+  color: $apple-text-secondary;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.detail-value {
+  font-size: 15px;
+  color: $apple-text-primary;
+  font-weight: 600;
+}
+
+/* --- Form --- */
+.form-item {
+  margin-bottom: 20px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: $apple-text-primary;
+  margin-bottom: 8px;
+}
+
+.picker-input {
+  @include glass-input;
+  height: 44px;
+  line-height: 44px;
+  padding: 0 16px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  color: $apple-text-primary;
+}

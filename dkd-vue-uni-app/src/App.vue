@@ -12,8 +12,10 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 /* 每个页面公共css */
+@import "@/styles/_layout.scss";
+
 page {
   /* Apple glassmorphism requires a colorful/interesting background to pop */
   background-color: #f2f2f7;
