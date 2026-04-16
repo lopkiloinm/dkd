@@ -1,43 +1,44 @@
 <template>
   <view class="layout-container">
-    <view class="login-card">
+    <Card class="login-card">
       <view class="login-header">
         <text class="title">{{ $t('login.title') }}</text>
         <text class="subtitle">Welcome back to DiKeDe Management</text>
       </view>
-      
-      <view class="n-form">
-        <view class="n-form-item">
-          <text class="n-form-label">Username</text>
-          <input class="n-input" v-model="form.username" placeholder="Please enter your username" placeholder-class="n-input-placeholder" />
-        </view>
-        
-        <view class="n-form-item">
-          <text class="n-form-label">Password</text>
-          <input class="n-input" type="password" v-model="form.password" placeholder="Please enter your password" placeholder-class="n-input-placeholder" />
-        </view>
-        
-        <view class="n-form-item" v-if="captchaEnabled">
-          <text class="n-form-label">Verification Code</text>
+
+      <view class="login-form">
+        <FormField label="Username">
+          <Input v-model="form.username" placeholder="Please enter your username" />
+        </FormField>
+
+        <FormField label="Password">
+          <Input v-model="form.password" type="password" placeholder="Please enter your password" />
+        </FormField>
+
+        <FormField v-if="captchaEnabled" label="Verification Code">
           <view class="captcha-row">
-            <input class="n-input n-input-captcha" v-model="form.code" placeholder="Captcha" placeholder-class="n-input-placeholder" />
+            <Input v-model="form.code" placeholder="Captcha" class="captcha-input" />
             <image class="captcha-img" :src="codeUrl" @click="getCode" mode="aspectFit"></image>
           </view>
-        </view>
-        
-        <button class="n-button n-button-primary" @click="handleLogin" :loading="loading" :disabled="loading">
+        </FormField>
+
+        <Button variant="primary" size="lg" block @click="handleLogin" :loading="loading" :disabled="loading">
           {{ loading ? 'Signing in...' : $t('common.confirm') }}
-        </button>
+        </Button>
       </view>
-    </view>
+    </Card>
   </view>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { login, getCodeImg } from '@/api/login'
+import { login, getCodeImg, getInfo } from '@/api/login'
 import useUserStore from '@/store/modules/user'
 import { useI18n } from 'vue-i18n'
+import Card from '@/components/ui/Card.vue'
+import Input from '@/components/ui/Input.vue'
+import Button from '@/components/ui/Button.vue'
+import FormField from '@/components/ui/FormField.vue'
 
 const { t } = useI18n()
 const userStore = useUserStore()
@@ -86,13 +87,26 @@ const handleLogin = async () => {
     
     if (res.token) {
       userStore.setToken(res.token)
-      // Store permissions if available
-      if (res.permissions) {
-        userStore.setPermissions(res.permissions)
-      }
-      // Store user info if available
-      if (res.user) {
-        userStore.setUserInfo(res.user)
+      // Fetch user info from backend using the token
+      try {
+        const userInfo = await getInfo()
+        if (userInfo && userInfo.user) {
+          userStore.setUserInfo({
+            name: userInfo.user.nickName || userInfo.user.userName,
+            avatar: userInfo.user.avatar,
+            roles: userInfo.roles,
+            permissions: userInfo.permissions
+          })
+        }
+      } catch (infoError) {
+        console.error('Failed to fetch user info after login', infoError)
+        // Fallback to username from login form
+        userStore.setUserInfo({
+          name: form.value.username,
+          avatar: '',
+          roles: [],
+          permissions: []
+        })
       }
       uni.showToast({ title: 'Login success', icon: 'success' })
       setTimeout(() => {
@@ -111,125 +125,68 @@ const handleLogin = async () => {
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/apple.scss";
+@import "@/styles/_variables.scss";
+@import "@/styles/_mixins.scss";
 
 .layout-container {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 24px;
+  padding: $spacing-6;
   box-sizing: border-box;
+  background: $color-bg-primary;
 }
 
 .login-card {
   width: 100%;
   max-width: 400px;
-  @include glass-panel;
-  padding: 40px 24px;
+  padding: $spacing-10 $spacing-6;
+  background: $color-bg-secondary;
+  border-radius: $radius-lg;
+  border: 1px solid $color-border-subtle;
 }
 
 .login-header {
-  margin-bottom: 36px;
+  margin-bottom: $spacing-10;
   text-align: center;
 }
 
 .title {
-  font-size: 32px;
-  font-weight: 700;
-  color: $apple-text-primary;
+  @include text-display($font-size-display-md, $font-weight-bold);
+  color: $color-text-primary;
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: $spacing-2;
   letter-spacing: -0.5px;
 }
 
 .subtitle {
-  font-size: 15px;
-  color: $apple-text-secondary;
+  @include text-body($font-size-body-sm, $font-weight-regular);
+  color: $color-text-secondary;
 }
 
-.n-form {
+.login-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-.n-form-item {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.n-form-label {
-  font-size: 13px;
-  color: $apple-text-secondary;
-  font-weight: 600;
-  padding-left: 4px;
-}
-
-.n-input {
-  @include glass-input;
-  height: 48px;
-  line-height: 48px;
-  padding: 0 16px;
-  font-size: 16px;
-}
-
-.n-input:focus {
-  @include glass-input-focus;
-}
-
-.n-input-placeholder {
-  color: rgba(60, 60, 67, 0.4);
+  gap: $spacing-5;
 }
 
 .captcha-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-3;
 }
 
-.n-input-captcha {
+.captcha-input {
   flex: 1;
 }
 
 .captcha-img {
   width: 120px;
-  height: 48px;
-  border-radius: $apple-radius-sm;
-  background-color: rgba(255, 255, 255, 0.4);
-  border: 1px solid $apple-glass-border;
+  height: $touch-target-min;
+  border-radius: $radius-md;
+  background-color: $color-bg-tertiary;
+  border: 1px solid $color-border-subtle;
   cursor: pointer;
-}
-
-.n-button {
-  margin-top: 24px;
-  height: 50px;
-  line-height: 50px;
-  border-radius: 25px;
-  font-size: 17px;
-  font-weight: 600;
-  text-align: center;
-  transition: all 0.3s ease;
-}
-
-.n-button::after {
-  border: none;
-}
-
-.n-button-primary {
-  background-color: $apple-blue;
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(0, 122, 255, 0.3);
-}
-
-.n-button-primary:active {
-  background-color: $apple-blue-pressed;
-  transform: scale(0.98);
-}
-
-.n-button-primary[disabled] {
-  background-color: rgba(0, 122, 255, 0.5);
-  box-shadow: none;
 }
 </style>

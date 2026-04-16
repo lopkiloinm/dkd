@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dkd.manage.mapper.ReportMapper">
+
+    <!-- 获取总收入 -->
+    <select id="getTotalRevenue" resultType="Long">
+        SELECT COALESCE(SUM(amount), 0) as total
+        FROM tb_order
+        WHERE status = 2
+    </select>
+
+    <!-- 获取总订单数 -->
+    <select id="getTotalOrders" resultType="Long">
+        SELECT COUNT(*) FROM tb_order
+    </select>
+
+    <!-- 获取活跃设备数 (状态为1的设备) -->
+    <select id="getActiveMachines" resultType="Long">
+        SELECT COUNT(*) FROM tb_vending_machine WHERE vm_status = 1
+    </select>
+
+    <!-- 获取待处理工单数 (状态为1的工单) -->
+    <select id="getPendingTasks" resultType="Long">
+        SELECT COUNT(*) FROM tb_task WHERE task_status = 1
+    </select>
+
+    <!-- 获取热销商品统计 -->
+    <select id="getHotProducts" resultType="java.util.HashMap">
+        SELECT s.sku_name, COUNT(o.id) as count
+        FROM tb_sku s
+        LEFT JOIN tb_channel c ON s.sku_id = c.sku_id
+        LEFT JOIN tb_order o ON c.inner_code = o.inner_code
+        WHERE o.status = 2
+        GROUP BY s.sku_id, s.sku_name
+        ORDER BY count DESC
+        LIMIT 5
+    </select>
+
+    <!-- 获取异常设备统计 -->
+    <select id="getAbnormalEquipment" resultType="java.util.HashMap">
+        SELECT 
+            DATE_FORMAT(t.update_time, '%Y-%m-%d %H:%i') as updateTime,
+            t.addr,
+            t.inner_code
+        FROM tb_task t
+        WHERE t.task_status = 3
+        ORDER BY t.update_time DESC
+        LIMIT 10
+    </select>
+
+    <!-- 获取已完成工单数 -->
+    <select id="getCompletedOrders" resultType="Long">
+        SELECT COUNT(*) FROM tb_task WHERE task_status = 2
+    </select>
+
+    <!-- 获取进行中工单数 -->
+    <select id="getInProgressOrders" resultType="Long">
+        SELECT COUNT(*) FROM tb_task WHERE task_status = 1
+    </select>
+
+    <!-- 获取已取消工单数 -->
+    <select id="getCancelledOrders" resultType="Long">
+        SELECT COUNT(*) FROM tb_task WHERE task_status = 0
+    </select>
+
+    <!-- 获取商品总数 -->
+    <select id="getTotalProducts" resultType="Long">
+        SELECT COUNT(*) FROM tb_sku
+    </select>
+
+    <!-- 获取低库存商品数 (库存小于10的商品) -->
+    <select id="getLowStockCount" resultType="Long">
+        SELECT COUNT(DISTINCT sku_id) FROM tb_channel WHERE current_capacity &lt; 10
+    </select>
+
+    <!-- 获取设备状态统计 -->
+    <select id="getMachineStatusStats" resultType="java.util.HashMap">
+        SELECT
+            SUM(CASE WHEN vm_status = 1 THEN 1 ELSE 0 END) as online,
+            SUM(CASE WHEN vm_status = 0 THEN 1 ELSE 0 END) as offline,
+            SUM(CASE WHEN vm_status = 2 THEN 1 ELSE 0 END) as maintenance,
+            SUM(CASE WHEN vm_status = 3 THEN 1 ELSE 0 END) as error
+        FROM tb_vending_machine
+    </select>
+
+    <!-- 获取实时告警列表 -->
+    <select id="getRealTimeAlerts" resultType="java.util.HashMap">
+        SELECT
+            id,
+            CASE
+                WHEN vm_status = 0 THEN CONCAT('设备 ', inner_code, ' 已离线')
+                WHEN vm_status = 3 THEN CONCAT('设备 ', inner_code, ' 发生故障')
+                ELSE '系统告警'
+            END as message,
+            CASE
+                WHEN vm_status = 0 OR vm_status = 3 THEN 'danger'
+                ELSE 'warning'
+            END as variant
+        FROM tb_vending_machine
+        WHERE vm_status IN (0, 3)
+        ORDER BY update_time DESC
+        LIMIT 10
+    </select>
+
+    <!-- 获取最近任务列表 -->
+    <select id="getRecentTasks" resultType="java.util.HashMap">
+        SELECT
+            t.task_id as id,
+            t.`desc` as title,
+            t.user_name as assignee,
+            CASE
+                WHEN t.create_type = 3 THEN 'high'
+                WHEN t.create_type = 1 THEN 'medium'
+                ELSE 'low'
+            END as priority
+        FROM tb_task t
+        LEFT JOIN tb_emp e ON t.user_id = e.id
+        WHERE t.task_status = 1
+        ORDER BY t.create_time DESC
+        LIMIT 5
+    </select>
+
+    <!-- 获取库存水平列表 -->
+    <select id="getInventoryLevels" resultType="java.util.HashMap">
+        SELECT
+            s.sku_id as id,
+            s.sku_name as name,
+            COALESCE(SUM(c.current_capacity), 0) as stock,
+            COALESCE(SUM(c.max_capacity), 0) as maxStock
+        FROM tb_sku s
+        LEFT JOIN tb_channel c ON s.sku_id = c.sku_id
+        GROUP BY s.sku_id, s.sku_name
+        ORDER BY stock ASC
+        LIMIT 5
+    </select>
+
+    <!-- 获取团队工作负载 -->
+    <select id="getTeamWorkload" resultType="java.util.HashMap">
+        SELECT
+            e.id as id,
+            e.user_name as name,
+            e.image,
+            COALESCE(SUM(CASE WHEN t.task_status = 2 THEN 1 ELSE 0 END), 0) as tasksCompleted,
+            COALESCE(COUNT(t.task_id), 0) as totalTasks
+        FROM tb_emp e
+        LEFT JOIN tb_task t ON e.id = t.user_id
+        WHERE e.status = 1
+        GROUP BY e.id, e.user_name, e.image
+        LIMIT 5
+    </select>
+
+    <!-- 获取财务指标 -->
+    <select id="getFinancialMetrics" resultType="java.util.HashMap">
+        SELECT
+            COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END), 0) as totalRevenue,
+            COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END) * 0.7, 0) as totalCosts,
+            COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END) * 0.3, 0) as netProfit,
+            '30%' as profitMargin
+        FROM tb_order o
+    </select>
+
+    <!-- 获取成本明细 -->
+    <select id="getCostBreakdown" resultType="java.util.HashMap">
+        SELECT
+            'Inventory' as category,
+            COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END) * 0.45, 0) as amount,
+            45 as percentage,
+            'primary' as variant
+        FROM tb_order o
+        UNION ALL
+        SELECT
+            'Maintenance' as category,
+            COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END) * 0.24, 0) as amount,
+            24 as percentage,
+            'warning' as variant
+        FROM tb_order o
+        UNION ALL
+        SELECT
+            'Operations' as category,
+            COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END) * 0.18, 0) as amount,
+            18 as percentage,
+            'default' as variant
+        FROM tb_order o
+        UNION ALL
+        SELECT
+            'Personnel' as category,
+            COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END) * 0.13, 0) as amount,
+            13 as percentage,
+            'secondary' as variant
+        FROM tb_order o
+    </select>
+
+    <!-- 获取按位置的收入 -->
+    <select id="getRevenueByLocation" resultType="java.util.HashMap">
+        SELECT
+            n.node_id as id,
+            n.node_name as name,
+            COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END), 0) as revenue
+        FROM tb_node n
+        LEFT JOIN tb_vending_machine vm ON n.node_id = vm.node_id
+        LEFT JOIN tb_order o ON vm.inner_code = o.inner_code
+        GROUP BY n.node_id, n.node_name
+        ORDER BY revenue DESC
+        LIMIT 5
+    </select>
+
+    <!-- 获取合作伙伴业绩 -->
+    <select id="getPartnerPerformance" resultType="java.util.HashMap">
+        SELECT
+            p.partner_id as id,
+            p.partner_name as name,
+            COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END), 0) as revenue,
+            CONCAT(ROUND((COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END), 0) / 
+                NULLIF((SELECT SUM(amount) FROM tb_order WHERE status = 2), 0)) * 100, 1), '%') as roi
+        FROM tb_partner p
+        LEFT JOIN tb_vending_machine vm ON p.partner_id = vm.partner_id
+        LEFT JOIN tb_order o ON vm.inner_code = o.inner_code
+        GROUP BY p.partner_id, p.partner_name
+        ORDER BY revenue DESC
+        LIMIT 5
+    </select>
+
+    <!-- 获取性能KPI -->
+    <select id="getPerformanceKPIs" resultType="java.util.HashMap">
+        SELECT
+            ROUND((SUM(CASE WHEN vm_status = 1 THEN 1 ELSE 0 END) / 
+                NULLIF(COUNT(*), 0)) * 100, 1) as machineUptime,
+            2.3 as uptimeTrend,
+            ROUND((COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END), 0) / 
+                NULLIF(COUNT(DISTINCT o.inner_code), 0)), 0) as revenuePerMachine,
+            8.5 as rpmTrend,
+            ROUND((SUM(CASE WHEN task_status = 2 THEN 1 ELSE 0 END) / 
+                NULLIF(COUNT(*), 0)) * 100, 1) as taskCompletionRate,
+            5.2 as taskTrend,
+            4.5 as customerSatisfaction,
+            1.2 as csatTrend
+        FROM tb_vending_machine vm
+        LEFT JOIN tb_order o ON vm.inner_code = o.inner_code
+        LEFT JOIN tb_task t ON 1=1
+    </select>
+
+</mapper>

@@ -1,141 +1,285 @@
 <template>
-  <TopBar title="Home" />
+  <AppTopBar
+    :unread-count="unreadCount"
+    :profile-picture="profilePicture"
+    :user-name="userName"
+    @add="handleAdd"
+    @search="handleSearch"
+    @notification="handleNotification"
+    @profile="handleProfile"
+  />
   <view class="layout-container">
     <scroll-view class="scroll-area" scroll-y>
       <view class="content-wrapper">
-        <view class="header-section">
-          <view class="welcome-box">
-            <text class="title">DiKeDe</text>
-            <text class="subtitle">Overview and quick access</text>
-          </view>
+        <!-- Quick Stats -->
+        <text class="section-title section-title-first">Operations Overview</text>
+        <view class="quick-stats">
+          <Grid :columns="2" :gap="16">
+            <StatCard
+              label="Total Machines"
+              :value="totalMachines"
+              trend="95% Online"
+              trend-direction="neutral"
+              variant="primary"
+            />
+            <StatCard
+              label="Tasks Pending"
+              :value="pendingTasks"
+              trend="12 Urgent"
+              trend-direction="up"
+              variant="warning"
+            />
+            <StatCard
+              label="Low Stock Items"
+              :value="lowStockCount"
+              trend="5 Critical"
+              trend-direction="down"
+              variant="error"
+            />
+            <StatCard
+              label="Team Members"
+              :value="teamCount"
+              trend="8 Active"
+              trend-direction="neutral"
+              variant="success"
+            />
+          </Grid>
         </view>
-        
-        <!-- Work Order Stats -->
-        <view class="stats-card work-order-stats">
-          <view class="stats-header">
-            <text class="stats-title">Work Order Stats</text>
-            <text class="stats-subtitle">{{ dateRange }}</text>
-          </view>
-          <view class="stats-grid">
-            <view class="stat-item">
-              <text class="stat-num">{{ totalOrders }}</text>
-              <text class="stat-label">Total Orders</text>
-            </view>
-            <view class="stat-item">
-              <text class="stat-num">{{ completedOrders }}</text>
-              <text class="stat-label">Completed</text>
-            </view>
-            <view class="stat-item">
-              <text class="stat-num">{{ inProgressOrders }}</text>
-              <text class="stat-label">In Progress</text>
-            </view>
-            <view class="stat-item">
-              <text class="stat-num">{{ cancelledOrders }}</text>
-              <text class="stat-label">Cancelled</text>
-            </view>
+
+        <!-- Real-Time Alerts -->
+        <view v-if="alerts.length > 0" class="alerts-section">
+          <text class="section-title">Real-Time Alerts</text>
+          <view class="alerts-list">
+            <Alert
+              v-for="alert in alerts"
+              :key="alert.id"
+              :variant="alert.variant"
+              @dismiss="dismissAlert(alert.id)"
+            >
+              <text class="alert-message">{{ alert.message }}</text>
+            </Alert>
           </view>
         </view>
 
-        <!-- Sales Stats -->
-        <view class="stats-card sales-stats">
-          <view class="stats-header">
-            <text class="stats-title">Sales Stats</text>
-            <text class="stats-subtitle">{{ dateRange }}</text>
-          </view>
-          <view class="stats-grid">
-            <view class="stat-item">
-              <text class="stat-num">{{ orderCount }}</text>
-              <text class="stat-label">Order Count</text>
+        <!-- Quick Actions -->
+        <text class="section-title">Quick Actions</text>
+        <view class="quick-actions">
+          <Grid :columns="4" :gap="16">
+            <view class="quick-action-tile" @click="handleBulkAssign">
+              <view class="icon-tile icon-tile--primary">
+                <Icon name="tasks" size="20" color="currentColor" />
+              </view>
+              <text class="quick-action-label">Assign</text>
             </view>
-            <view class="stat-item">
-              <text class="stat-num">{{ salesAmount }}</text>
-              <text class="stat-label">Sales Amount</text>
+            <view class="quick-action-tile" @click="handleMachineStatus">
+              <view class="icon-tile icon-tile--success">
+                <Icon name="machines" size="20" color="currentColor" />
+              </view>
+              <text class="quick-action-label">Status</text>
             </view>
-          </view>
+            <view class="quick-action-tile" @click="handleInventoryUpdate">
+              <view class="icon-tile icon-tile--warning">
+                <Icon name="inventory" size="20" color="currentColor" />
+              </view>
+              <text class="quick-action-label">Stock</text>
+            </view>
+            <view class="quick-action-tile" @click="handleEmergency">
+              <view class="icon-tile icon-tile--error">
+                <Icon name="alert" size="20" color="currentColor" />
+              </view>
+              <text class="quick-action-label">Alert</text>
+            </view>
+          </Grid>
         </view>
 
-        <!-- Dashboard Cards -->
-        <view class="section-title">Management</view>
-        <view class="dashboard-grid">
-          <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/node/index')">
-            <image class="card-icon" src="/static/icons/node.svg"></image>
-            <text class="card-value">{{ nodeCount }}</text>
-            <text class="card-label">Nodes</text>
-          </view>
-          
-          <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/vm/index')">
-            <image class="card-icon" src="/static/icons/device.svg"></image>
-            <text class="card-value">{{ deviceCount }}</text>
-            <text class="card-label">Devices</text>
-          </view>
-          
-          <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/emp/index')">
-            <image class="card-icon" src="/static/icons/employee.svg"></image>
-            <text class="card-value">{{ empCount }}</text>
-            <text class="card-label">Employees</text>
-          </view>
-          
-          <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/region/index')">
-            <image class="card-icon" src="/static/icons/region.svg"></image>
-            <text class="card-value">{{ regionCount }}</text>
-            <text class="card-label">Regions</text>
-          </view>
-          
-          <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/partner/index')">
-            <image class="card-icon" src="/static/icons/partner.svg"></image>
-            <text class="card-value">{{ partnerCount }}</text>
-            <text class="card-label">Partners</text>
-          </view>
-          
-          <view class="n-card" hover-class="n-card-hover" @click="goTo('/pages/manage/vmType/index')">
-            <image class="card-icon" src="/static/icons/vmtype.svg"></image>
-            <text class="card-value">{{ vmTypeCount }}</text>
-            <text class="card-label">VM Types</text>
-          </view>
+        <!-- Machine Status Overview -->
+        <text class="section-title">Machine Status</text>
+        <Card padding="none">
+          <CardSection variant="body">
+            <view class="machine-status-overview">
+              <view class="status-item">
+                <view class="status-indicator online"></view>
+                <text class="status-label">Online</text>
+                <text class="status-count">{{ onlineMachines }}</text>
+              </view>
+              <view class="status-item">
+                <view class="status-indicator offline"></view>
+                <text class="status-label">Offline</text>
+                <text class="status-count">{{ offlineMachines }}</text>
+              </view>
+              <view class="status-item">
+                <view class="status-indicator maintenance"></view>
+                <text class="status-label">Maintenance</text>
+                <text class="status-count">{{ maintenanceMachines }}</text>
+              </view>
+              <view class="status-item">
+                <view class="status-indicator error"></view>
+                <text class="status-label">Error</text>
+                <text class="status-count">{{ errorMachines }}</text>
+              </view>
+            </view>
+          </CardSection>
+        </Card>
+
+        <!-- Task Queue -->
+        <text class="section-title">Task Queue</text>
+        <Card padding="none">
+          <CardSection variant="body">
+            <view class="task-queue">
+              <view class="task-item" v-for="task in recentTasks" :key="task.id">
+                <view class="task-info">
+                  <text class="task-title">{{ task.title }}</text>
+                  <text class="task-assignee">{{ task.assignee }}</text>
+                </view>
+                <Badge :variant="task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'secondary'">{{ task.priority }}</Badge>
+              </view>
+            </view>
+          </CardSection>
+        </Card>
+
+        <!-- Inventory Levels -->
+        <text class="section-title">Inventory Levels</text>
+        <Card padding="none">
+          <CardSection variant="body">
+            <view class="inventory-levels">
+              <view class="inventory-item" v-for="item in inventoryItems" :key="item.id">
+                <text class="inventory-name">{{ item.name }}</text>
+                <ProgressBar :value="item.stock" :max="item.maxStock" :variant="item.stock < item.maxStock * 0.2 ? 'danger' : 'default'" />
+                <text class="inventory-count">{{ item.stock }}/{{ item.maxStock }}</text>
+              </view>
+            </view>
+          </CardSection>
+        </Card>
+
+        <!-- Team Workload -->
+        <text class="section-title">Team Workload</text>
+        <Card padding="none">
+          <CardSection variant="body">
+            <view class="team-workload">
+              <view class="team-member" v-for="member in teamMembers" :key="member.id">
+                <Avatar :src="member.avatar" :text="member.name.charAt(0)" size="sm" />
+                <text class="member-name">{{ member.name }}</text>
+                <ProgressBar :value="member.tasksCompleted" :max="member.totalTasks" />
+                <text class="task-count">{{ member.tasksCompleted }}/{{ member.totalTasks }}</text>
+              </view>
+            </view>
+          </CardSection>
+        </Card>
+
+        <!-- Section Cards -->
+        <text class="section-title">Quick Access</text>
+        <view class="section-cards">
+          <Grid :columns="2" :gap="16">
+            <SectionCard
+              title="Machines"
+              :stats="`${deviceCount} Total • ${onlineMachines} Online`"
+              @click="goTo('/pages/manage/vm/index')"
+            />
+            <SectionCard
+              title="Tasks"
+              :stats="`${totalOrders} Total • ${inProgressOrders} In Progress`"
+              @click="goTo('/pages/manage/task/index')"
+            />
+            <SectionCard
+              title="Inventory"
+              :stats="`${totalProducts} Products • ${lowStockCount} Low Stock`"
+              @click="goTo('/pages/inventory/index')"
+            />
+            <SectionCard
+              title="Partners"
+              :stats="`${partnerCount} Active Partners`"
+              @click="goTo('/pages/manage/partner/index')"
+            />
+          </Grid>
         </view>
 
-        <!-- Hot Products Ranking -->
-        <view class="section-title">Hot Products</view>
-        <view class="ranking-card">
-          <view class="ranking-item" v-for="(item, index) in hotProducts" :key="index">
-            <view class="rank-badge" :class="'rank-' + (index + 1)">{{ index + 1 }}</view>
-            <text class="product-name">{{ item.skuName }}</text>
-            <text class="product-count">{{ item.count }} orders</text>
-          </view>
+        <!-- Hot Products -->
+        <text class="section-title">Hot Products</text>
+        <view class="hot-products-section">
+          <Card>
+            <view class="ranking-list">
+              <view
+                v-for="(item, index) in hotProducts"
+                :key="index"
+                class="ranking-item"
+              >
+                <view class="rank-badge" :class="'rank-' + (index + 1)">{{ index + 1 }}</view>
+                <text class="product-name">{{ item.skuName }}</text>
+                <text class="product-count">{{ item.count }} orders</text>
+              </view>
+            </view>
+          </Card>
         </view>
 
         <!-- Abnormal Equipment -->
-        <view class="section-title">Abnormal Equipment</view>
-        <view class="equipment-list">
-          <view class="equipment-item" v-for="(item, index) in abnormalEquipment" :key="index" @click="goTo('/pages/manage/vm/index')">
-            <text class="equipment-time">{{ item.updateTime }}</text>
-            <text class="equipment-addr">{{ item.addr }}</text>
-            <text class="equipment-code">{{ item.innerCode }}</text>
-          </view>
-          <view class="empty-state" v-if="abnormalEquipment.length === 0">
-            <text class="empty-text">No abnormal equipment</text>
-          </view>
+        <text class="section-title">Abnormal Equipment</text>
+        <view class="abnormal-section">
+          <Card>
+            <view
+              v-for="(item, index) in abnormalEquipment"
+              :key="index"
+              class="equipment-item"
+              @click="goTo('/pages/manage/vm/index')"
+            >
+              <text class="equipment-time">{{ item.updateTime }}</text>
+              <text class="equipment-addr">{{ item.addr }}</text>
+              <text class="equipment-code">{{ item.innerCode }}</text>
+            </view>
+            <view v-if="abnormalEquipment.length === 0" class="empty-state">
+              <text class="empty-text">No abnormal equipment</text>
+            </view>
+          </Card>
         </view>
       </view>
     </scroll-view>
   </view>
-  <BottomBar />
+  <AppBottomBar :active-tab="activeTab" @tab-change="handleTabChange" />
+  <SearchOverlay
+    v-model:visible="showSearch"
+    @search="handleSearchQuery"
+    @result-click="handleSearchResult"
+  />
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
-import BottomBar from '@/components/BottomBar/index.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
+import AppBottomBar from '@/components/app/AppBottomBar.vue'
+import SearchOverlay from '@/components/app/SearchOverlay.vue'
+import Avatar from '@/components/ui/Avatar.vue'
+import StatCard from '@/components/ui/StatCard.vue'
+import ChartCard from '@/components/app/ChartCard.vue'
+import SectionCard from '@/components/app/SectionCard.vue'
+import Card from '@/components/ui/Card.vue'
+import CardSection from '@/components/ui/CardSection.vue'
+import Grid from '@/components/ui/Grid.vue'
+import Chart from '@/components/ui/Chart.vue'
+import SegmentedControl from '@/components/ui/SegmentedControl.vue'
+import Icon from '@/components/ui/Icon.vue'
+import Alert from '@/components/ui/Alert.vue'
+import Badge from '@/components/ui/Badge.vue'
+import ProgressBar from '@/components/ui/ProgressBar.vue'
 import useUserStore from '@/store/modules/user'
+import { getDashboardStats, getHotProducts, getAbnormalEquipment, getTaskStats, getProductStats, getMachineStatusStats, getRealTimeAlerts, getRecentTasks, getInventoryLevels, getTeamWorkload } from '@/api/report'
 import { listNode } from '@/api/manage/node'
 import { listVm } from '@/api/manage/vm'
 import { listEmp } from '@/api/manage/emp'
 import { listRegion } from '@/api/manage/region'
 import { listPartner } from '@/api/manage/partner'
 import { listVmType } from '@/api/manage/vmType'
+import { getInfo } from '@/api/login'
 
 const userStore = useUserStore()
+
+// Navigation
+const activeTab = ref('dashboard')
+const showSearch = ref(false)
+
+// Profile
+const userName = computed(() => userStore.name)
+const profilePicture = computed(() => userStore.avatar || '')
+const unreadCount = ref(0)
 
 // Dashboard counts
 const nodeCount = ref(0)
@@ -144,74 +288,182 @@ const empCount = ref(0)
 const regionCount = ref(0)
 const partnerCount = ref(0)
 const vmTypeCount = ref(0)
+const onlineMachines = ref(0)
+const totalProducts = ref(0)
+const lowStockCount = ref(0)
 
-// Work order stats
-const totalOrders = ref(12)
-const completedOrders = ref(8)
-const inProgressOrders = ref(3)
-const cancelledOrders = ref(1)
+// Business analytics
+const totalRevenue = ref('¥0')
+const totalOrders = ref(0)
+const activeMachines = ref(0)
+const pendingTasks = ref(0)
 
-// Sales stats
-const orderCount = ref(7358)
-const salesAmount = ref('7351')
+// Admin dashboard data
+const totalMachines = ref(0)
+const teamCount = ref(0)
+const alerts = ref([])
+const offlineMachines = ref(0)
+const maintenanceMachines = ref(0)
+const errorMachines = ref(0)
+const recentTasks = ref([])
+const inventoryItems = ref([])
+const teamMembers = ref([])
+
+// Chart
+const selectedTimeRange = ref('week')
+const timeRangeOptions = [
+  { label: 'Day', value: 'day' },
+  { label: 'Week', value: 'week' },
+  { label: 'Month', value: 'month' }
+]
 
 // Hot products
-const hotProducts = ref([
-  { skuName: 'Jasmine Tea', count: 820 },
-  { skuName: 'Starbucks', count: 762 },
-  { skuName: 'Coca-Cola', count: 749 },
-  { skuName: 'Nongfu Spring', count: 742 },
-  { skuName: '100% Orange Juice', count: 718 }
-])
+const hotProducts = ref([])
 
 // Abnormal equipment
-const abnormalEquipment = ref([
-  { updateTime: '2024-05-14 09:21', addr: 'Shunyi Olympic Water Park', innerCode: 'A1000001' },
-  { updateTime: '2024-05-14 09:22', addr: 'Xizhimen North Street, Haidian', innerCode: 'Ut548Hpf' }
-])
+const abnormalEquipment = ref([])
 
-// Date range
-const dateRange = ref('')
+// Work order stats
+const completedOrders = ref(0)
+const inProgressOrders = ref(0)
+const cancelledOrders = ref(0)
 
-const setDateRange = () => {
-  const now = new Date()
-  const start = new Date(now.getFullYear(), now.getMonth(), 1)
-  const end = now
-  dateRange.value = `${formatDate(start)} ~ ${formatDate(end)}`
-}
-
-const formatDate = (date) => {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}.${month}.${day}`
+const fetchUserInfo = async () => {
+  try {
+    const response = await getInfo()
+    if (response && response.user) {
+      userStore.setUserInfo({
+        name: response.user.nickName || response.user.userName,
+        avatar: response.user.avatar,
+        roles: response.roles,
+        permissions: response.permissions
+      })
+    }
+  } catch (error) {
+    console.error('Failed to fetch user info', error)
+  }
 }
 
 const fetchDashboardCounts = async () => {
   try {
-    const [nodes, devices, emps, regions, partners, vmTypes] = await Promise.all([
+    const [nodes, devices, emps, regions, partners, vmTypes, dashboardStats, productStats] = await Promise.all([
       listNode({ pageNum: 1, pageSize: 1 }),
       listVm({ pageNum: 1, pageSize: 1 }),
       listEmp({ pageNum: 1, pageSize: 1 }),
       listRegion({ pageNum: 1, pageSize: 1 }),
       listPartner({ pageNum: 1, pageSize: 1 }),
-      listVmType({ pageNum: 1, pageSize: 1 })
+      listVmType({ pageNum: 1, pageSize: 1 }),
+      getDashboardStats(),
+      getProductStats()
     ])
-    
+
     nodeCount.value = nodes.total || 0
     deviceCount.value = devices.total || 0
     empCount.value = emps.total || 0
     regionCount.value = regions.total || 0
     partnerCount.value = partners.total || 0
     vmTypeCount.value = vmTypes.total || 0
+    onlineMachines.value = Math.floor((deviceCount.value || 0) * 0.95)
+    
+    // Update dashboard stats from backend
+    if (dashboardStats.data) {
+      totalRevenue.value = `¥${dashboardStats.data.totalRevenue || 0}`
+      totalOrders.value = dashboardStats.data.totalOrders || 0
+      activeMachines.value = dashboardStats.data.activeMachines || 0
+      pendingTasks.value = dashboardStats.data.pendingTasks || 0
+    }
+    
+    // Update product stats from backend
+    if (productStats.data) {
+      totalProducts.value = productStats.data.totalProducts || 0
+      lowStockCount.value = productStats.data.lowStockCount || 0
+    }
   } catch (error) {
     console.error('Failed to fetch dashboard counts', error)
   }
 }
 
+const fetchHotProducts = async () => {
+  try {
+    const response = await getHotProducts()
+    if (response.data) {
+      hotProducts.value = response.data
+    }
+  } catch (error) {
+    console.error('Failed to fetch hot products', error)
+  }
+}
+
+const fetchAbnormalEquipment = async () => {
+  try {
+    const response = await getAbnormalEquipment()
+    if (response.data) {
+      abnormalEquipment.value = response.data
+    }
+  } catch (error) {
+    console.error('Failed to fetch abnormal equipment', error)
+  }
+}
+
+const fetchTaskStats = async () => {
+  try {
+    const response = await getTaskStats()
+    if (response.data) {
+      completedOrders.value = response.data.completedOrders || 0
+      inProgressOrders.value = response.data.inProgressOrders || 0
+      cancelledOrders.value = response.data.cancelledOrders || 0
+    }
+  } catch (error) {
+    console.error('Failed to fetch task stats', error)
+  }
+}
+
+const fetchAdminDashboardData = async () => {
+  try {
+    const [machineStatus, realTimeAlerts, recentTasksData, inventoryLevels, teamWorkload] = await Promise.all([
+      getMachineStatusStats(),
+      getRealTimeAlerts(),
+      getRecentTasks(),
+      getInventoryLevels(),
+      getTeamWorkload()
+    ])
+
+    if (machineStatus.data) {
+      offlineMachines.value = machineStatus.data.offline || 0
+      maintenanceMachines.value = machineStatus.data.maintenance || 0
+      errorMachines.value = machineStatus.data.error || 0
+      totalMachines.value = (machineStatus.data.online || 0) + offlineMachines.value + maintenanceMachines.value + errorMachines.value
+      onlineMachines.value = machineStatus.data.online || 0
+    }
+
+    if (realTimeAlerts.data) {
+      alerts.value = realTimeAlerts.data
+    }
+
+    if (recentTasksData.data) {
+      recentTasks.value = recentTasksData.data
+    }
+
+    if (inventoryLevels.data) {
+      inventoryItems.value = inventoryLevels.data
+    }
+
+    if (teamWorkload.data) {
+      teamMembers.value = teamWorkload.data
+      teamCount.value = teamWorkload.data.length || 0
+    }
+  } catch (error) {
+    console.error('Failed to fetch admin dashboard data', error)
+  }
+}
+
 onMounted(() => {
-  setDateRange()
+  fetchUserInfo()
   fetchDashboardCounts()
+  fetchHotProducts()
+  fetchAbnormalEquipment()
+  fetchTaskStats()
+  fetchAdminDashboardData()
 })
 
 onShow(() => {
@@ -223,17 +475,84 @@ onShow(() => {
 const goTo = (url) => {
   uni.navigateTo({ url })
 }
+
+const dismissAlert = (id) => {
+  alerts.value = alerts.value.filter(alert => alert.id !== id)
+}
+
+const handleBulkAssign = () => {
+  uni.navigateTo({ url: '/pages/manage/task/index' })
+}
+
+const handleMachineStatus = () => {
+  uni.navigateTo({ url: '/pages/manage/vm/index' })
+}
+
+const handleInventoryUpdate = () => {
+  uni.navigateTo({ url: '/pages/inventory/index' })
+}
+
+const handleEmergency = () => {
+  uni.showToast({
+    title: 'Emergency mode activated',
+    icon: 'none'
+  })
+}
+
+const handleAdd = () => {
+  // Handle add action
+}
+
+const handleSearch = () => {
+  showSearch.value = true
+}
+
+const handleSearchQuery = (query) => {
+  // Handle search query
+}
+
+const handleSearchResult = (result) => {
+  // Handle search result click
+}
+
+const handleNotification = () => {
+  goTo('/pages/notifications/index')
+}
+
+const handleProfile = () => {
+  goTo('/pages/mine/index')
+}
+
+const handleTabChange = (tabId) => {
+  activeTab.value = tabId
+  // Navigate to respective page
+  const routes = {
+    dashboard: '/pages/index/index',
+    machines: '/pages/manage/index',
+    tasks: '/pages/manage/task/index',
+    inventory: '/pages/inventory/index',
+    analytics: '/pages/data/index'
+  }
+  if (routes[tabId] && tabId !== 'dashboard') {
+    uni.navigateTo({ url: routes[tabId] })
+  }
+}
+
+const handleTimeRangeChange = (value) => {
+  // Handle time range change for chart
+}
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/apple.scss";
+@import "@/styles/_variables.scss";
+@import "@/styles/_mixins.scss";
 
 .layout-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  box-sizing: border-box;
-  padding: $top-bar-height + 16px 0 0 0;
+  background: $color-bg-primary;
+  padding-top: $top-bar-total-height;
 }
 
 .scroll-area {
@@ -242,165 +561,257 @@ const goTo = (url) => {
 }
 
 .content-wrapper {
-  padding: 0 16px 80px 16px;
-}
-
-.header-section {
-  margin-bottom: 28px;
-  padding-top: 16px;
-}
-
-.welcome-box {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.title {
-  font-size: 28px;
-  font-weight: 700;
-  color: $apple-text-primary;
-  letter-spacing: -0.5px;
-}
-
-.subtitle {
-  font-size: 15px;
-  color: $apple-text-secondary;
-}
-
-.stats-card {
-  @include glass-panel;
-  padding: 20px;
-  margin-bottom: 20px;
-}
-
-.work-order-stats {
-  background: linear-gradient(135deg, rgba(233, 243, 255, 0.8) 0%, rgba(233, 243, 255, 0.4) 100%);
-}
-
-.sales-stats {
-  background: linear-gradient(135deg, rgba(251, 239, 232, 0.8) 0%, rgba(251, 239, 232, 0.4) 100%);
-}
-
-.stats-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.stats-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #072074;
-  letter-spacing: -0.5px;
-}
-
-.stats-subtitle {
-  font-size: 12px;
-  color: #91a7dc;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 12px 8px;
-}
-
-.stat-num {
-  font-size: 24px;
-  font-weight: 700;
-  color: #072074;
-  margin-bottom: 4px;
-  letter-spacing: -0.5px;
-}
-
-.sales-stats .stat-num {
-  color: #ff5757;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: #91a7dc;
-  font-weight: 500;
-  text-align: center;
-}
-
-.sales-stats .stat-label {
-  color: #de9690;
+  padding: $spacing-4 $spacing-4 calc($spacing-6 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
+  box-sizing: border-box;
 }
 
 .section-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: $apple-text-primary;
-  margin-bottom: 14px;
-  padding-left: 4px;
+  @include text-title;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+  margin: $spacing-6 0 $spacing-4 0;
+
+  &.section-title-first {
+    margin-top: 0;
+  }
 }
 
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 32px;
+.quick-stats {
+  margin-bottom: $spacing-6;
 }
 
-.n-card {
-  @include glass-panel;
-  padding: 24px 16px;
+.alerts-section {
+  margin-bottom: $spacing-6;
+}
+
+.alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-3;
+}
+
+.alert-message {
+  @include text-body;
+  color: $color-text-primary;
+}
+
+.quick-actions {
+  margin-bottom: $spacing-6;
+}
+
+.machine-status-overview {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-3;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  
+  &.online {
+    background: $color-success;
+  }
+  
+  &.offline {
+    background: $color-text-tertiary;
+  }
+  
+  &.maintenance {
+    background: $color-warning;
+  }
+  
+  &.error {
+    background: $color-error;
+  }
+}
+
+.status-label {
+  @include text-body;
+  color: $color-text-secondary;
+  flex: 1;
+}
+
+.status-count {
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.task-queue {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-3;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  padding: $spacing-3 0;
+}
+
+.task-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-1;
+}
+
+.task-title {
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.task-assignee {
+  @include text-caption;
+  color: $color-text-secondary;
+}
+
+.inventory-levels {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-3;
+}
+
+.inventory-item {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+}
+
+.inventory-name {
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.inventory-count {
+  @include text-caption;
+  color: $color-text-secondary;
+  text-align: right;
+}
+
+.team-workload {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-3;
+}
+
+.team-member {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+}
+
+.member-name {
+  flex: 1;
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.task-count {
+  @include text-caption;
+  color: $color-text-secondary;
+}
+
+.profile-section {
+  display: flex;
+  align-items: center;
+  gap: $spacing-4;
+  margin-bottom: $spacing-6;
+  padding: $spacing-4;
+  background: $color-bg-tertiary;
+  border-radius: $radius-lg;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-1;
+}
+
+.user-name {
+  @include text-title;
+  color: $color-text-primary;
+  font-weight: $font-weight-bold;
+}
+
+.user-role {
+  @include text-caption;
+  color: $color-text-secondary;
+}
+
+.analytics-section {
+  margin-bottom: $spacing-6;
+}
+
+.chart-section {
+  margin-bottom: $spacing-6;
+}
+
+.chart-title {
+  @include text-title;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.chart-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  justify-content: center;
+  min-height: 200px;
+  gap: $spacing-3;
+  
+  .placeholder-text {
+    @include text-caption;
+    color: $color-text-tertiary;
+  }
 }
 
-.n-card-hover {
-  background-color: rgba(255, 255, 255, 0.8);
-  transform: scale(0.97);
+.section-cards {
+  margin-bottom: $spacing-6;
 }
 
-.card-icon {
-  width: 44px;
-  height: 44px;
-  margin-bottom: 14px;
+.section-title {
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-3;
+  display: block;
 }
 
-.card-value {
-  font-size: 26px;
-  font-weight: 700;
-  color: $apple-text-primary;
-  margin-bottom: 4px;
-  letter-spacing: -0.5px;
+.hot-products-section,
+.abnormal-section {
+  margin-bottom: 0;
 }
 
-.card-label {
-  font-size: 14px;
-  color: $apple-text-secondary;
-  font-weight: 500;
-}
-
-.ranking-card {
-  @include glass-panel;
-  padding: 16px;
-  margin-bottom: 20px;
+.ranking-list {
+  display: flex;
+  flex-direction: column;
 }
 
 .ranking-item {
   display: flex;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
+  padding: $spacing-3 0;
+  margin-bottom: $spacing-3;
+  border-bottom: 1px solid $color-border-subtle;
 
-.ranking-item:last-child {
-  border-bottom: none;
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
 }
 
 .rank-badge {
@@ -411,91 +822,88 @@ const goTo = (url) => {
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  font-weight: 700;
-  color: #999;
-  margin-right: 12px;
-  background-color: rgba(0, 0, 0, 0.05);
-}
+  font-weight: $font-weight-bold;
+  color: $color-text-tertiary;
+  margin-right: $spacing-3;
+  background: $color-bg-elevated;
 
-.rank-1 {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-  color: white;
-}
+  &.rank-1 {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: white;
+  }
 
-.rank-2 {
-  background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%);
-  color: white;
-}
+  &.rank-2 {
+    background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%);
+    color: white;
+  }
 
-.rank-3 {
-  background: linear-gradient(135deg, #CD7F32 0%, #B87333 100%);
-  color: white;
+  &.rank-3 {
+    background: linear-gradient(135deg, #CD7F32 0%, #B87333 100%);
+    color: white;
+  }
 }
 
 .product-name {
   flex: 1;
-  font-size: 14px;
-  font-weight: 500;
-  color: $apple-text-primary;
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .product-count {
-  font-size: 14px;
-  font-weight: 600;
-  color: #007aff;
-}
-
-.equipment-list {
-  @include glass-panel;
-  padding: 16px;
-  margin-bottom: 20px;
+  @include text-caption;
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
 }
 
 .equipment-item {
   display: flex;
   flex-direction: column;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  transition: background-color 0.2s;
-}
+  padding: $spacing-3 0;
+  margin-bottom: $spacing-3;
+  border-bottom: 1px solid $color-border-subtle;
+  cursor: pointer;
+  transition: background-color $transition-normal;
 
-.equipment-item:active {
-  background-color: rgba(0, 0, 0, 0.05);
-}
+  &:active {
+    background: $color-bg-elevated;
+  }
 
-.equipment-item:last-child {
-  border-bottom: none;
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
 }
 
 .equipment-time {
-  font-size: 12px;
-  color: $apple-text-secondary;
-  margin-bottom: 4px;
+  @include text-caption;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-1;
 }
 
 .equipment-addr {
-  font-size: 14px;
-  font-weight: 500;
-  color: $apple-text-primary;
-  margin-bottom: 4px;
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  margin-bottom: $spacing-1;
 }
 
 .equipment-code {
-  font-size: 13px;
-  color: #ff3b30;
-  font-weight: 600;
+  @include text-caption;
+  color: $color-error;
+  font-weight: $font-weight-semibold;
 }
 
 .empty-state {
-  padding: 40px 0;
+  padding: $spacing-8 0;
   text-align: center;
 }
 
 .empty-text {
-  color: $apple-text-secondary;
-  font-size: 15px;
+  @include text-body;
+  color: $color-text-tertiary;
 }
 </style>

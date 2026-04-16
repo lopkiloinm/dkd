@@ -1,41 +1,15 @@
 <template>
-  <TopBar title="Employee Management" :showBack="true" />
+  <AppTopBar title="Employee Management" :showBack="true" />
   <view class="layout-container">
-    <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.userName" placeholder="Search by Name" @confirm="handleSearch" />
-      <view class="filter-toggle" @click="toggleFilters">
-        <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
-        <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
-      </view>
-      <view class="filters-container" :class="{ expanded: filtersExpanded }">
-        <picker mode="selector" :range="regionList" range-key="regionName" :value="filterRegionIndex" @change="onFilterRegionChange">
-          <view class="filter-picker">{{ queryParams.regionId ? regionList[filterRegionIndex]?.regionName : 'All Regions' }}</view>
-        </picker>
-        <picker mode="selector" :range="roleList" range-key="roleName" :value="filterRoleIndex" @change="onFilterRoleChange">
-          <view class="filter-picker">{{ queryParams.roleId ? roleList[filterRoleIndex]?.roleName : 'All Roles' }}</view>
-        </picker>
-        <picker mode="selector" :range="statusOptions" :value="filterStatusIndex" @change="onFilterStatusChange">
-          <view class="filter-picker">{{ statusOptions[filterStatusIndex] }}</view>
-        </picker>
-      </view>
-    </view>
-
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
-      <view class="emp-list">
-        <view class="emp-card" v-for="item in empList" :key="item.id" @click="handleViewDetail(item)">
+      <view class="content-wrapper">
+        <view class="emp-list">
+        <Card v-for="item in empList" :key="item.id" @click="handleViewDetail(item)" class="emp-card">
           <view class="emp-card-header">
-            <view class="emp-avatar">
-              <image v-if="item.image" :src="item.image" class="avatar-image" mode="aspectFill" />
-              <view v-else class="avatar-placeholder">
-                <text class="avatar-initial">{{ item.userName?.charAt(0)?.toUpperCase() || '?' }}</text>
-              </view>
-            </view>
+            <Avatar :src="item.image" :text="item.userName?.charAt(0)?.toUpperCase() || '?'" size="md" />
             <view class="emp-info-header">
               <text class="emp-name">{{ item.userName }}</text>
-              <view class="emp-status" :class="item.status === 1 ? 'status-active' : 'status-inactive'">
-                <text class="status-dot"></text>
-                <text class="status-text">{{ getStatusLabel(item.status) }}</text>
-              </view>
+              <Badge :variant="item.status === 1 ? 'success' : 'secondary'">{{ getStatusLabel(item.status) }}</Badge>
             </view>
           </view>
           
@@ -53,132 +27,98 @@
               <text class="info-value">{{ item.mobile || 'N/A' }}</text>
             </view>
           </view>
+        </Card>
 
-          <view class="card-actions">
-            <view class="action-btn" @click="handleEdit(item)" v-if="hasPermission('manage:emp:edit')">
-              <text class="action-text">Edit</text>
-            </view>
-            <view class="action-btn delete" @click="handleDelete(item)" v-if="hasPermission('manage:emp:remove')">
-              <text class="action-text">Delete</text>
-            </view>
-          </view>
-        </view>
-
-        <view class="empty-state" v-if="empList.length === 0 && !loading">
-          <text class="empty-text">No employees found</text>
-        </view>
+        <EmptyState v-if="empList.length === 0 && !loading" message="No employees found" />
       </view>
+    </view>
     </scroll-view>
-
-    <view class="modal-overlay" v-if="showDetailModal" @click="closeDetailModal">
-      <view class="modal-content detail-modal" @click.stop>
-        <view class="modal-header">
-          <text class="modal-title">Employee Detail</text>
-          <text class="modal-close" @click="closeDetailModal">×</text>
-        </view>
-        <view class="modal-body">
-          <view class="detail-avatar-section">
-            <view class="detail-avatar">
-              <image v-if="detailData.image" :src="detailData.image" class="detail-avatar-image" mode="aspectFill" />
-              <view v-else class="detail-avatar-placeholder">
-                <text class="detail-avatar-initial">{{ detailData.userName?.charAt(0)?.toUpperCase() || '?' }}</text>
-              </view>
-            </view>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">User Name:</text>
-            <text class="detail-value">{{ detailData.userName }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Region:</text>
-            <text class="detail-value">{{ detailData.regionName }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Role:</text>
-            <text class="detail-value">{{ detailData.roleName }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Mobile:</text>
-            <text class="detail-value">{{ detailData.mobile }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Status:</text>
-            <text class="detail-value">{{ getStatusLabel(detailData.status) }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Created:</text>
-            <text class="detail-value">{{ detailData.createTime }}</text>
-          </view>
-        </view>
-        <view class="modal-footer">
-          <view class="modal-btn cancel" @click="closeDetailModal">
-            <text>Close</text>
-          </view>
-        </view>
-      </view>
-    </view>
-
-    <view class="modal-overlay" v-if="showModal" @click="closeModal">
-      <view class="modal-content" @click.stop>
-        <view class="modal-header">
-          <text class="modal-title">{{ isEdit ? 'Edit Employee' : 'Add Employee' }}</text>
-          <text class="modal-close" @click="closeModal">×</text>
-        </view>
-        <view class="modal-body">
-          <view class="form-item">
-            <text class="form-label">User Name *</text>
-            <input class="modal-input" v-model="form.userName" placeholder="Enter user name" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Region *</text>
-            <picker mode="selector" :range="regionList" range-key="regionName" :value="regionIndex" @change="onRegionChange">
-              <view class="modal-input">{{ form.regionId ? regionList[regionIndex]?.regionName : 'Select Region' }}</view>
-            </picker>
-          </view>
-          <view class="form-item">
-            <text class="form-label">Role *</text>
-            <picker mode="selector" :range="roleList" range-key="roleName" :value="roleIndex" @change="onRoleChange">
-              <view class="modal-input">{{ form.roleId ? roleList[roleIndex]?.roleName : 'Select Role' }}</view>
-            </picker>
-          </view>
-          <view class="form-item">
-            <text class="form-label">Mobile *</text>
-            <input class="modal-input" v-model="form.mobile" type="number" placeholder="Enter mobile number" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Image *</text>
-            <view class="image-upload-container">
-              <image v-if="form.image" :src="form.image" class="preview-image" mode="aspectFill" @click="removeImage" />
-              <view v-else class="upload-placeholder" @click="chooseImage">
-                <text class="upload-icon">+</text>
-                <text class="upload-text">Tap to upload</text>
-              </view>
-            </view>
-          </view>
-          <view class="form-item">
-            <text class="form-label">Status *</text>
-            <picker mode="selector" :range="statusOptions" :value="statusIndex" @change="onStatusChange">
-              <view class="modal-input">{{ statusOptions[statusIndex] }}</view>
-            </picker>
-          </view>
-        </view>
-        <view class="modal-footer">
-          <view class="modal-btn cancel" @click="closeModal">
-            <text>Cancel</text>
-          </view>
-          <view class="modal-btn confirm" :class="{ disabled: isSubmitting }" @click="submitForm">
-            <text>{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</text>
-          </view>
-        </view>
-      </view>
-    </view>
+    <AppBottomBar :active-tab="'machines'" @tab-change="handleTabChange" />
   </view>
+
+  <Modal :visible="showDetailModal" @update:visible="closeDetailModal" title="Employee Detail">
+      <view class="detail-avatar-section">
+        <Avatar :src="detailData.image" :text="detailData.userName?.charAt(0)?.toUpperCase() || '?'" size="lg" />
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">User Name:</text>
+        <text class="detail-value">{{ detailData.userName }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Region:</text>
+        <text class="detail-value">{{ detailData.regionName }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Role:</text>
+        <text class="detail-value">{{ detailData.roleName }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Mobile:</text>
+        <text class="detail-value">{{ detailData.mobile }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Status:</text>
+        <text class="detail-value">{{ getStatusLabel(detailData.status) }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Created:</text>
+        <text class="detail-value">{{ detailData.createTime }}</text>
+      </view>
+      <template #footer>
+        <Button variant="secondary" @click="closeDetailModal">Close</Button>
+      </template>
+    </Modal>
+
+    <Modal :visible="showModal" @update:visible="closeModal" :title="isEdit ? 'Edit Employee' : 'Add Employee'">
+      <Input v-model="form.userName" label="User Name *" placeholder="Enter user name" />
+      <view class="form-item">
+        <text class="form-label">Region *</text>
+        <picker mode="selector" :range="regionList" range-key="regionName" :value="regionIndex" @change="onRegionChange">
+          <view class="picker-input">{{ form.regionId ? regionList[regionIndex]?.regionName : 'Select Region' }}</view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">Role *</text>
+        <picker mode="selector" :range="roleList" range-key="roleName" :value="roleIndex" @change="onRoleChange">
+          <view class="picker-input">{{ form.roleId ? roleList[roleIndex]?.roleName : 'Select Role' }}</view>
+        </picker>
+      </view>
+      <Input v-model="form.mobile" label="Mobile *" type="number" placeholder="Enter mobile number" />
+      <view class="form-item">
+        <text class="form-label">Image *</text>
+        <view class="image-upload-container">
+          <image v-if="form.image" :src="form.image" class="preview-image" mode="aspectFill" @click="removeImage" />
+          <view v-else class="upload-placeholder" @click="chooseImage">
+            <text class="upload-icon">+</text>
+            <text class="upload-text">Tap to upload</text>
+          </view>
+        </view>
+      </view>
+      <view class="form-item">
+        <text class="form-label">Status *</text>
+        <picker mode="selector" :range="statusOptions" :value="statusIndex" @change="onStatusChange">
+          <view class="picker-input">{{ statusOptions[statusIndex] }}</view>
+        </picker>
+      </view>
+      <template #footer>
+        <Button variant="secondary" @click="closeModal">Cancel</Button>
+        <Button :loading="isSubmitting" @click="submitForm">{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</Button>
+      </template>
+    </Modal>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
+import AppBottomBar from '@/components/app/AppBottomBar.vue'
+import Card from '@/components/ui/Card.vue'
+import Modal from '@/components/ui/Modal.vue'
+import Input from '@/components/ui/Input.vue'
+import Button from '@/components/ui/Button.vue'
+import Avatar from '@/components/ui/Avatar.vue'
+import Badge from '@/components/ui/Badge.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
 import { useI18n } from 'vue-i18n'
 import { listEmp, getEmp, addEmp, updateEmp, delEmp } from '@/api/manage/emp'
 import { listRegion } from '@/api/manage/region'
@@ -484,93 +424,30 @@ const onRefresh = () => {
   isRefreshing.value = true
   fetchList(true)
 }
+
+const handleTabChange = (tabId) => {
+  const routes = {
+    dashboard: '/pages/index/index',
+    machines: '/pages/manage/index',
+    tasks: '/pages/manage/task/index',
+    inventory: '/pages/inventory/index',
+    analytics: '/pages/analytics/index'
+  }
+  if (routes[tabId]) {
+    uni.navigateTo({ url: routes[tabId] })
+  }
+}
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/apple.scss";
+@import "@/styles/_variables.scss";
 
 .layout-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  box-sizing: border-box;
-  padding: 60px 0 16px 0;
-}
-
-.search-bar {
-  padding: 16px;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.n-input {
-  @include glass-input;
-  height: 44px;
-  line-height: 44px;
-  padding: 0 16px;
-  font-size: 16px;
-  width: 100%;
-  box-sizing: border-box;
-  color: $apple-text-primary;
-}
-
-.n-input::placeholder {
-  color: $apple-text-secondary;
-}
-
-.filter-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background-color: rgba(0, 122, 255, 0.1);
-  border-radius: $apple-radius-sm;
-  transition: background-color 0.2s;
-}
-
-.filter-toggle:active {
-  background-color: rgba(0, 122, 255, 0.2);
-}
-
-.filter-toggle-text {
-  font-size: 14px;
-  font-weight: 600;
-  color: #007aff;
-}
-
-.filter-toggle-icon {
-  font-size: 12px;
-  color: #007aff;
-  transition: transform 0.2s;
-}
-
-.filters-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
-  opacity: 0;
-}
-
-.filters-container.expanded {
-  max-height: 200px;
-  opacity: 1;
-}
-
-.filter-picker {
-  @include glass-input;
-  height: 44px;
-  line-height: 44px;
-  padding: 0 16px;
-  font-size: 16px;
-  width: 100%;
-  box-sizing: border-box;
-  color: $apple-text-primary;
+  background: $color-bg-primary;
+  padding-top: $top-bar-total-height;
 }
 
 .scroll-area {
@@ -578,102 +455,55 @@ const onRefresh = () => {
   overflow: hidden;
 }
 
+.content-wrapper {
+  padding: $spacing-4 $spacing-4 calc($spacing-6 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
+  box-sizing: border-box;
+}
+
 .emp-list {
-  padding: 0 16px 24px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-4;
 }
 
 .emp-card {
-  @include glass-panel;
-  padding: 20px;
-  transition: transform 0.2s ease;
+  padding: $spacing-4;
+  transition: transform $transition-normal;
 }
 
 .emp-card:active {
   transform: scale(0.98);
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: $color-bg-elevated;
 }
 
 .emp-card-header {
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid $apple-glass-border;
-}
-
-.emp-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  margin-right: 16px;
-  flex-shrink: 0;
-  overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.avatar-image {
-  width: 100%;
-  height: 100%;
-}
-
-.avatar-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.avatar-initial {
-  font-size: 24px;
-  font-weight: 700;
-  color: white;
+  gap: $spacing-3;
+  margin-bottom: $spacing-4;
+  padding-bottom: $spacing-3;
 }
 
 .emp-info-header {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-2;
+  margin-left: $spacing-3;
 }
 
 .emp-name {
   font-size: 18px;
-  font-weight: 700;
-  color: $apple-text-primary;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
   letter-spacing: -0.5px;
-}
-
-.emp-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.status-active {
-  color: #34c759;
-}
-
-.status-inactive {
-  color: #8e8e93;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: currentColor;
 }
 
 .emp-info {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-3;
 }
 
 .info-row {
@@ -683,13 +513,13 @@ const onRefresh = () => {
 
 .info-label {
   font-size: 14px;
-  color: $apple-text-secondary;
+  color: $color-text-secondary;
 }
 
 .info-value {
   font-size: 14px;
-  color: $apple-text-primary;
-  font-weight: 500;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
   text-align: right;
   max-width: 60%;
   white-space: nowrap;
@@ -697,91 +527,47 @@ const onRefresh = () => {
   text-overflow: ellipsis;
 }
 
-.empty-state {
-  padding: 40px 0;
-  text-align: center;
-}
-
-.empty-text {
-  color: $apple-text-secondary;
-  font-size: 15px;
-}
-
 .card-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid $apple-glass-border;
+  gap: $spacing-3;
+  margin-top: $spacing-4;
+  padding-top: $spacing-3;
+  border-top: 1px solid $color-border-subtle;
 }
 
-.action-btn {
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: 8px;
-  background-color: rgba(0, 122, 255, 0.1);
-  text-align: center;
-  transition: background-color 0.2s;
+.form-item {
+  margin-bottom: $spacing-4;
 }
 
-.action-btn:active {
-  background-color: rgba(0, 122, 255, 0.2);
+.form-item:last-child {
+  margin-bottom: 0;
 }
 
-.action-btn.delete {
-  background-color: rgba(255, 59, 48, 0.1);
-}
-
-.action-btn.delete:active {
-  background-color: rgba(255, 59, 48, 0.2);
-}
-
-.action-text {
+.form-label {
+  display: block;
   font-size: 14px;
-  font-weight: 600;
-  color: #007aff;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-2;
 }
 
-.action-btn.delete .action-text {
-  color: #ff3b30;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
-}
-
-.modal-input {
-  width: 100%;
+.picker-input {
   height: 44px;
-  padding: 0 16px;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: $apple-radius-sm;
+  padding: 0 $spacing-4;
+  background: $color-bg-secondary;
+  border: 1px solid $color-border-subtle;
+  border-radius: $radius-md;
   font-size: 16px;
-  color: $apple-text-primary;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  color: $color-text-primary;
   box-sizing: border-box;
 }
 
 .image-upload-container {
   width: 100%;
   height: 120px;
-  border: 2px dashed rgba(0, 0, 0, 0.15);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  border: 2px dashed $color-border-subtle;
+  border-radius: $radius-lg;
+  background: $color-bg-secondary;
   overflow: hidden;
 }
 
@@ -798,174 +584,43 @@ const onRefresh = () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: $spacing-2;
 }
 
 .upload-icon {
   font-size: 32px;
-  color: $apple-text-secondary;
-  font-weight: 300;
+  color: $color-text-secondary;
+  font-weight: $font-weight-light;
 }
 
 .upload-text {
   font-size: 12px;
-  color: $apple-text-secondary;
-  font-weight: 500;
-}
-
-.modal-content {
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid $apple-glass-border;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: $apple-text-primary;
-  letter-spacing: -0.5px;
-}
-
-.modal-close {
-  font-size: 32px;
-  color: $apple-text-secondary;
-  line-height: 1;
-  padding: 0 8px;
-}
-
-.modal-body {
-  padding: 24px;
-}
-
-.form-item {
-  margin-bottom: 20px;
-}
-
-.form-item:last-child {
-  margin-bottom: 0;
-}
-
-.form-label {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: $apple-text-primary;
-  margin-bottom: 8px;
-}
-
-.picker-input {
-  @include glass-input;
-  padding: 12px 16px;
-  font-size: 16px;
-  color: $apple-text-primary;
-}
-
-.modal-footer {
-  display: flex;
-  gap: 12px;
-  padding: 16px 24px 24px;
-}
-
-.modal-btn {
-  flex: 1;
-  padding: 14px;
-  border-radius: 12px;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 600;
-  transition: opacity 0.2s;
-}
-
-.modal-btn:active {
-  opacity: 0.7;
-}
-
-.modal-btn.cancel {
-  background-color: rgba(118, 118, 128, 0.1);
-  color: $apple-text-primary;
-}
-
-.modal-btn.confirm {
-  background-color: #007aff;
-  color: white;
-}
-
-.modal-btn.confirm.disabled {
-  background-color: rgba(0, 122, 255, 0.5);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.detail-modal {
-  max-width: 500px;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
 }
 
 .detail-avatar-section {
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
-}
-
-.detail-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.detail-avatar-image {
-  width: 100%;
-  height: 100%;
-}
-
-.detail-avatar-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.detail-avatar-initial {
-  font-size: 32px;
-  font-weight: 700;
-  color: white;
+  margin-bottom: $spacing-4;
 }
 
 .detail-info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.detail-info-row:last-child {
-  border-bottom: none;
+  padding: $spacing-3 0;
 }
 
 .detail-label {
   font-size: 14px;
-  color: $apple-text-secondary;
-  font-weight: 500;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
 }
 
 .detail-value {
   font-size: 15px;
-  color: $apple-text-primary;
-  font-weight: 600;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
 }
 </style>

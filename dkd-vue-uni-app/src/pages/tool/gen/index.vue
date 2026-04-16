@@ -189,29 +189,30 @@ const onRefresh = () => {
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/apple.scss";
+@import "@/styles/_variables.scss";
+@import "@/styles/_mixins.scss";
 
 .layout-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
   box-sizing: border-box;
-  padding: 60px 0 16px 0;
+  padding: calc($spacing-4 + env(safe-area-inset-top, 0px)) $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
 }
 
 .search-bar {
-  padding: 16px 20px 16px;
+  padding: $spacing-4 $spacing-5 $spacing-4;
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-3;
 }
 
 .n-input {
   @include glass-input;
   height: 44px;
   line-height: 44px;
-  padding: 0 16px;
+  padding: 0 $spacing-4;
   font-size: 16px;
   width: 100%;
   box-sizing: border-box;
@@ -223,23 +224,23 @@ const onRefresh = () => {
 }
 
 .table-list {
-  padding: 0 20px 24px;
+  padding: 0 $spacing-5 $spacing-6;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-4;
 }
 
 .table-card {
   @include glass-panel;
-  padding: 20px;
+  padding: $spacing-5;
 }
 
 .table-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
+  margin-bottom: $spacing-4;
+  padding-bottom: $spacing-3;
   border-bottom: 1px solid $apple-glass-border;
 }
 
@@ -251,11 +252,11 @@ const onRefresh = () => {
 }
 
 .action-btn {
-  padding: 10px 16px;
-  border-radius: 8px;
+  padding: $spacing-2 $spacing-4;
+  border-radius: $radius-md;
   background-color: rgba(0, 122, 255, 0.1);
   text-align: center;
-  transition: background-color 0.2s;
+  transition: background-color $transition-normal;
 }
 
 .action-btn:active {
@@ -271,7 +272,7 @@ const onRefresh = () => {
 .table-info {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-2;
 }
 
 .info-row {
@@ -296,7 +297,7 @@ const onRefresh = () => {
 }
 
 .empty-state {
-  padding: 40px 0;
+  padding: $spacing-10 0;
   text-align: center;
 }
 
@@ -307,15 +308,15 @@ const onRefresh = () => {
 
 .card-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 16px;
-  padding-top: 12px;
+  gap: $spacing-2;
+  margin-top: $spacing-4;
+  padding-top: $spacing-3;
   border-top: 1px solid $apple-glass-border;
 }
 
 .action-btn {
   flex: 1;
-  padding: 10px 8px;
+  padding: $spacing-2 $spacing-2;
 }
 
 .action-btn.delete {

@@ -340,29 +340,30 @@ const onRefresh = () => {
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/apple.scss";
+@import "@/styles/_variables.scss";
+@import "@/styles/_mixins.scss";
 
 .layout-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
   box-sizing: border-box;
-  padding: 60px 0 16px 0;
+  padding: calc($spacing-4 + env(safe-area-inset-top, 0px)) $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
 }
 
 .search-bar {
-  padding: 16px;
+  padding: $spacing-4;
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-3;
 }
 
 .n-input {
   @include glass-input;
   height: 44px;
   line-height: 44px;
-  padding: 0 16px;
+  padding: 0 $spacing-4;
   font-size: 16px;
   width: 100%;
   box-sizing: border-box;
@@ -377,11 +378,11 @@ const onRefresh = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: $spacing-2;
+  padding: $spacing-2 $spacing-4;
   background-color: rgba(0, 122, 255, 0.1);
   border-radius: $apple-radius-sm;
-  transition: background-color 0.2s;
+  transition: background-color $transition-normal;
 }
 
 .filter-toggle:active {
@@ -403,7 +404,7 @@ const onRefresh = () => {
 .filters-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-3;
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
@@ -419,7 +420,7 @@ const onRefresh = () => {
   @include glass-input;
   height: 44px;
   line-height: 44px;
-  padding: 0 16px;
+  padding: 0 $spacing-4;
   font-size: 16px;
   width: 100%;
   box-sizing: border-box;
@@ -432,16 +433,16 @@ const onRefresh = () => {
 }
 
 .notice-list {
-  padding: 0 20px 24px;
+  padding: 0 $spacing-5 $spacing-6;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-4;
 }
 
 .notice-card {
   @include glass-panel;
-  padding: 20px;
-  transition: transform 0.2s ease;
+  padding: $spacing-5;
+  transition: transform $transition-normal;
 }
 
 .notice-card:active {
@@ -453,8 +454,8 @@ const onRefresh = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
+  margin-bottom: $spacing-4;
+  padding-bottom: $spacing-3;
   border-bottom: 1px solid $apple-glass-border;
 }
 
@@ -466,8 +467,8 @@ const onRefresh = () => {
 }
 
 .notice-type-badge {
-  padding: 6px 12px;
-  border-radius: 12px;
+  padding: $spacing-1 $spacing-3;
+  border-radius: $radius-lg;
   font-size: 12px;
   font-weight: 600;
 }
@@ -490,7 +491,7 @@ const onRefresh = () => {
 .notice-info {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-2;
 }
 
 .info-row {
@@ -523,7 +524,7 @@ const onRefresh = () => {
 }
 
 .empty-state {
-  padding: 40px 0;
+  padding: $spacing-10 0;
   text-align: center;
 }
 
@@ -534,19 +535,19 @@ const onRefresh = () => {
 
 .card-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 16px;
-  padding-top: 12px;
+  gap: $spacing-3;
+  margin-top: $spacing-4;
+  padding-top: $spacing-3;
   border-top: 1px solid $apple-glass-border;
 }
 
 .action-btn {
   flex: 1;
-  padding: 10px 16px;
-  border-radius: 8px;
+  padding: $spacing-2 $spacing-4;
+  border-radius: $radius-md;
   background-color: rgba(0, 122, 255, 0.1);
   text-align: center;
-  transition: background-color 0.2s;
+  transition: background-color $transition-normal;
 }
 
 .action-btn:active {
@@ -598,7 +599,7 @@ const onRefresh = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: $spacing-5 $spacing-6;
   border-bottom: 1px solid $apple-glass-border;
 }
 
@@ -613,15 +614,15 @@ const onRefresh = () => {
   font-size: 32px;
   color: $apple-text-secondary;
   line-height: 1;
-  padding: 0 8px;
+  padding: 0 $spacing-2;
 }
 
 .modal-body {
-  padding: 24px;
+  padding: $spacing-6;
 }
 
 .form-item {
-  margin-bottom: 20px;
+  margin-bottom: $spacing-5;
 }
 
 .form-item:last-child {
@@ -633,14 +634,14 @@ const onRefresh = () => {
   font-size: 14px;
   font-weight: 600;
   color: $apple-text-primary;
-  margin-bottom: 8px;
+  margin-bottom: $spacing-2;
 }
 
 .picker-input {
   @include glass-input;
   height: 44px;
   line-height: 44px;
-  padding: 0 16px;
+  padding: 0 $spacing-4;
   font-size: 16px;
   width: 100%;
   box-sizing: border-box;
@@ -649,27 +650,27 @@ const onRefresh = () => {
 .n-textarea {
   @include glass-input;
   min-height: 120px;
-  padding: 12px 16px;
+  padding: $spacing-3 $spacing-4;
   font-size: 16px;
   width: 100%;
   box-sizing: border-box;
-  border-radius: 12px;
+  border-radius: $radius-lg;
 }
 
 .modal-footer {
   display: flex;
-  gap: 12px;
-  padding: 16px 24px 24px;
+  gap: $spacing-3;
+  padding: $spacing-4 $spacing-6 $spacing-6;
 }
 
 .modal-btn {
   flex: 1;
-  padding: 14px;
-  border-radius: 12px;
+  padding: $spacing-3;
+  border-radius: $radius-lg;
   text-align: center;
   font-size: 16px;
   font-weight: 600;
-  transition: opacity 0.2s;
+  transition: opacity $transition-normal;
 }
 
 .modal-btn:active {
@@ -700,7 +701,7 @@ const onRefresh = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
+  padding: $spacing-3 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 

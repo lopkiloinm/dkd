@@ -1,0 +1,141 @@
+@import "./_variables.scss";
+@import "./_mixins.scss";
+
+/* ============================================
+   Global Design Language Utilities
+   ============================================ */
+
+.surface-layer-default {
+  @include surface-panel;
+}
+
+.surface-layer-muted {
+  @include surface-muted;
+}
+
+.surface-layer-floating {
+  @include surface-floating;
+}
+
+.surface-card {
+  @include surface-panel;
+}
+
+.surface-card-muted {
+  @include surface-muted;
+}
+
+.surface-card-floating {
+  @include surface-floating;
+}
+
+.surface-card-pressable {
+  @include interactive-pressable;
+}
+
+.app-section-title {
+  @include text-title;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+  margin: 0 0 $spacing-4;
+  display: block;
+}
+
+.quick-action-tile {
+  @include surface-muted($radius-panel);
+  @include flex-column-center;
+  @include interactive-pressable;
+  gap: $spacing-2;
+  min-height: 104px;
+  padding: $spacing-3;
+  text-align: center;
+  width: 100%;
+}
+
+.quick-action-label {
+  @include text-caption;
+  display: block;
+  width: 100%;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  line-height: 1.2;
+  min-height: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.icon-tile {
+  @include icon-tile-base;
+}
+
+.icon-tile-lg {
+  @include icon-tile-base($icon-tile-size-lg);
+}
+
+.icon-tile--neutral {
+  @include icon-tone($color-text-secondary);
+}
+
+.icon-tile--primary {
+  @include icon-tone($color-primary);
+}
+
+.icon-tile--secondary {
+  @include icon-tone($color-secondary);
+}
+
+.icon-tile--success {
+  @include icon-tone($color-success);
+}
+
+.icon-tile--warning {
+  @include icon-tone($color-warning);
+}
+
+.icon-tile--error {
+  @include icon-tone($color-error);
+}
+
+.pill-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-2;
+  min-height: 36px;
+  padding: 0 $spacing-4;
+  border-radius: $radius-pill;
+  background: rgba($surface-card-elevated, 0.88);
+  border: 1px solid $color-border-subtle;
+  color: $color-text-secondary;
+}
+
+.pill-filter-active {
+  background: $accent-primary-soft;
+  border-color: rgba($color-primary, 0.18);
+  color: $color-primary;
+}
+
+.interactive-pill-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $spacing-2;
+}
+
+.interactive-pill {
+  @include flex-center;
+  min-height: 32px;
+  padding: 0 $spacing-3;
+  border-radius: $radius-pill;
+  background: rgba($surface-card, 0.88);
+  border: 1px solid $color-border-subtle;
+  color: $color-text-secondary;
+  @include interactive-pressable;
+  
+  &.interactive-pill-active {
+    background: $accent-primary-medium;
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+}
+

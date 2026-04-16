@@ -1,23 +1,10 @@
 <template>
-  <view class="page">
-    <view class="top-bar">
-      <view class="top-bar-back" @click="goBack">
-        <text class="back-caret">‹</text>
-        <text class="back-text">Back</text>
-      </view>
-      <text class="top-bar-title">Node Management</text>
-    </view>
-    <view class="layout-container">
-      <view class="search-bar">
-        <input class="n-input search-input" v-model="queryParams.nodeName" placeholder="Search by Node Name" @confirm="handleSearch" />
-        <picker mode="selector" :range="regionList" range-key="regionName" :value="filterRegionIndex" @change="onFilterRegionChange">
-          <view class="filter-picker">{{ queryParams.regionId ? regionList[filterRegionIndex]?.regionName : 'All Regions' }}</view>
-        </picker>
-      </view>
-
-      <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
+  <AppTopBar title="Node Management" :showBack="true" />
+  <view class="layout-container">
+    <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
+      <view class="content-wrapper">
         <view class="node-list">
-          <view class="node-card" v-for="item in nodeList" :key="item.id" @click="handleViewDetail(item)">
+          <Card v-for="item in nodeList" :key="item.id" @click="handleViewDetail(item)" class="node-card">
             <view class="node-card-header">
               <text class="node-name">{{ item.nodeName }}</text>
               <view class="device-count">
@@ -43,119 +30,84 @@
                 <text class="info-value">{{ item.address || 'N/A' }}</text>
               </view>
             </view>
+          </Card>
 
-            <view class="card-actions">
-              <view class="action-btn" @click="handleEdit(item)" v-if="hasPermission('manage:node:edit')">
-                <text class="action-text">Edit</text>
-              </view>
-              <view class="action-btn delete" @click="handleDelete(item)" v-if="hasPermission('manage:node:remove')">
-                <text class="action-text">Delete</text>
-              </view>
-            </view>
-          </view>
-
-          <view class="empty-state" v-if="nodeList.length === 0 && !loading">
-            <text class="empty-text">No nodes found</text>
-          </view>
+          <EmptyState v-if="nodeList.length === 0 && !loading" message="No nodes found" />
         </view>
+      </view>
       </scroll-view>
-
-      <view class="modal-overlay" v-if="showDetailModal" @click="closeDetailModal">
-        <view class="modal-content detail-modal" @click.stop>
-          <view class="modal-header">
-            <text class="modal-title">Node Detail</text>
-            <text class="modal-close" @click="closeDetailModal">×</text>
-          </view>
-          <view class="modal-body">
-            <view class="detail-info-row">
-              <text class="detail-label">Node Name:</text>
-              <text class="detail-value">{{ detailData.nodeName }}</text>
-            </view>
-            <view class="detail-info-row">
-              <text class="detail-label">Region:</text>
-              <text class="detail-value">{{ detailData.regionName }}</text>
-            </view>
-            <view class="detail-info-row">
-              <text class="detail-label">Business Type:</text>
-              <text class="detail-value">{{ getBusinessTypeLabel(detailData.businessType) }}</text>
-            </view>
-            <view class="detail-info-row">
-              <text class="detail-label">Partner:</text>
-              <text class="detail-value">{{ detailData.partnerName }}</text>
-            </view>
-            <view class="detail-info-row">
-              <text class="detail-label">Address:</text>
-              <text class="detail-value">{{ detailData.address }}</text>
-            </view>
-            <view class="detail-info-row">
-              <text class="detail-label">Device Count:</text>
-              <text class="detail-value">{{ detailData.vmCount || 0 }}</text>
-            </view>
-          </view>
-          <view class="modal-footer">
-            <view class="modal-btn cancel" @click="closeDetailModal">
-              <text>Close</text>
-            </view>
-          </view>
-        </view>
-      </view>
-
-      <view class="modal-overlay" v-if="showModal" @click="closeModal">
-        <view class="modal-content" @click.stop>
-          <view class="modal-header">
-            <text class="modal-title">{{ isEdit ? 'Edit Node' : 'Add Node' }}</text>
-            <text class="modal-close" @click="closeModal">×</text>
-          </view>
-          <view class="modal-body">
-            <view class="form-item">
-              <text class="form-label">Node Name *</text>
-              <input class="n-input" v-model="form.nodeName" placeholder="Enter node name" />
-            </view>
-            <view class="form-item">
-              <text class="form-label">Region *</text>
-              <picker mode="selector" :range="regionList" range-key="regionName" :value="regionIndex" @change="onRegionChange">
-                <view class="picker-input">{{ form.regionId ? regionList[regionIndex]?.regionName : 'Select Region' }}</view>
-              </picker>
-            </view>
-            <view class="form-item">
-              <text class="form-label">Business Type *</text>
-              <picker mode="selector" :range="businessTypes" :value="businessTypeIndex" @change="onBusinessTypeChange">
-                <view class="picker-input">{{ form.businessType ? businessTypes[businessTypeIndex] : 'Select Business Type' }}</view>
-              </picker>
-            </view>
-            <view class="form-item">
-              <text class="form-label">Partner *</text>
-              <picker mode="selector" :range="partnerList" range-key="partnerName" :value="partnerIndex" @change="onPartnerChange">
-                <view class="picker-input">{{ form.partnerId ? partnerList[partnerIndex]?.partnerName : 'Select Partner' }}</view>
-              </picker>
-            </view>
-            <view class="form-item">
-              <text class="form-label">Address *</text>
-              <textarea class="n-textarea" v-model="form.address" placeholder="Enter address" />
-            </view>
-          </view>
-          <view class="modal-footer">
-            <view class="modal-btn cancel" @click="closeModal">
-              <text>Cancel</text>
-            </view>
-            <view class="modal-btn confirm" :class="{ disabled: isSubmitting }" @click="submitForm">
-              <text>{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</text>
-            </view>
-          </view>
-        </view>
-      </view>
+      <AppBottomBar :active-tab="'machines'" @tab-change="handleTabChange" />
     </view>
-  </view>
+
+    <Modal :visible="showDetailModal" @update:visible="closeDetailModal" title="Node Detail">
+        <view class="detail-info-row">
+          <text class="detail-label">Node Name:</text>
+          <text class="detail-value">{{ detailData.nodeName }}</text>
+        </view>
+        <view class="detail-info-row">
+          <text class="detail-label">Region:</text>
+          <text class="detail-value">{{ detailData.regionName }}</text>
+        </view>
+        <view class="detail-info-row">
+          <text class="detail-label">Business Type:</text>
+          <text class="detail-value">{{ getBusinessTypeLabel(detailData.businessType) }}</text>
+        </view>
+        <view class="detail-info-row">
+          <text class="detail-label">Partner:</text>
+          <text class="detail-value">{{ detailData.partnerName }}</text>
+        </view>
+        <view class="detail-info-row">
+          <text class="detail-label">Address:</text>
+          <text class="detail-value">{{ detailData.address }}</text>
+        </view>
+        <view class="detail-info-row">
+          <text class="detail-label">Device Count:</text>
+          <text class="detail-value">{{ detailData.vmCount || 0 }}</text>
+        </view>
+      </Modal>
+
+      <Modal :visible="showModal" @update:visible="closeModal" :title="isEdit ? 'Edit Node' : 'Add Node'">
+        <Input v-model="form.nodeName" label="Node Name *" placeholder="Enter node name" />
+        <view class="form-item">
+          <text class="form-label">Region *</text>
+          <picker mode="selector" :range="regionList" range-key="regionName" :value="regionIndex" @change="onRegionChange">
+            <view class="picker-input">{{ form.regionId ? regionList[regionIndex]?.regionName : 'Select Region' }}</view>
+          </picker>
+        </view>
+        <view class="form-item">
+          <text class="form-label">Business Type *</text>
+          <picker mode="selector" :range="businessTypes" :value="businessTypeIndex" @change="onBusinessTypeChange">
+            <view class="picker-input">{{ form.businessType ? businessTypes[businessTypeIndex] : 'Select Business Type' }}</view>
+          </picker>
+        </view>
+        <view class="form-item">
+          <text class="form-label">Partner *</text>
+          <picker mode="selector" :range="partnerList" range-key="partnerName" :value="partnerIndex" @change="onPartnerChange">
+            <view class="picker-input">{{ form.partnerId ? partnerList[partnerIndex]?.partnerName : 'Select Partner' }}</view>
+          </picker>
+        </view>
+        <view class="form-item">
+          <text class="form-label">Address *</text>
+          <textarea class="n-textarea" v-model="form.address" placeholder="Enter address" />
+        </view>
+        <template #footer>
+          <Button variant="secondary" @click="closeModal">Cancel</Button>
+          <Button :loading="isSubmitting" @click="submitForm">{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</Button>
+        </template>
+      </Modal>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { useI18n } from 'vue-i18n'
-
-const goBack = () => {
-  uni.navigateBack()
-}
+import AppTopBar from '@/components/app/AppTopBar.vue'
+import AppBottomBar from '@/components/app/AppBottomBar.vue'
+import Card from '@/components/ui/Card.vue'
+import Modal from '@/components/ui/Modal.vue'
+import Input from '@/components/ui/Input.vue'
+import Button from '@/components/ui/Button.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
 import { listNode, getNode, addNode, updateNode, delNode } from '@/api/manage/node'
 import { listRegion } from '@/api/manage/region'
 import { listPartner } from '@/api/manage/partner'
@@ -375,6 +327,19 @@ const onRefresh = () => {
   fetchList(true)
 }
 
+const handleTabChange = (tabId) => {
+  const routes = {
+    dashboard: '/pages/index/index',
+    machines: '/pages/manage/index',
+    tasks: '/pages/manage/task/index',
+    inventory: '/pages/inventory/index',
+    analytics: '/pages/analytics/index'
+  }
+  if (routes[tabId]) {
+    uni.navigateTo({ url: routes[tabId] })
+  }
+}
+
 const handleViewDetail = async (item) => {
   try {
     const res = await getNode(item.id)
@@ -399,95 +364,14 @@ const closeDetailModal = () => {
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/apple.scss";
-
-.page {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-.top-bar {
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-}
-
-.top-bar-back {
-  position: absolute;
-  left: 16px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.back-caret {
-  font-size: 24px;
-  color: #007aff;
-  line-height: 1;
-  font-weight: 300;
-}
-
-.back-text {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-  font-size: 17px;
-  color: #007aff;
-  font-weight: 500;
-  letter-spacing: -0.3px;
-}
-
-.top-bar-title {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-  font-size: 17px;
-  font-weight: 600;
-  color: #1d1d1f;
-  letter-spacing: -0.4px;
-}
+@import "@/styles/_variables.scss";
 
 .layout-container {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  box-sizing: border-box;
-  padding: 60px 0 16px 0;
-}
-
-.search-bar {
-  padding: 16px;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.n-input {
-  @include glass-input;
-  height: 44px;
-  line-height: 44px;
-  padding: 0 16px;
-  font-size: 16px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.filter-picker {
-  @include glass-input;
-  height: 44px;
-  line-height: 44px;
-  padding: 0 16px;
-  font-size: 16px;
-  width: 100%;
-  box-sizing: border-box;
+  height: 100vh;
+  background: $color-bg-primary;
+  padding-top: $top-bar-total-height;
 }
 
 .scroll-area {
@@ -495,56 +379,60 @@ const closeDetailModal = () => {
   overflow: hidden;
 }
 
+.content-wrapper {
+  padding: $spacing-4 $spacing-4 calc($spacing-6 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
+  box-sizing: border-box;
+}
+
 .node-list {
-  padding: 0 16px 24px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-4;
 }
 
 .node-card {
-  @include glass-panel;
-  padding: 20px;
-  transition: transform 0.2s ease;
+  padding: $spacing-4;
+  transition: transform $transition-normal;
 }
 
 .node-card:active {
   transform: scale(0.98);
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: $color-bg-elevated;
 }
 
 .node-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid $apple-glass-border;
+  margin-bottom: $spacing-4;
+  padding-bottom: $spacing-3;
 }
 
 .node-name {
   font-size: 18px;
-  font-weight: 700;
-  color: $apple-text-primary;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
   letter-spacing: -0.5px;
 }
 
 .device-count {
   font-size: 13px;
-  color: $apple-text-secondary;
-  font-weight: 500;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
 }
 
 .count-number {
   font-size: 16px;
-  color: $apple-blue;
-  font-weight: 700;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  margin-right: 2px;
 }
 
 .node-info {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-3;
 }
 
 .info-row {
@@ -554,13 +442,13 @@ const closeDetailModal = () => {
 
 .info-label {
   font-size: 14px;
-  color: $apple-text-secondary;
+  color: $color-text-secondary;
 }
 
 .info-value {
   font-size: 14px;
-  color: $apple-text-primary;
-  font-weight: 500;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
   text-align: right;
   max-width: 60%;
   white-space: nowrap;
@@ -568,107 +456,8 @@ const closeDetailModal = () => {
   text-overflow: ellipsis;
 }
 
-.empty-state {
-  padding: 40px 0;
-  text-align: center;
-}
-
-.empty-text {
-  color: $apple-text-secondary;
-  font-size: 15px;
-}
-
-.card-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid $apple-glass-border;
-}
-
-.action-btn {
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: 8px;
-  background-color: rgba(0, 122, 255, 0.1);
-  text-align: center;
-  transition: background-color 0.2s;
-}
-
-.action-btn:active {
-  background-color: rgba(0, 122, 255, 0.2);
-}
-
-.action-btn.delete {
-  background-color: rgba(255, 59, 48, 0.1);
-}
-
-.action-btn.delete:active {
-  background-color: rgba(255, 59, 48, 0.2);
-}
-
-.action-text {
-  font-size: 14px;
-  font-weight: 600;
-  color: #007aff;
-}
-
-.action-btn.delete .action-text {
-  color: #ff3b30;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
-}
-
-.modal-content {
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid $apple-glass-border;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: $apple-text-primary;
-  letter-spacing: -0.5px;
-}
-
-.modal-close {
-  font-size: 32px;
-  color: $apple-text-secondary;
-  line-height: 1;
-  padding: 0 8px;
-}
-
-.modal-body {
-  padding: 24px;
-}
-
 .form-item {
-  margin-bottom: 20px;
+  margin-bottom: $spacing-4;
 }
 
 .form-item:last-child {
@@ -678,89 +467,57 @@ const closeDetailModal = () => {
 .form-label {
   display: block;
   font-size: 14px;
-  font-weight: 600;
-  color: $apple-text-primary;
-  margin-bottom: 8px;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-2;
 }
 
 .picker-input {
-  @include glass-input;
-  padding: 12px 16px;
+  height: 44px;
+  padding: 0 $spacing-4;
+  background: $color-bg-secondary;
+  border: 1px solid $color-border-subtle;
+  border-radius: $radius-md;
   font-size: 16px;
-  color: $apple-text-primary;
-}
-
-.n-textarea {
-  @include glass-input;
-  width: 100%;
-  min-height: 100px;
-  padding: 12px 16px;
-  font-size: 16px;
-  border-radius: 12px;
+  color: $color-text-primary;
   box-sizing: border-box;
 }
 
-.modal-footer {
+.card-actions {
   display: flex;
-  gap: 12px;
-  padding: 16px 24px 24px;
+  gap: $spacing-3;
+  margin-top: $spacing-4;
+  padding-top: $spacing-3;
 }
 
-.modal-btn {
-  flex: 1;
-  padding: 14px;
-  border-radius: 12px;
-  text-align: center;
+.n-textarea {
+  min-height: 88px;
+  padding: $spacing-3 $spacing-4;
   font-size: 16px;
-  font-weight: 600;
-  transition: opacity 0.2s;
-}
-
-.modal-btn:active {
-  opacity: 0.7;
-}
-
-.modal-btn.cancel {
-  background-color: rgba(118, 118, 128, 0.1);
-  color: $apple-text-primary;
-}
-
-.modal-btn.confirm {
-  background-color: #007aff;
-  color: white;
-}
-
-.modal-btn.confirm.disabled {
-  background-color: rgba(0, 122, 255, 0.5);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.detail-modal {
-  max-width: 500px;
+  width: 100%;
+  box-sizing: border-box;
+  color: $color-text-primary;
+  background: $color-bg-secondary;
+  border-radius: $radius-md;
 }
 
 .detail-info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.detail-info-row:last-child {
-  border-bottom: none;
+  padding: $spacing-3 0;
 }
 
 .detail-label {
   font-size: 14px;
-  color: $apple-text-secondary;
-  font-weight: 500;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  flex: 1;
 }
 
 .detail-value {
   font-size: 15px;
-  color: $apple-text-primary;
-  font-weight: 600;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
 }
 </style>

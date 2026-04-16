@@ -1,157 +1,114 @@
 <template>
-  <TopBar title="VM Type Management" :showBack="true" />
+  <AppTopBar title="VM Type Management" :showBack="true" />
   <view class="layout-container">
-    <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.name" placeholder="Search by Name" @confirm="handleSearch" />
-      <input class="n-input search-input" v-model="queryParams.model" placeholder="Search by Model" @confirm="handleSearch" />
-    </view>
-
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
-      <view class="vmtype-list">
+      <view class="content-wrapper">
+        <view class="vmtype-list">
         <view class="vmtype-card" v-for="item in vmTypeList" :key="item.id" @click="handleViewDetail(item)">
           <view class="vmtype-card-header">
-            <view class="vmtype-image">
-              <image v-if="item.image" :src="item.image" class="type-image" mode="aspectFill" />
-              <view v-else class="image-placeholder">
-                <text class="placeholder-text">No Image</text>
+              <view class="vmtype-image">
+                <image v-if="item.image" :src="item.image" class="type-image" mode="aspectFill" />
+                <view v-else class="image-placeholder">
+                  <text class="placeholder-text">No Image</text>
+                </view>
+              </view>
+              <view class="vmtype-info-header">
+                <text class="vmtype-name">{{ item.name }}</text>
+                <text class="vmtype-model">{{ item.model || 'N/A' }}</text>
               </view>
             </view>
-            <view class="vmtype-info-header">
-              <text class="vmtype-name">{{ item.name }}</text>
-              <text class="vmtype-model">{{ item.model || 'N/A' }}</text>
+            
+            <view class="vmtype-info">
+              <view class="info-row">
+                <text class="info-label">Rows</text>
+                <text class="info-value">{{ item.vmRow || 0 }}</text>
+              </view>
+              <view class="info-row">
+                <text class="info-label">Columns</text>
+                <text class="info-value">{{ item.vmCol || 0 }}</text>
+              </view>
+              <view class="info-row">
+                <text class="info-label">Capacity</text>
+                <text class="info-value">{{ item.channelMaxCapacity || 0 }}</text>
+              </view>
             </view>
-          </view>
-          
-          <view class="vmtype-info">
-            <view class="info-row">
-              <text class="info-label">Rows</text>
-              <text class="info-value">{{ item.vmRow || 0 }}</text>
-            </view>
-            <view class="info-row">
-              <text class="info-label">Columns</text>
-              <text class="info-value">{{ item.vmCol || 0 }}</text>
-            </view>
-            <view class="info-row">
-              <text class="info-label">Capacity</text>
-              <text class="info-value">{{ item.channelMaxCapacity || 0 }}</text>
-            </view>
-          </view>
-
-          <view class="card-actions">
-            <view class="action-btn" @click="handleEdit(item)" v-if="hasPermission('manage:vmType:edit')">
-              <text class="action-text">Edit</text>
-            </view>
-            <view class="action-btn delete" @click="handleDelete(item)" v-if="hasPermission('manage:vmType:remove')">
-              <text class="action-text">Delete</text>
-            </view>
-          </view>
         </view>
 
-        <view class="empty-state" v-if="vmTypeList.length === 0 && !loading">
-          <text class="empty-text">No VM types found</text>
-        </view>
+        <EmptyState v-if="vmTypeList.length === 0 && !loading" message="No VM types found" />
       </view>
+    </view>
     </scroll-view>
-
-    <view class="modal-overlay" v-if="showDetailModal" @click="closeDetailModal">
-      <view class="modal-content detail-modal" @click.stop>
-        <view class="modal-header">
-          <text class="modal-title">VM Type Detail</text>
-          <text class="modal-close" @click="closeDetailModal">×</text>
-        </view>
-        <view class="modal-body">
-          <view class="detail-image-section">
-            <view class="detail-image-container">
-              <image v-if="detailData.image" :src="detailData.image" class="detail-type-image" mode="aspectFill" />
-              <view v-else class="detail-image-placeholder">
-                <text class="detail-placeholder-text">No Image</text>
-              </view>
-            </view>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Type Name:</text>
-            <text class="detail-value">{{ detailData.name }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Model:</text>
-            <text class="detail-value">{{ detailData.model }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Rows:</text>
-            <text class="detail-value">{{ detailData.vmRow }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Columns:</text>
-            <text class="detail-value">{{ detailData.vmCol }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Capacity:</text>
-            <text class="detail-value">{{ detailData.channelMaxCapacity }}</text>
-          </view>
-        </view>
-        <view class="modal-footer">
-          <view class="modal-btn cancel" @click="closeDetailModal">
-            <text>Close</text>
-          </view>
-        </view>
-      </view>
-    </view>
-
-    <view class="modal-overlay" v-if="showModal" @click="closeModal">
-      <view class="modal-content" @click.stop>
-        <view class="modal-header">
-          <text class="modal-title">{{ isEdit ? 'Edit VM Type' : 'Add VM Type' }}</text>
-          <text class="modal-close" @click="closeModal">×</text>
-        </view>
-        <view class="modal-body">
-          <view class="form-item">
-            <text class="form-label">Type Name *</text>
-            <input class="modal-input" v-model="form.name" placeholder="Enter type name" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Model *</text>
-            <input class="modal-input" v-model="form.model" placeholder="Enter model" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Rows *</text>
-            <input class="modal-input" v-model="form.vmRow" type="number" placeholder="Enter rows (1-10)" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Columns *</text>
-            <input class="modal-input" v-model="form.vmCol" type="number" placeholder="Enter columns (1-10)" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Capacity *</text>
-            <input class="modal-input" v-model="form.channelMaxCapacity" type="number" placeholder="Enter capacity" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Image *</text>
-            <view class="image-upload-container">
-              <image v-if="form.image" :src="form.image" class="preview-image" mode="aspectFill" @click="removeImage" />
-              <view v-else class="upload-placeholder" @click="chooseImage">
-                <text class="upload-icon">+</text>
-                <text class="upload-text">Tap to upload</text>
-              </view>
-            </view>
-          </view>
-        </view>
-        <view class="modal-footer">
-          <view class="modal-btn cancel" @click="closeModal">
-            <text>Cancel</text>
-          </view>
-          <view class="modal-btn confirm" :class="{ disabled: isSubmitting }" @click="submitForm">
-            <text>{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</text>
-          </view>
-        </view>
-      </view>
-    </view>
+    <AppBottomBar :active-tab="'machines'" @tab-change="handleTabChange" />
   </view>
+
+  <Modal :visible="showDetailModal" @update:visible="closeDetailModal" title="VM Type Detail">
+        <view class="detail-image-section">
+          <view class="detail-image-container">
+            <image v-if="detailData.image" :src="detailData.image" class="detail-type-image" mode="aspectFill" />
+            <view v-else class="detail-image-placeholder">
+              <text class="detail-placeholder-text">No Image</text>
+            </view>
+          </view>
+        </view>
+        <view class="detail-info-row">
+          <text class="detail-label">Type Name:</text>
+          <text class="detail-value">{{ detailData.name }}</text>
+        </view>
+        <view class="detail-info-row">
+          <text class="detail-label">Model:</text>
+          <text class="detail-value">{{ detailData.model }}</text>
+        </view>
+        <view class="detail-info-row">
+          <text class="detail-label">Rows:</text>
+          <text class="detail-value">{{ detailData.vmRow }}</text>
+        </view>
+        <view class="detail-info-row">
+          <text class="detail-label">Columns:</text>
+          <text class="detail-value">{{ detailData.vmCol }}</text>
+        </view>
+        <view class="detail-info-row">
+          <text class="detail-label">Capacity:</text>
+          <text class="detail-value">{{ detailData.channelMaxCapacity }}</text>
+        </view>
+        <template #footer>
+          <Button variant="secondary" @click="closeDetailModal">Close</Button>
+        </template>
+      </Modal>
+
+      <Modal :visible="showModal" @update:visible="closeModal" :title="isEdit ? 'Edit VM Type' : 'Add VM Type'">
+        <Input v-model="form.name" label="Type Name *" placeholder="Enter type name" />
+        <Input v-model="form.model" label="Model *" placeholder="Enter model" />
+        <Input v-model="form.vmRow" label="Rows *" type="number" placeholder="Enter rows (1-10)" />
+        <Input v-model="form.vmCol" label="Columns *" type="number" placeholder="Enter columns (1-10)" />
+        <Input v-model="form.channelMaxCapacity" label="Capacity *" type="number" placeholder="Enter capacity" />
+        <view class="form-item">
+          <text class="form-label">Image *</text>
+          <view class="image-upload-container">
+            <image v-if="form.image" :src="form.image" class="preview-image" mode="aspectFill" @click="removeImage" />
+            <view v-else class="upload-placeholder" @click="chooseImage">
+              <text class="upload-icon">+</text>
+              <text class="upload-text">Tap to upload</text>
+            </view>
+          </view>
+        </view>
+        <template #footer>
+          <Button variant="secondary" @click="closeModal">Cancel</Button>
+          <Button :loading="isSubmitting" @click="submitForm">{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</Button>
+        </template>
+      </Modal>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
+import { useI18n } from 'vue-i18n'
+import AppTopBar from '@/components/app/AppTopBar.vue'
+import AppBottomBar from '@/components/app/AppBottomBar.vue'
+import Card from '@/components/ui/Card.vue'
+import Modal from '@/components/ui/Modal.vue'
+import Input from '@/components/ui/Input.vue'
+import Button from '@/components/ui/Button.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
 import { listVmType, getVmType, addVmType, updateVmType, delVmType } from '@/api/manage/vmType'
 import { hasPermission } from '@/utils/permission'
 
@@ -371,6 +328,19 @@ const onRefresh = () => {
   fetchList(true)
 }
 
+const handleTabChange = (tabId) => {
+  const routes = {
+    dashboard: '/pages/index/index',
+    machines: '/pages/manage/index',
+    tasks: '/pages/manage/task/index',
+    inventory: '/pages/inventory/index',
+    analytics: '/pages/analytics/index'
+  }
+  if (routes[tabId]) {
+    uni.navigateTo({ url: routes[tabId] })
+  }
+}
+
 const handleViewDetail = async (item) => {
   try {
     const res = await getVmType(item.id)
@@ -395,32 +365,14 @@ const closeDetailModal = () => {
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/apple.scss";
+@import "@/styles/_variables.scss";
 
 .layout-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  box-sizing: border-box;
-  padding: 60px 0 16px 0;
-}
-
-.search-bar {
-  padding: 16px;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.n-input {
-  @include glass-input;
-  height: 44px;
-  line-height: 44px;
-  padding: 0 16px;
-  font-size: 16px;
-  width: 100%;
-  box-sizing: border-box;
+  background: $color-bg-primary;
+  padding-top: $top-bar-total-height;
 }
 
 .scroll-area {
@@ -428,17 +380,21 @@ const closeDetailModal = () => {
   overflow: hidden;
 }
 
+.content-wrapper {
+  padding: $spacing-4 $spacing-4 calc($spacing-6 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
+  box-sizing: border-box;
+}
+
 .vmtype-list {
-  padding: 0 16px 24px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-4;
 }
 
 .vmtype-card {
-  @include glass-panel;
-  padding: 20px;
-  transition: transform 0.2s ease;
+  padding: $spacing-4;
+  transition: transform $transition-normal;
 }
 
 .vmtype-card:active {
@@ -538,7 +494,7 @@ const closeDetailModal = () => {
 
 .card-actions {
   display: flex;
-  gap: 12px;
+  gap: $spacing-4;
   margin-top: 16px;
   padding-top: 12px;
   border-top: 1px solid $apple-glass-border;
@@ -695,7 +651,7 @@ const closeDetailModal = () => {
 
 .modal-footer {
   display: flex;
-  gap: 12px;
+  gap: $spacing-4;
   padding: 16px 24px 24px;
 }
 

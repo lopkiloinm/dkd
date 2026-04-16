@@ -141,22 +141,23 @@ const onRefresh = () => {
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/apple.scss";
+@import "@/styles/_variables.scss";
+@import "@/styles/_mixins.scss";
 
 .layout-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
   box-sizing: border-box;
-  padding: 16px;
+  padding: calc($spacing-4 + env(safe-area-inset-top, 0px)) $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
 }
 
 .search-bar {
-  padding: 16px;
+  padding: $spacing-4;
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-3;
 }
 
 .n-input {
@@ -258,7 +259,7 @@ const onRefresh = () => {
 
 .card-actions {
   display: flex;
-  gap: 12px;
+  gap: $spacing-4;
   margin-top: 16px;
   padding-top: 12px;
   border-top: 1px solid $apple-glass-border;

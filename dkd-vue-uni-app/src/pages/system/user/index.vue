@@ -1,6 +1,17 @@
 <template>
   <TopBar title="User Management" :showBack="true" />
   <view class="layout-container">
+    <!-- Bulk Actions Bar -->
+    <view v-if="selectedUsers.length > 0" class="bulk-actions-bar">
+      <text class="selected-count">{{ selectedUsers.length }} selected</text>
+      <view class="bulk-actions">
+        <Button variant="secondary" size="sm" @click="handleBulkActivate">Activate</Button>
+        <Button variant="secondary" size="sm" @click="handleBulkDeactivate">Deactivate</Button>
+        <Button variant="secondary" size="sm" @click="handleBulkDelete">Delete</Button>
+        <Button variant="secondary" size="sm" @click="handleBulkRoleAssign">Assign Role</Button>
+      </view>
+    </view>
+
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.userName" placeholder="Search by User Name" @confirm="handleSearch" />
       <view class="filter-toggle" @click="toggleFilters">
@@ -15,10 +26,21 @@
       </view>
     </view>
 
+    <!-- Quick Actions -->
+    <view class="quick-actions-bar">
+      <Button variant="primary" size="sm" @click="handleAddUser">Add User</Button>
+      <Button variant="secondary" size="sm" @click="handleRoleTemplate">Role Template</Button>
+      <Button variant="secondary" size="sm" @click="handlePermissionMatrix">Permission Matrix</Button>
+      <Button variant="secondary" size="sm" @click="handleAuditLog">Audit Log</button>
+    </view>
+
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
       <view class="user-list">
         <view class="user-card" v-for="item in userList" :key="item.userId" @click="handleViewDetail(item)">
           <view class="user-card-header">
+            <view class="user-select-checkbox" @click.stop>
+              <checkbox :checked="selectedUsers.includes(item.userId)" @change="toggleUserSelection(item.userId)" />
+            </view>
             <view class="user-avatar">
               <image v-if="item.avatar" :src="item.avatar" class="avatar-image" mode="aspectFill" />
               <view v-else class="avatar-placeholder">
@@ -46,6 +68,14 @@
             <view class="info-row">
               <text class="info-label">Email</text>
               <text class="info-value">{{ item.email || 'N/A' }}</text>
+            </view>
+            <view class="info-row">
+              <text class="info-label">Roles</text>
+              <text class="info-value">{{ item.roles?.map(r => r.roleName).join(', ') || 'N/A' }}</text>
+            </view>
+            <view class="info-row">
+              <text class="info-label">Last Login</text>
+              <text class="info-value">{{ item.loginDate || 'Never' }}</text>
             </view>
           </view>
 
@@ -177,6 +207,7 @@
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import TopBar from '@/components/TopBar/index.vue'
+import Button from '@/components/ui/Button.vue'
 import { listUser, getUser, addUser, updateUser, delUser, resetUserPwd } from '@/api/system/user'
 import { listDept } from '@/api/system/dept'
 import { hasPermission } from '@/utils/permission'
@@ -205,6 +236,69 @@ const queryParams = ref({
 })
 const total = ref(0)
 const filtersExpanded = ref(false)
+const selectedUsers = ref([])
+
+const toggleUserSelection = (userId) => {
+  const index = selectedUsers.value.indexOf(userId)
+  if (index > -1) {
+    selectedUsers.value.splice(index, 1)
+  } else {
+    selectedUsers.value.push(userId)
+  }
+}
+
+const handleBulkActivate = () => {
+  uni.showToast({
+    title: `Activating ${selectedUsers.value.length} users...`,
+    icon: 'loading'
+  })
+}
+
+const handleBulkDeactivate = () => {
+  uni.showToast({
+    title: `Deactivating ${selectedUsers.value.length} users...`,
+    icon: 'loading'
+  })
+}
+
+const handleBulkDelete = () => {
+  uni.showModal({
+    title: 'Confirm Delete',
+    content: `Delete ${selectedUsers.value.length} selected users?`,
+    success: (res) => {
+      if (res.confirm) {
+        uni.showToast({
+          title: `Deleting ${selectedUsers.value.length} users...`,
+          icon: 'loading'
+        })
+      }
+    }
+  })
+}
+
+const handleBulkRoleAssign = () => {
+  uni.navigateTo({ url: '/pages/system/role/index' })
+}
+
+const handleAddUser = () => {
+  showModal.value = true
+  isEdit.value = false
+}
+
+const handleRoleTemplate = () => {
+  uni.navigateTo({ url: '/pages/system/role/index' })
+}
+
+const handlePermissionMatrix = () => {
+  uni.showToast({
+    title: 'Opening permission matrix...',
+    icon: 'loading'
+  })
+}
+
+const handleAuditLog = () => {
+  uni.navigateTo({ url: '/pages/monitor/operlog/index' })
+}
 
 const showModal = ref(false)
 const isEdit = ref(false)
@@ -445,22 +539,51 @@ const onRefresh = () => {
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/apple.scss";
+@import "@/styles/_variables.scss";
+@import "@/styles/_mixins.scss";
 
 .layout-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
   box-sizing: border-box;
-  padding: 60px 0 16px 0;
+  padding: calc($spacing-4 + env(safe-area-inset-top, 0px)) $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
+}
+
+.bulk-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-3 $spacing-4;
+  background: $color-bg-tertiary;
+  border-bottom: 1px solid $color-border-subtle;
+}
+
+.selected-count {
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: $spacing-2;
+}
+
+.quick-actions-bar {
+  display: flex;
+  gap: $spacing-2;
+  padding: $spacing-3 $spacing-4;
+  background: $color-bg-secondary;
+  border-bottom: 1px solid $color-border-subtle;
 }
 
 .search-bar {
-  padding: 16px;
+  padding: $spacing-4;
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-3;
 }
 
 .n-input {
@@ -508,7 +631,7 @@ const onRefresh = () => {
 .filters-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-4;
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
@@ -667,7 +790,7 @@ const onRefresh = () => {
 
 .card-actions {
   display: flex;
-  gap: 12px;
+  gap: $spacing-4;
   margin-top: 16px;
   padding-top: 12px;
   border-top: 1px solid $apple-glass-border;
@@ -781,7 +904,7 @@ const onRefresh = () => {
 
 .modal-footer {
   display: flex;
-  gap: 12px;
+  gap: $spacing-4;
   padding: 16px 24px 24px;
 }
 

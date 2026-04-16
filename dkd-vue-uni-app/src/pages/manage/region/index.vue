@@ -1,13 +1,10 @@
 <template>
-  <TopBar title="Region Management" :showBack="true" />
+  <AppTopBar title="Region Management" :showBack="true" />
   <view class="layout-container">
-    <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.regionName" placeholder="Search by Region Name" @confirm="handleSearch" />
-    </view>
-
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
-      <view class="region-list">
-        <view class="region-card" v-for="item in regionList" :key="item.id">
+      <view class="content-wrapper">
+        <view class="region-list">
+        <Card class="region-card" v-for="item in regionList" :key="item.id">
           <view class="region-card-header">
             <text class="region-name">{{ item.regionName }}</text>
             <view class="node-count">
@@ -21,89 +18,65 @@
               <text class="info-value">{{ item.remark || 'N/A' }}</text>
             </view>
           </view>
+        </Card>
 
-          <view class="card-actions">
-            <view class="action-btn" @click="handleViewDetail(item)" v-if="hasPermission('manage:node:list')">
-              <text class="action-text">View</text>
-            </view>
-            <view class="action-btn" @click="handleEdit(item)" v-if="hasPermission('manage:region:edit')">
-              <text class="action-text">Edit</text>
-            </view>
-            <view class="action-btn delete" @click="handleDelete(item)" v-if="hasPermission('manage:region:remove')">
-              <text class="action-text">Delete</text>
-            </view>
-          </view>
-        </view>
-
-        <view class="empty-state" v-if="regionList.length === 0 && !loading">
+        <EmptyState class="empty-state" v-if="regionList.length === 0 && !loading">
           <text class="empty-text">No regions found</text>
-        </view>
+        </EmptyState>
       </view>
+    </view>
     </scroll-view>
-
-    <view class="modal-overlay" v-if="showModal" @click="closeModal">
-      <view class="modal-content" @click.stop>
-        <view class="modal-header">
-          <text class="modal-title">{{ isEdit ? 'Edit Region' : 'Add Region' }}</text>
-          <text class="modal-close" @click="closeModal">×</text>
-        </view>
-        <view class="modal-body">
-          <view class="form-item">
-            <text class="form-label">Region Name *</text>
-            <input class="n-input" v-model="form.regionName" placeholder="Enter region name" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Remark *</text>
-            <textarea class="n-textarea" v-model="form.remark" placeholder="Enter remark" />
-          </view>
-        </view>
-        <view class="modal-footer">
-          <view class="modal-btn cancel" @click="closeModal">
-            <text>Cancel</text>
-          </view>
-          <view class="modal-btn confirm" :class="{ disabled: isSubmitting }" @click="submitForm">
-            <text>{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</text>
-          </view>
-        </view>
-      </view>
-    </view>
-
-    <view class="modal-overlay" v-if="showDetailModal" @click="closeDetailModal">
-      <view class="modal-content detail-modal" @click.stop>
-        <view class="modal-header">
-          <text class="modal-title">Region Detail</text>
-          <text class="modal-close" @click="closeDetailModal">×</text>
-        </view>
-        <view class="modal-body">
-          <view class="detail-info">
-            <text class="detail-label">Region Name:</text>
-            <text class="detail-value">{{ detailData.regionName }}</text>
-          </view>
-          <view class="detail-section-title">Nodes in this Region</view>
-          <view class="node-list-detail">
-            <view class="node-item" v-for="node in detailData.nodeList" :key="node.id">
-              <text class="node-name">{{ node.nodeName }}</text>
-              <text class="node-vm-count">{{ node.vmCount || 0 }} VMs</text>
-            </view>
-            <view class="empty-nodes" v-if="detailData.nodeList.length === 0">
-              <text class="empty-text">No nodes in this region</text>
-            </view>
-          </view>
-        </view>
-        <view class="modal-footer">
-          <view class="modal-btn cancel" @click="closeDetailModal">
-            <text>Close</text>
-          </view>
-        </view>
-      </view>
-    </view>
+    <AppBottomBar :active-tab="'machines'" @tab-change="handleTabChange" />
   </view>
+
+  <Modal :visible="showModal" @update:visible="closeModal" :title="isEdit ? 'Edit Region' : 'Add Region'">
+      <Input v-model="form.regionName" label="Region Name *" placeholder="Enter region name" />
+      <view class="form-item">
+        <text class="form-label">Remark *</text>
+        <textarea class="n-textarea" v-model="form.remark" placeholder="Enter remark" />
+      </view>
+      <template #footer>
+        <Button variant="secondary" @click="closeModal">Cancel</Button>
+        <Button :loading="isSubmitting" @click="submitForm">{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</Button>
+      </template>
+    </Modal>
+
+    <Modal :visible="showDetailModal" @update:visible="closeDetailModal" title="Region Detail">
+      <view class="detail-info-row">
+        <text class="detail-label">Region Name:</text>
+        <text class="detail-value">{{ detailData.regionName }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Remark:</text>
+        <text class="detail-value">{{ detailData.remark || 'N/A' }}</text>
+      </view>
+      <view class="detail-section-title">Nodes in this region</view>
+      <view class="node-list-detail">
+        <view class="node-item" v-for="node in detailData.nodeList" :key="node.id">
+          <text class="node-name">{{ node.nodeName }}</text>
+          <text class="node-vm-count">{{ node.vmCount || 0 }} VMs</text>
+        </view>
+        <EmptyState class="empty-nodes" v-if="detailData.nodeList.length === 0">
+          <text class="empty-text">No nodes in this region</text>
+        </EmptyState>
+      </view>
+      <template #footer>
+        <Button variant="secondary" @click="closeDetailModal">Close</Button>
+      </template>
+    </Modal>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
+import { useI18n } from 'vue-i18n'
+import AppTopBar from '@/components/app/AppTopBar.vue'
+import AppBottomBar from '@/components/app/AppBottomBar.vue'
+import Card from '@/components/ui/Card.vue'
+import Modal from '@/components/ui/Modal.vue'
+import Input from '@/components/ui/Input.vue'
+import Button from '@/components/ui/Button.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
 import { listRegion, getRegion, addRegion, updateRegion, delRegion } from '@/api/manage/region'
 import { listNode } from '@/api/manage/node'
 import { hasPermission } from '@/utils/permission'
@@ -260,32 +233,30 @@ const onRefresh = () => {
   isRefreshing.value = true
   fetchList(true)
 }
+
+const handleTabChange = (tabId) => {
+  const routes = {
+    dashboard: '/pages/index/index',
+    machines: '/pages/manage/index',
+    tasks: '/pages/manage/task/index',
+    inventory: '/pages/inventory/index',
+    analytics: '/pages/analytics/index'
+  }
+  if (routes[tabId]) {
+    uni.navigateTo({ url: routes[tabId] })
+  }
+}
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/apple.scss";
+@import "@/styles/_variables.scss";
 
 .layout-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  box-sizing: border-box;
-  padding: 60px 0 16px 0;
-}
-
-.search-bar {
-  padding: 16px;
-  z-index: 10;
-}
-
-.n-input {
-  @include glass-input;
-  height: 44px;
-  line-height: 44px;
-  padding: 0 16px;
-  font-size: 16px;
-  width: 100%;
-  box-sizing: border-box;
+  background: $color-bg-primary;
+  padding-top: $top-bar-total-height;
 }
 
 .scroll-area {
@@ -293,56 +264,60 @@ const onRefresh = () => {
   overflow: hidden;
 }
 
+.content-wrapper {
+  padding: $spacing-4 $spacing-4 calc($spacing-6 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
+  box-sizing: border-box;
+}
+
 .region-list {
-  padding: 0 16px 24px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-4;
 }
 
 .region-card {
-  @include glass-panel;
-  padding: 20px;
-  transition: transform 0.2s ease;
+  padding: $spacing-4;
+  transition: transform $transition-normal;
 }
 
 .region-card:active {
   transform: scale(0.98);
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: $color-bg-elevated;
 }
 
 .region-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid $apple-glass-border;
+  margin-bottom: $spacing-4;
+  padding-bottom: $spacing-3;
 }
 
 .region-name {
   font-size: 18px;
-  font-weight: 700;
-  color: $apple-text-primary;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
   letter-spacing: -0.5px;
 }
 
 .node-count {
   font-size: 13px;
-  color: $apple-text-secondary;
-  font-weight: 500;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
 }
 
 .count-number {
   font-size: 16px;
-  color: $apple-blue;
-  font-weight: 700;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  margin-right: 2px;
 }
 
 .region-info {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-3;
 }
 
 .info-row {
@@ -352,13 +327,14 @@ const onRefresh = () => {
 
 .info-label {
   font-size: 14px;
-  color: $apple-text-secondary;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
 }
 
 .info-value {
   font-size: 14px;
-  color: $apple-text-primary;
-  font-weight: 500;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
   text-align: right;
   max-width: 60%;
   white-space: nowrap;
@@ -372,100 +348,19 @@ const onRefresh = () => {
 }
 
 .empty-text {
-  color: $apple-text-secondary;
+  color: $color-text-secondary;
   font-size: 15px;
 }
 
 .card-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid $apple-glass-border;
-}
-
-.action-btn {
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: 8px;
-  background-color: rgba(0, 122, 255, 0.1);
-  text-align: center;
-  transition: background-color 0.2s;
-}
-
-.action-btn:active {
-  background-color: rgba(0, 122, 255, 0.2);
-}
-
-.action-btn.delete {
-  background-color: rgba(255, 59, 48, 0.1);
-}
-
-.action-btn.delete:active {
-  background-color: rgba(255, 59, 48, 0.2);
-}
-
-.action-text {
-  font-size: 14px;
-  font-weight: 600;
-  color: #007aff;
-}
-
-.action-btn.delete .action-text {
-  color: #ff3b30;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
-}
-
-.modal-content {
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid $apple-glass-border;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: $apple-text-primary;
-  letter-spacing: -0.5px;
-}
-
-.modal-close {
-  font-size: 32px;
-  color: $apple-text-secondary;
-  line-height: 1;
-  padding: 0 8px;
-}
-
-.modal-body {
-  padding: 24px;
+  gap: $spacing-2;
+  margin-top: $spacing-4;
+  padding-top: $spacing-3;
 }
 
 .form-item {
-  margin-bottom: 20px;
+  margin-bottom: $spacing-4;
 }
 
 .form-item:last-child {
@@ -475,116 +370,63 @@ const onRefresh = () => {
 .form-label {
   display: block;
   font-size: 14px;
-  font-weight: 600;
-  color: $apple-text-primary;
-  margin-bottom: 8px;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-2;
 }
 
-.n-textarea {
-  @include glass-input;
-  width: 100%;
-  min-height: 100px;
-  padding: 12px 16px;
-  font-size: 16px;
-  border-radius: 12px;
-  box-sizing: border-box;
-}
-
-.modal-footer {
-  display: flex;
-  gap: 12px;
-  padding: 16px 24px 24px;
-}
-
-.modal-btn {
-  flex: 1;
-  padding: 14px;
-  border-radius: 12px;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 600;
-  transition: opacity 0.2s;
-}
-
-.modal-btn:active {
-  opacity: 0.7;
-}
-
-.modal-btn.cancel {
-  background-color: rgba(118, 118, 128, 0.1);
-  color: $apple-text-primary;
-}
-
-.modal-btn.confirm {
-  background-color: #007aff;
-  color: white;
-}
-
-.modal-btn.confirm.disabled {
-  background-color: rgba(0, 122, 255, 0.5);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.detail-modal {
-  max-width: 500px;
-}
-
-.detail-info {
+.detail-info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  background-color: rgba(0, 122, 255, 0.05);
-  border-radius: 12px;
-  margin-bottom: 20px;
+  padding: $spacing-3 0;
 }
 
 .detail-label {
   font-size: 14px;
-  color: $apple-text-secondary;
-  font-weight: 500;
+  color: $color-text-secondary;
 }
 
 .detail-value {
-  font-size: 16px;
-  color: $apple-text-primary;
-  font-weight: 700;
+  font-size: 15px;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
 }
 
 .detail-section-title {
   font-size: 16px;
-  font-weight: 700;
-  color: $apple-text-primary;
-  margin-bottom: 16px;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin: $spacing-4 0 $spacing-3;
+  display: block;
 }
 
 .node-list-detail {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-height: 300px;
+  gap: $spacing-2;
+  max-height: 200px;
   overflow-y: auto;
 }
 
 .node-item {
-  @include glass-panel;
-  padding: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: $spacing-2 $spacing-3;
+  background: $color-bg-secondary;
+  border-radius: $radius-md;
 }
 
-.node-item .node-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: $apple-text-primary;
-}
-
-.node-item .node-vm-count {
+.node-name {
   font-size: 14px;
-  color: $apple-blue;
-  font-weight: 500;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.node-vm-count {
+  font-size: 13px;
+  color: $color-text-secondary;
 }
 
 .empty-nodes {

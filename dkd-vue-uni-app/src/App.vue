@@ -14,17 +14,25 @@ export default {
 
 <style lang="scss">
 /* 每个页面公共css */
+@import "@/styles/_variables.scss";
+@import "@/styles/_mixins.scss";
 @import "@/styles/_layout.scss";
+@import "@/styles/_utilities.scss";
+@import "@/styles/_design-language.scss";
 
 page {
-  /* Apple glassmorphism requires a colorful/interesting background to pop */
-  background-color: #f2f2f7;
-  background-image: radial-gradient(at 40% 20%, rgba(255, 189, 132, 0.4) 0px, transparent 50%),
-                    radial-gradient(at 80% 0%, rgba(100, 210, 255, 0.4) 0px, transparent 50%),
-                    radial-gradient(at 0% 50%, rgba(255, 150, 170, 0.4) 0px, transparent 50%);
-  background-attachment: fixed;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-  color: #1d1d1f;
+  background: $gradient-page;
+  font-family: $font-family-body;
+  color: $color-text-primary;
   min-height: 100vh;
+  letter-spacing: $letter-spacing-normal;
+}
+
+view,
+text,
+button,
+input,
+textarea {
+  box-sizing: border-box;
 }
 </style>
