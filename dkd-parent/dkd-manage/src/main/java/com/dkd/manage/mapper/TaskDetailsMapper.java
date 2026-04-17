@@ -15,4 +15,9 @@ public interface TaskDetailsMapper
      * @return 结果
      */
     public int insertBatch(List<TaskDetails> taskDetailsList);
+
+    /**
+     * List replenish details for a task.
+     */
+    public List<TaskDetails> listByTaskId(Long taskId);
 }

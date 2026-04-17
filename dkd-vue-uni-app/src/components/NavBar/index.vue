@@ -64,7 +64,7 @@ const goBack = () => {
   uni.navigateBack({
     fail: () => {
       // Fallback to home if no pages in stack
-      uni.switchTab({ url: '/pages/index/index' })
+      uni.reLaunch({ url: '/pages/index/index' })
     }
   })
 }

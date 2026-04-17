@@ -9,8 +9,10 @@ import com.dkd.manage.domain.Emp;
 import com.dkd.manage.domain.Task;
 import com.dkd.manage.domain.TaskDetails;
 import com.dkd.manage.domain.VendingMachine;
+import com.dkd.manage.domain.Channel;
 import com.dkd.manage.domain.dto.TaskDto;
 import com.dkd.manage.mapper.TaskMapper;
+import com.dkd.manage.service.IChannelService;
 import com.dkd.manage.service.IEmpService;
 import com.dkd.manage.service.ITaskDetailsService;
 import com.dkd.manage.service.ITaskService;
@@ -34,7 +36,8 @@ public class TaskServiceImpl implements ITaskService {
     private IEmpService empService;
     @Autowired
     private ITaskDetailsService taskDetailsService;
-
+    @Autowired
+    private IChannelService channelService;
     @Override
     public Task selectTaskByTaskId(Long taskId) {
         return taskMapper.selectTaskByTaskId(taskId);
@@ -125,5 +128,104 @@ public class TaskServiceImpl implements ITaskService {
     private String generateTaskCode() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         return LocalDateTime.now().format(formatter) + (int)(Math.random() * 9000 + 1000);
+    }
+
+    @Override
+    public int updateTask(Task task) {
+        return taskMapper.updateTask(task);
+    }
+
+    @Override
+    public int deleteTaskByTaskId(Long taskId) {
+        return taskMapper.deleteTaskByTaskId(taskId);
+    }
+
+    @Override
+    public int deleteTaskByTaskIds(Long[] taskIds) {
+        return taskMapper.deleteTaskByTaskIds(taskIds);
+    }
+
+    @Override
+    public int acceptTask(Long taskId) {
+        Task existing = taskMapper.selectTaskByTaskId(taskId);
+        if (existing == null) {
+            throw new ServiceException("Task not found");
+        }
+        if (!DkdContants.TASK_STATUS_CREATE.equals(existing.getTaskStatus())) {
+            throw new ServiceException("Only pending tasks can be accepted");
+        }
+        Task update = new Task();
+        update.setTaskId(taskId);
+        update.setTaskStatus(DkdContants.TASK_STATUS_PROGRESS);
+        update.setUpdateTime(DateUtils.getNowDate());
+        return taskMapper.updateTask(update);
+    }
+
+    @Override
+    public int rejectTask(Long taskId, String reason) {
+        Task existing = taskMapper.selectTaskByTaskId(taskId);
+        if (existing == null) {
+            throw new ServiceException("Task not found");
+        }
+        if (DkdContants.TASK_STATUS_FINISH.equals(existing.getTaskStatus())
+                || DkdContants.TASK_STATUS_CANCEL.equals(existing.getTaskStatus())) {
+            throw new ServiceException("Task is already closed");
+        }
+        Task update = new Task();
+        update.setTaskId(taskId);
+        update.setTaskStatus(DkdContants.TASK_STATUS_CANCEL);
+        if (reason != null && !reason.isEmpty()) {
+            update.setDesc(reason);
+        }
+        update.setUpdateTime(DateUtils.getNowDate());
+        return taskMapper.updateTask(update);
+    }
+
+    @Transactional
+    @Override
+    public int completeTask(Long taskId) {
+        Task existing = taskMapper.selectTaskByTaskId(taskId);
+        if (existing == null) {
+            throw new ServiceException("Task not found");
+        }
+        if (DkdContants.TASK_STATUS_FINISH.equals(existing.getTaskStatus())
+                || DkdContants.TASK_STATUS_CANCEL.equals(existing.getTaskStatus())) {
+            throw new ServiceException("Task is already closed");
+        }
+        // 1. mark done
+        Task update = new Task();
+        update.setTaskId(taskId);
+        update.setTaskStatus(DkdContants.TASK_STATUS_FINISH);
+        update.setUpdateTime(DateUtils.getNowDate());
+        int rows = taskMapper.updateTask(update);
+        // 2. if this is a replenish task, refill channels to expect_capacity
+        if (DkdContants.TASK_TYPE_SUPPLY.equals(existing.getProductTypeId())) {
+            List<TaskDetails> details = taskDetailsService.listByTaskId(taskId);
+            if (CollUtil.isNotEmpty(details)) {
+                for (TaskDetails d : details) {
+                    Channel probe = new Channel();
+                    probe.setInnerCode(existing.getInnerCode());
+                    probe.setChannelCode(d.getChannelCode());
+                    List<Channel> found = channelService.selectChannelList(probe);
+                    if (CollUtil.isEmpty(found)) {
+                        continue;
+                    }
+                    Channel ch = found.get(0);
+                    ch.setCurrentCapacity(d.getExpectCapacity());
+                    ch.setLastSupplyTime(DateUtils.getNowDate());
+                    ch.setSkuId(d.getSkuId());
+                    ch.setUpdateTime(DateUtils.getNowDate());
+                    channelService.updateChannel(ch);
+                }
+            }
+            // refresh machine last_supply_time
+            VendingMachine vm = vendingMachineService.selectVendingMachineByInnerCode(existing.getInnerCode());
+            if (vm != null) {
+                vm.setLastSupplyTime(DateUtils.getNowDate());
+                vm.setUpdateTime(DateUtils.getNowDate());
+                vendingMachineService.updateVendingMachine(vm);
+            }
+        }
+        return rows;
     }
 }

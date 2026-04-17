@@ -107,6 +107,96 @@
     @search="handleSearchQuery"
     @result-click="handleSearchResult"
   />
+
+  <BottomSheet
+    :visible="showDetail"
+    :title="formMode === 'detail' ? 'Task Details' : (formData.taskId ? 'Edit Task' : 'New Task')"
+    @update:visible="val => !val && closeDetail()"
+    @close="closeDetail"
+  >
+    <view v-if="formMode === 'detail'" class="detail-view">
+      <view class="detail-row">
+        <text class="detail-label">Code</text>
+        <text class="detail-value">{{ detailData.taskCode }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Status</text>
+        <Badge :variant="getStatusVariant(detailData.taskStatus)">{{ getStatusText(detailData.taskStatus) }}</Badge>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Type</text>
+        <text class="detail-value">{{ getTypeText(detailData.productTypeId) }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Machine</text>
+        <text class="detail-value">{{ detailData.innerCode }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Operator</text>
+        <text class="detail-value">{{ detailData.userName || 'Unassigned' }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Address</text>
+        <text class="detail-value">{{ detailData.addr || 'N/A' }}</text>
+      </view>
+      <view class="detail-row detail-row-column">
+        <text class="detail-label">Description</text>
+        <text class="detail-value detail-desc">{{ detailData.desc || 'No description' }}</text>
+      </view>
+      <view class="detail-actions">
+        <view
+          v-if="detailData.taskStatus === 1"
+          class="detail-action-btn detail-action-btn--primary"
+          @click="confirmAccept"
+        >
+          <text class="detail-action-text">Accept</text>
+        </view>
+        <view
+          v-if="detailData.taskStatus === 2"
+          class="detail-action-btn detail-action-btn--success"
+          @click="confirmComplete"
+        >
+          <text class="detail-action-text">Complete</text>
+        </view>
+        <view
+          v-if="detailData.taskStatus === 1 || detailData.taskStatus === 2"
+          class="detail-action-btn detail-action-btn--danger"
+          @click="confirmReject"
+        >
+          <text class="detail-action-text">Reject</text>
+        </view>
+      </view>
+    </view>
+    <view v-else class="form-view">
+      <view class="form-group">
+        <text class="form-label">Task Type *</text>
+        <picker mode="selector" :range="typeOptions" range-key="label" :value="typeIndex" @change="onTypeChange">
+          <view class="form-picker">{{ typeOptions[typeIndex]?.label || 'Select type' }}</view>
+        </picker>
+      </view>
+      <view class="form-group">
+        <text class="form-label">Machine Code *</text>
+        <input class="form-input" v-model="formData.innerCode" placeholder="Enter machine inner code" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">Assignee</text>
+        <input class="form-input" v-model="formData.userName" placeholder="Operator name" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">Address</text>
+        <input class="form-input" v-model="formData.addr" placeholder="Machine location" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">Description</text>
+        <textarea class="form-input form-textarea" v-model="formData.desc" placeholder="Task description" />
+      </view>
+    </view>
+
+    <template v-if="formMode !== 'detail'" #header-actions>
+      <view class="action-pill" @click="closeDetail"><text class="action-pill-text">Cancel</text></view>
+      <view class="action-pill action-pill--primary" @click="saveTask"><text class="action-pill-text">Save</text></view>
+    </template>
+  </BottomSheet>
 </template>
 
 <script setup>
@@ -118,11 +208,13 @@ import FilterModal from '@/components/app/FilterModal.vue'
 import SearchOverlay from '@/components/app/SearchOverlay.vue'
 import Card from '@/components/ui/Card.vue'
 import CardSection from '@/components/ui/CardSection.vue'
+import Button from '@/components/ui/Button.vue'
 import Badge from '@/components/ui/Badge.vue'
 import Grid from '@/components/ui/Grid.vue'
 import Icon from '@/components/ui/Icon.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
-import { listTask } from '@/api/manage/task'
+import BottomSheet from '@/components/ui/BottomSheet.vue'
+import { listTask, completeTask, cancelTask, acceptTask, rejectTask, addTask, updateTask, delTask, getTask } from '@/api/manage/task'
 import { getInfo } from '@/api/login'
 import useUserStore from '@/store/modules/user'
 
@@ -154,6 +246,19 @@ const fetchUserInfo = async () => {
 const activeTab = ref('tasks')
 const showSearch = ref(false)
 const showFilterModal = ref(false)
+
+// Detail/edit modal state
+const showDetail = ref(false)
+const formMode = ref('detail') // 'detail' | 'create' | 'edit'
+const detailData = ref({})
+const formData = ref({})
+const typeIndex = ref(0)
+const typeOptions = ref([
+  { label: 'Deploy', value: 1 },
+  { label: 'Restock', value: 2 },
+  { label: 'Maintenance', value: 3 },
+  { label: 'Revoke', value: 4 }
+])
 
 // Filter tabs
 const activeFilter = ref('all')
@@ -240,19 +345,41 @@ const onRefresh = () => {
 }
 
 const handleAdd = () => {
-  // Navigate to add task
+  formMode.value = 'create'
+  formData.value = {
+    productTypeId: typeOptions.value[0]?.value,
+    innerCode: '',
+    userName: '',
+    addr: '',
+    desc: ''
+  }
+  typeIndex.value = 0
+  showDetail.value = true
 }
 
 const handleAssignAll = () => {
-  // Handle assign
+  uni.showToast({ title: 'Bulk assign coming soon', icon: 'none' })
 }
 
 const handleCompleteAll = () => {
-  // Handle complete
+  uni.showModal({
+    title: 'Complete All In-Progress',
+    content: 'Mark all in-progress tasks as complete?',
+    success: async (r) => {
+      if (r.confirm) {
+        const inProgress = taskList.value.filter(t => t.taskStatus === 2)
+        for (const t of inProgress) {
+          try { await completeTask(t.taskId) } catch (e) { console.error(e) }
+        }
+        uni.showToast({ title: `${inProgress.length} completed`, icon: 'success' })
+        fetchList(true)
+      }
+    }
+  })
 }
 
 const handleExport = () => {
-  // Handle export
+  uni.showToast({ title: 'Export coming soon', icon: 'none' })
 }
 
 const handleSearch = () => {
@@ -274,7 +401,7 @@ const handleTabChange = (tabId) => {
     machines: '/pages/manage/index',
     tasks: '/pages/manage/task/index',
     inventory: '/pages/inventory/index',
-    analytics: '/pages/data/index'
+    analytics: '/pages/analytics/index'
   }
   if (routes[tabId] && tabId !== 'tasks') {
     uni.navigateTo({ url: routes[tabId] })
@@ -321,8 +448,132 @@ const handleFilterReset = () => {
   fetchList(true)
 }
 
-const handleViewDetail = (item) => {
-  // Navigate to task detail
+const handleViewDetail = async (item) => {
+  try {
+    const res = await getTask(item.taskId)
+    detailData.value = res.data || item
+  } catch (e) {
+    detailData.value = item
+  }
+  formMode.value = 'detail'
+  showDetail.value = true
+}
+
+const closeDetail = () => {
+  showDetail.value = false
+}
+
+const onTypeChange = (e) => {
+  typeIndex.value = e.detail.value
+  formData.value.productTypeId = typeOptions.value[e.detail.value]?.value
+}
+
+const saveTask = async () => {
+  if (!formData.value.innerCode) {
+    uni.showToast({ title: 'Machine code required', icon: 'none' })
+    return
+  }
+  try {
+    if (formData.value.taskId) {
+      await updateTask(formData.value)
+      uni.showToast({ title: 'Task updated', icon: 'success' })
+    } else {
+      await addTask(formData.value)
+      uni.showToast({ title: 'Task created', icon: 'success' })
+    }
+    closeDetail()
+    fetchList(true)
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+const confirmComplete = () => {
+  uni.showModal({
+    title: 'Complete Task',
+    content: 'Mark this task as complete?',
+    success: async (r) => {
+      if (r.confirm) {
+        await completeTask(detailData.value.taskId)
+        uni.showToast({ title: 'Task completed', icon: 'success' })
+        closeDetail()
+        fetchList(true)
+      }
+    }
+  })
+}
+
+const confirmCancel = () => {
+  uni.showModal({
+    title: 'Cancel Task',
+    content: 'Cancel this task?',
+    confirmColor: '#ef4444',
+    success: async (r) => {
+      if (r.confirm) {
+        await cancelTask(detailData.value.taskId)
+        uni.showToast({ title: 'Task cancelled', icon: 'success' })
+        closeDetail()
+        fetchList(true)
+      }
+    }
+  })
+}
+
+const confirmAccept = () => {
+  uni.showModal({
+    title: 'Accept Task',
+    content: 'Take ownership of this task?',
+    success: async (r) => {
+      if (r.confirm) {
+        try {
+          await acceptTask(detailData.value.taskId)
+          uni.showToast({ title: 'Task accepted', icon: 'success' })
+          closeDetail()
+          fetchList(true)
+        } catch (e) {
+          console.error(e)
+        }
+      }
+    }
+  })
+}
+
+const confirmReject = () => {
+  uni.showModal({
+    title: 'Reject Task',
+    content: 'Reject this task? You can optionally enter a reason.',
+    editable: true,
+    placeholderText: 'Reason (optional)',
+    confirmColor: '#ef4444',
+    success: async (r) => {
+      if (r.confirm) {
+        try {
+          await rejectTask(detailData.value.taskId, r.content || '')
+          uni.showToast({ title: 'Task rejected', icon: 'success' })
+          closeDetail()
+          fetchList(true)
+        } catch (e) {
+          console.error(e)
+        }
+      }
+    }
+  })
+}
+
+const confirmDelete = () => {
+  uni.showModal({
+    title: 'Delete Task',
+    content: 'Permanently delete this task?',
+    confirmColor: '#ef4444',
+    success: async (r) => {
+      if (r.confirm) {
+        await delTask(detailData.value.taskId)
+        uni.showToast({ title: 'Task deleted', icon: 'success' })
+        closeDetail()
+        fetchList(true)
+      }
+    }
+  })
 }
 
 const getStatusText = (status) => {
@@ -362,6 +613,26 @@ const handleSearchResult = () => {}
 <style scoped lang="scss">
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
+
+.action-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-1 $spacing-3;
+  background: $color-bg-tertiary;
+  border-radius: $radius-full;
+
+  &:active { opacity: 0.7; }
+  &--primary { background: $color-primary; }
+}
+
+.action-pill-text {
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+
+  .action-pill--primary & { color: #fff; }
+}
 
 .layout-container {
   display: flex;
@@ -469,7 +740,6 @@ const handleSearchResult = () => {}
 .task-list {
   display: flex;
   flex-direction: column;
-  margin-bottom: $spacing-6;
 }
 
 .task-card {
@@ -519,5 +789,81 @@ const handleSearchResult = () => {}
 
 .empty-state {
   padding: $spacing-4 0;
+}
+
+.detail-view { display: flex; flex-direction: column; }
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-3 0;
+  border-bottom: 1px solid $color-border-subtle;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:first-child {
+    padding-top: 0;
+  }
+}
+
+.detail-row-column {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: $spacing-2;
+}
+
+.detail-label { @include text-caption; color: $color-text-secondary; }
+.detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
+.detail-desc { font-weight: $font-weight-regular; }
+
+.detail-actions {
+  display: flex;
+  gap: $spacing-3;
+  padding-top: $spacing-4;
+  margin-top: $spacing-3;
+}
+.detail-action-btn {
+  flex: 1;
+  padding: $spacing-3 0;
+  border-radius: $radius-md;
+  text-align: center;
+  background: $color-surface-raised;
+  border: 1px solid $color-border-subtle;
+}
+.detail-action-btn--primary { background: $color-primary; border-color: $color-primary; }
+.detail-action-btn--success { background: $color-success; border-color: $color-success; }
+.detail-action-btn--danger  { background: $color-danger;  border-color: $color-danger;  }
+.detail-action-btn--primary .detail-action-text,
+.detail-action-btn--success .detail-action-text,
+.detail-action-btn--danger  .detail-action-text { color: #fff; }
+.detail-action-text { @include text-body; font-weight: $font-weight-medium; }
+
+.form-view { display: flex; flex-direction: column; gap: $spacing-4; }
+.form-group { display: flex; flex-direction: column; gap: $spacing-2; }
+.form-label { @include text-caption; color: $color-text-secondary; font-weight: $font-weight-medium; }
+
+.form-input {
+  @include text-body;
+  color: $color-text-primary;
+  padding: $spacing-3;
+  background: $color-bg-tertiary;
+  border: 1px solid $color-border-subtle;
+  border-radius: $radius-sm;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-textarea { min-height: 80px; }
+
+.form-picker {
+  @include text-body;
+  color: $color-text-primary;
+  padding: $spacing-3;
+  background: $color-bg-tertiary;
+  border: 1px solid $color-border-subtle;
+  border-radius: $radius-sm;
 }
 </style>

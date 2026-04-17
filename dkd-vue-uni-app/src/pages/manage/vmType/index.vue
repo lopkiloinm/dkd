@@ -38,10 +38,11 @@
       </view>
     </view>
     </scroll-view>
+    <view class="fab" @click="handleAdd">+</view>
     <AppBottomBar :active-tab="'machines'" @tab-change="handleTabChange" />
   </view>
 
-  <Modal :visible="showDetailModal" @update:visible="closeDetailModal" title="VM Type Detail">
+  <BottomSheet :visible="showDetailModal" title="VM Type Detail" @update:visible="val => !val && closeDetailModal()" @close="closeDetailModal">
         <view class="detail-image-section">
           <view class="detail-image-container">
             <image v-if="detailData.image" :src="detailData.image" class="detail-type-image" mode="aspectFill" />
@@ -51,31 +52,28 @@
           </view>
         </view>
         <view class="detail-info-row">
-          <text class="detail-label">Type Name:</text>
+          <text class="detail-label">Type Name</text>
           <text class="detail-value">{{ detailData.name }}</text>
         </view>
         <view class="detail-info-row">
-          <text class="detail-label">Model:</text>
+          <text class="detail-label">Model</text>
           <text class="detail-value">{{ detailData.model }}</text>
         </view>
         <view class="detail-info-row">
-          <text class="detail-label">Rows:</text>
+          <text class="detail-label">Rows</text>
           <text class="detail-value">{{ detailData.vmRow }}</text>
         </view>
         <view class="detail-info-row">
-          <text class="detail-label">Columns:</text>
+          <text class="detail-label">Columns</text>
           <text class="detail-value">{{ detailData.vmCol }}</text>
         </view>
         <view class="detail-info-row">
-          <text class="detail-label">Capacity:</text>
+          <text class="detail-label">Capacity</text>
           <text class="detail-value">{{ detailData.channelMaxCapacity }}</text>
         </view>
-        <template #footer>
-          <Button variant="secondary" @click="closeDetailModal">Close</Button>
-        </template>
-      </Modal>
+      </BottomSheet>
 
-      <Modal :visible="showModal" @update:visible="closeModal" :title="isEdit ? 'Edit VM Type' : 'Add VM Type'">
+      <BottomSheet :visible="showModal" :title="isEdit ? 'Edit VM Type' : 'Add VM Type'" @update:visible="val => !val && closeModal()" @close="closeModal">
         <Input v-model="form.name" label="Type Name *" placeholder="Enter type name" />
         <Input v-model="form.model" label="Model *" placeholder="Enter model" />
         <Input v-model="form.vmRow" label="Rows *" type="number" placeholder="Enter rows (1-10)" />
@@ -91,11 +89,11 @@
             </view>
           </view>
         </view>
-        <template #footer>
-          <Button variant="secondary" @click="closeModal">Cancel</Button>
-          <Button :loading="isSubmitting" @click="submitForm">{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</Button>
+        <template #header-actions>
+          <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
+          <view class="action-pill action-pill--primary" @click="submitForm"><text class="action-pill-text">{{ isSubmitting ? 'Saving...' : 'Save' }}</text></view>
         </template>
-      </Modal>
+      </BottomSheet>
 </template>
 
 <script setup>
@@ -105,7 +103,7 @@ import { useI18n } from 'vue-i18n'
 import AppTopBar from '@/components/app/AppTopBar.vue'
 import AppBottomBar from '@/components/app/AppBottomBar.vue'
 import Card from '@/components/ui/Card.vue'
-import Modal from '@/components/ui/Modal.vue'
+import BottomSheet from '@/components/ui/BottomSheet.vue'
 import Input from '@/components/ui/Input.vue'
 import Button from '@/components/ui/Button.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
@@ -366,6 +364,27 @@ const closeDetailModal = () => {
 
 <style scoped lang="scss">
 @import "@/styles/_variables.scss";
+@import "@/styles/_mixins.scss";
+
+.action-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-1 $spacing-3;
+  background: $color-bg-tertiary;
+  border-radius: $radius-full;
+
+  &:active { opacity: 0.7; }
+  &--primary { background: $color-primary; }
+}
+
+.action-pill-text {
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+
+  .action-pill--primary & { color: #fff; }
+}
 
 .layout-container {
   display: flex;
@@ -531,50 +550,16 @@ const closeDetailModal = () => {
   color: #ff3b30;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
-}
-
-.modal-input {
-  width: 100%;
-  height: 44px;
-  padding: 0 16px;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: $apple-radius-sm;
-  font-size: 16px;
-  color: $apple-text-primary;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-sizing: border-box;
-}
-
 .image-upload-container {
   width: 100%;
   height: 120px;
-  border: 2px dashed rgba(0, 0, 0, 0.15);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  border: 2px dashed $color-border-subtle;
+  border-radius: $radius-sm;
+  background: $color-bg-tertiary;
   overflow: hidden;
 }
 
-.preview-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.preview-image { width: 100%; height: 100%; object-fit: cover; }
 
 .upload-placeholder {
   width: 100%;
@@ -583,124 +568,36 @@ const closeDetailModal = () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: $spacing-2;
 }
 
-.upload-icon {
-  font-size: 32px;
-  color: $apple-text-secondary;
-  font-weight: 300;
-}
+.upload-icon { font-size: 32px; color: $color-text-tertiary; font-weight: 300; }
+.upload-text { @include text-caption; color: $color-text-secondary; }
 
-.upload-text {
-  font-size: 12px;
-  color: $apple-text-secondary;
-  font-weight: 500;
-}
-
-.modal-content {
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid $apple-glass-border;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: $apple-text-primary;
-  letter-spacing: -0.5px;
-}
-
-.modal-close {
-  font-size: 32px;
-  color: $apple-text-secondary;
-  line-height: 1;
-  padding: 0 8px;
-}
-
-.modal-body {
-  padding: 24px;
-}
-
-.form-item {
-  margin-bottom: 20px;
-}
-
-.form-item:last-child {
-  margin-bottom: 0;
-}
-
+.form-item { margin-bottom: $spacing-4; &:last-child { margin-bottom: 0; } }
 .form-label {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: $apple-text-primary;
-  margin-bottom: 8px;
-}
-
-.modal-footer {
-  display: flex;
-  gap: $spacing-4;
-  padding: 16px 24px 24px;
-}
-
-.modal-btn {
-  flex: 1;
-  padding: 14px;
-  border-radius: 12px;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 600;
-  transition: opacity 0.2s;
-}
-
-.modal-btn:active {
-  opacity: 0.7;
-}
-
-.modal-btn.cancel {
-  background-color: rgba(118, 118, 128, 0.1);
-  color: $apple-text-primary;
-}
-
-.modal-btn.confirm {
-  background-color: #007aff;
-  color: white;
-}
-
-.detail-modal {
-  max-width: 500px;
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  margin-bottom: $spacing-2;
 }
 
 .detail-image-section {
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: $spacing-4;
 }
 
 .detail-image-container {
   width: 120px;
   height: 120px;
-  border-radius: 12px;
+  border-radius: $radius-sm;
   overflow: hidden;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: $color-bg-tertiary;
 }
 
-.detail-type-image {
-  width: 100%;
-  height: 100%;
-}
+.detail-type-image { width: 100%; height: 100%; }
 
 .detail-image-placeholder {
   width: 100%;
@@ -710,33 +607,36 @@ const closeDetailModal = () => {
   justify-content: center;
 }
 
-.detail-placeholder-text {
-  font-size: 12px;
-  color: $apple-text-secondary;
-  font-weight: 500;
-}
+.detail-placeholder-text { @include text-caption; color: $color-text-tertiary; }
 
 .detail-info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: $spacing-3 0;
+  border-bottom: 1px solid $color-border-subtle;
+
+  &:first-child { padding-top: 0; }
+  &:last-child { border-bottom: none; }
 }
 
-.detail-info-row:last-child {
-  border-bottom: none;
-}
+.detail-label { @include text-caption; color: $color-text-secondary; }
+.detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
 
-.detail-label {
-  font-size: 14px;
-  color: $apple-text-secondary;
-  font-weight: 500;
-}
-
-.detail-value {
-  font-size: 15px;
-  color: $apple-text-primary;
-  font-weight: 600;
+.fab {
+  position: fixed;
+  right: $spacing-4;
+  bottom: calc($bottom-bar-height + $spacing-4 + env(safe-area-inset-bottom, 0px));
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: $color-primary;
+  color: white;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(61, 139, 255, 0.4);
+  z-index: 100;
 }
 </style>

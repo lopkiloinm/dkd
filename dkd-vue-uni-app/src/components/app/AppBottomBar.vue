@@ -59,7 +59,7 @@ const handleTabClick = (tabId) => {
   justify-content: space-between;
   gap: $spacing-4;
   padding: $spacing-2 $spacing-2 calc(env(safe-area-inset-bottom, 0px) + $spacing-2);
-  z-index: 9998;
+  z-index: $z-index-fixed;
   transform: translateZ(0);
   opacity: 1;
   visibility: visible;
@@ -118,8 +118,8 @@ const handleTabClick = (tabId) => {
   @include icon-tile-base(34px, $radius-md);
   margin-bottom: $spacing-1;
   color: inherit;
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
 
   @media (max-width: 360px) {
     margin-bottom: $spacing-0;

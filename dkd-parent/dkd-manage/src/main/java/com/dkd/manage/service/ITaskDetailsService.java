@@ -12,4 +12,9 @@ public interface ITaskDetailsService
      * 批量新增工单详情
      */
     public int insertBatch(List<TaskDetails> taskDetailsList);
+
+    /**
+     * List replenish details for a task.
+     */
+    public List<TaskDetails> listByTaskId(Long taskId);
 }

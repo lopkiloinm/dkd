@@ -144,50 +144,55 @@ const recentReports = ref([
 ])
 
 const generateReport = (type) => {
-  uni.showToast({
-    title: `Generating ${type} report...`,
-    icon: 'loading'
-  })
+  const labels = { financial: 'Financial', operational: 'Operational', inventory: 'Inventory', team: 'Team' }
+  const newReport = {
+    id: Date.now(),
+    name: `${labels[type] || type} Report - ${new Date().toISOString().slice(0, 10)}`,
+    date: new Date().toISOString().slice(0, 10)
+  }
+  recentReports.value.unshift(newReport)
+  uni.showToast({ title: `${labels[type] || type} report generated`, icon: 'success' })
 }
 
 const exportReport = (format) => {
-  uni.showToast({
-    title: `Exporting as ${format.toUpperCase()}...`,
-    icon: 'loading'
+  uni.showModal({
+    title: `Export as ${format.toUpperCase()}`,
+    content: 'This will export the latest report. Continue?',
+    success: (r) => {
+      if (r.confirm) {
+        uni.showToast({ title: `${format.toUpperCase()} export queued`, icon: 'success' })
+      }
+    }
   })
 }
 
 const downloadReport = (id) => {
-  uni.showToast({
-    title: 'Downloading report...',
-    icon: 'loading'
-  })
+  const report = recentReports.value.find(r => r.id === id)
+  uni.showToast({ title: report ? `Downloading "${report.name}"` : 'Report not found', icon: 'none' })
 }
 
 const handleDateRangeChange = (value) => {
-  console.log('Date range changed:', value)
+  selectedDateRange.value = value
 }
 
 const handleAdd = () => {
-  // Handle add action
+  generateReport('financial')
 }
 
-const handleSearch = () => {
-  // Handle search
-}
+const handleSearch = () => {}
 
 const handleNotification = () => {
-  uni.navigateTo({ url: '/pages/notification/index' })
+  uni.navigateTo({ url: '/pages/notifications/index' })
 }
 
 const handleProfile = () => {
-  uni.navigateTo({ url: '/pages/profile/index' })
+  uni.navigateTo({ url: '/pages/mine/index' })
 }
 
 const handleTabChange = (tabId) => {
   const routes = {
     dashboard: '/pages/index/index',
-    machines: '/pages/manage/vm/index',
+    machines: '/pages/manage/index',
     tasks: '/pages/manage/task/index',
     inventory: '/pages/inventory/index',
     analytics: '/pages/analytics/index'

@@ -41,48 +41,45 @@
     <AppBottomBar :active-tab="'machines'" @tab-change="handleTabChange" />
   </view>
 
-  <Modal :visible="showModal" @update:visible="closeModal" :title="isEdit ? 'Edit Partner' : 'Add Partner'">
+  <BottomSheet :visible="showModal" @update:visible="val => !val && closeModal()" @close="closeModal" :title="isEdit ? 'Edit Partner' : 'Add Partner'">
       <Input v-model="form.partnerName" label="Partner Name *" placeholder="Enter partner name" />
       <Input v-model="form.contactPerson" label="Contact Person *" placeholder="Enter contact person" />
       <Input v-model="form.contactPhone" label="Contact Phone *" placeholder="Enter contact phone" />
       <Input v-model="form.profitRatio" label="Profit Ratio (%) *" type="number" placeholder="Enter profit ratio" />
       <Input v-if="!isEdit" v-model="form.account" label="Account *" placeholder="Enter account" />
       <Input v-if="!isEdit" v-model="form.password" label="Password *" type="password" placeholder="Enter password" />
-      <template #footer>
-        <Button variant="secondary" @click="closeModal">Cancel</Button>
-        <Button :loading="isSubmitting" @click="submitForm">{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</Button>
+      <template #header-actions>
+        <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
+        <view class="action-pill action-pill--primary" @click="submitForm"><text class="action-pill-text">{{ isSubmitting ? 'Saving...' : 'Save' }}</text></view>
       </template>
-    </Modal>
+    </BottomSheet>
 
-    <Modal :visible="showDetailModal" @update:visible="closeDetailModal" title="Partner Detail">
+    <BottomSheet :visible="showDetailModal" @update:visible="val => !val && closeDetailModal()" @close="closeDetailModal" title="Partner Detail">
       <view class="detail-info-row">
-        <text class="detail-label">Partner Name:</text>
+        <text class="detail-label">Partner Name</text>
         <text class="detail-value">{{ detailData.partnerName }}</text>
       </view>
       <view class="detail-info-row">
-        <text class="detail-label">Contact Person:</text>
+        <text class="detail-label">Contact Person</text>
         <text class="detail-value">{{ detailData.contactPerson }}</text>
       </view>
       <view class="detail-info-row">
-        <text class="detail-label">Contact Phone:</text>
+        <text class="detail-label">Contact Phone</text>
         <text class="detail-value">{{ detailData.contactPhone }}</text>
       </view>
       <view class="detail-info-row">
-        <text class="detail-label">Profit Ratio:</text>
+        <text class="detail-label">Profit Ratio</text>
         <text class="detail-value">{{ detailData.profitRatio || 0 }}%</text>
       </view>
       <view class="detail-info-row">
-        <text class="detail-label">Account:</text>
+        <text class="detail-label">Account</text>
         <text class="detail-value">{{ detailData.account }}</text>
       </view>
       <view class="detail-info-row">
-        <text class="detail-label">Created:</text>
+        <text class="detail-label">Created</text>
         <text class="detail-value">{{ detailData.createTime }}</text>
       </view>
-      <template #footer>
-        <Button variant="secondary" @click="closeDetailModal">Close</Button>
-      </template>
-    </Modal>
+    </BottomSheet>
 </template>
 
 <script setup>
@@ -92,7 +89,7 @@ import { useI18n } from 'vue-i18n'
 import AppTopBar from '@/components/app/AppTopBar.vue'
 import AppBottomBar from '@/components/app/AppBottomBar.vue'
 import Card from '@/components/ui/Card.vue'
-import Modal from '@/components/ui/Modal.vue'
+import BottomSheet from '@/components/ui/BottomSheet.vue'
 import Input from '@/components/ui/Input.vue'
 import Button from '@/components/ui/Button.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
@@ -315,6 +312,27 @@ const handleTabChange = (tabId) => {
 
 <style scoped lang="scss">
 @import "@/styles/_variables.scss";
+@import "@/styles/_mixins.scss";
+
+.action-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-1 $spacing-3;
+  background: $color-bg-tertiary;
+  border-radius: $radius-full;
+
+  &:active { opacity: 0.7; }
+  &--primary { background: $color-primary; }
+}
+
+.action-pill-text {
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+
+  .action-pill--primary & { color: #fff; }
+}
 
 .layout-container {
   display: flex;
@@ -427,16 +445,20 @@ const handleTabChange = (tabId) => {
   justify-content: space-between;
   align-items: center;
   padding: $spacing-3 0;
+  border-bottom: 1px solid $color-border-subtle;
+
+  &:first-child { padding-top: 0; }
+  &:last-child { border-bottom: none; }
 }
 
 .detail-label {
-  font-size: 14px;
+  @include text-caption;
   color: $color-text-secondary;
   font-weight: $font-weight-medium;
 }
 
 .detail-value {
-  font-size: 15px;
+  @include text-body;
   color: $color-text-primary;
   font-weight: $font-weight-semibold;
 }

@@ -52,9 +52,18 @@ const handleClick = () => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
+:host {
+  display: block;
+  height: 100%;
+}
+
+
 .section-card {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  box-sizing: border-box;
   gap: $spacing-3;
 }
 

@@ -23,70 +23,145 @@
             @click="handleFilterTab(tab.value)"
           >
             <text class="tab-text">{{ tab.label }}</text>
-            <text v-if="tab.count !== undefined" class="tab-count">{{ tab.count }}</text>
           </view>
         </view>
       </scroll-view>
     </view>
 
-    <scroll-view class="scroll-area" scroll-y>
+    <scroll-view class="scroll-area" scroll-y refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
       <view class="content-wrapper">
-
         <!-- Quick Stats -->
         <view class="stats-row">
           <view class="stat-item">
             <text class="stat-value">{{ totalProducts }}</text>
-            <text class="stat-label">Total Products</text>
+            <text class="stat-label">Total SKUs</text>
           </view>
           <view class="stat-item">
-            <text class="stat-value">{{ lowStockCount }}</text>
-            <text class="stat-label">Low Stock</text>
+            <text class="stat-value">{{ discountCount }}</text>
+            <text class="stat-label">On Discount</text>
           </view>
           <view class="stat-item">
-            <text class="stat-value">{{ outOfStockCount }}</text>
-            <text class="stat-label">Out of Stock</text>
+            <text class="stat-value">{{ classCount }}</text>
+            <text class="stat-label">Categories</text>
           </view>
         </view>
 
         <!-- Product List -->
-        <text class="section-title">Product List</text>
+        <text class="section-title">Product Catalog</text>
         <view class="product-list">
+          <view v-if="filteredProducts.length === 0 && !loading" class="empty-state-wrapper">
+            <EmptyState title="No products found" description="Add a new SKU to get started" />
+          </view>
           <view
             v-for="product in filteredProducts"
-            :key="product.id"
+            :key="product.skuId"
             class="product-item"
             @click="handleProductClick(product)"
           >
             <view class="product-image">
-              <Icon name="box" size="24" color="currentColor" />
+              <image v-if="product.skuImage" :src="product.skuImage" class="product-img" mode="aspectFill" />
+              <Icon v-else name="box" size="24" color="currentColor" />
             </view>
             <view class="product-info">
-              <text class="product-name">{{ product.name }}</text>
-              <text class="product-sku">SKU: {{ product.sku }}</text>
+              <text class="product-name">{{ product.skuName }}</text>
+              <text class="product-sku">{{ product.brandName || 'Generic' }} · {{ product.unit || 'unit' }}</text>
               <view class="product-meta">
-                <text class="stock-count">{{ product.stock }} in stock</text>
-                <Chip
-                  :label="getStockStatus(product.stock)"
-                  :variant="getStockVariant(product.stock)"
-                  size="sm"
-                />
+                <text class="stock-count">¥{{ product.price || 0 }}</text>
+                <Badge v-if="product.isDiscount" variant="warning">Discount</Badge>
               </view>
             </view>
             <view class="product-actions">
               <Icon name="chevron-right" size="20" color="currentColor" />
             </view>
           </view>
-          <view v-if="filteredProducts.length === 0" class="empty-state">
-            <text class="empty-text">No products found</text>
-          </view>
         </view>
       </view>
     </scroll-view>
   </view>
   <AppBottomBar :active-tab="activeTab" @tab-change="handleTabChange" />
+
+  <BottomSheet
+    :visible="showDetail"
+    :title="deleteConfirmMode ? 'Delete Product?' : (isEditing ? (formData.skuId ? 'Edit Product' : 'New Product') : 'Product Details')"
+    @update:visible="val => !val && closeDetail()"
+    @close="closeDetail"
+  >
+    <template #header-actions>
+      <template v-if="deleteConfirmMode">
+        <view class="action-pill" @click="cancelDeleteConfirm"><text class="action-pill-text">Cancel</text></view>
+        <view class="action-pill action-pill--danger" @click="confirmDelete"><text class="action-pill-text">Delete</text></view>
+      </template>
+      <template v-else-if="!isEditing">
+        <view class="action-pill" @click="handleDelete"><text class="action-pill-text">Delete</text></view>
+        <view class="action-pill action-pill--primary" @click="startEdit"><text class="action-pill-text">Edit</text></view>
+      </template>
+      <template v-else>
+        <view class="action-pill" @click="cancelEdit"><text class="action-pill-text">Cancel</text></view>
+        <view class="action-pill action-pill--primary" @click="saveForm"><text class="action-pill-text">Save</text></view>
+      </template>
+    </template>
+    <view v-if="deleteConfirmMode" class="delete-confirm">
+      <text class="delete-confirm-message">Are you sure you want to delete "{{ detailData.skuName }}"? This action cannot be undone.</text>
+    </view>
+    <view v-else-if="!isEditing" class="detail-view">
+      <view class="detail-row">
+        <text class="detail-label">Name</text>
+        <text class="detail-value">{{ detailData.skuName }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Brand</text>
+        <text class="detail-value">{{ detailData.brandName || 'N/A' }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Unit</text>
+        <text class="detail-value">{{ detailData.unit || 'N/A' }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Price</text>
+        <text class="detail-value">¥{{ detailData.price || 0 }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Category</text>
+        <text class="detail-value">{{ getClassName(detailData.classId) }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Discount</text>
+        <text class="detail-value">{{ detailData.isDiscount ? 'Yes' : 'No' }}</text>
+      </view>
+    </view>
+    <view v-else class="form-view">
+      <view class="form-group">
+        <text class="form-label">Product Name *</text>
+        <input class="form-input" v-model="formData.skuName" placeholder="Enter product name" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">Brand</text>
+        <input class="form-input" v-model="formData.brandName" placeholder="Enter brand name" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">Unit</text>
+        <input class="form-input" v-model="formData.unit" placeholder="e.g. bottle, pack" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">Price (¥) *</text>
+        <input class="form-input" v-model.number="formData.price" type="number" placeholder="0" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">Category</text>
+        <picker mode="selector" :range="classOptions" range-key="className" :value="classIndex" @change="onClassChange">
+          <view class="form-picker">{{ getClassName(formData.classId) || 'Select category' }}</view>
+        </picker>
+      </view>
+      <view class="form-group form-toggle">
+        <text class="form-label">On Discount</text>
+        <switch :checked="formData.isDiscount" @change="formData.isDiscount = $event.detail.value" color="#3d8bff" />
+      </view>
+    </view>
+
+  </BottomSheet>
+
   <FilterModal
-    :visible="showFilterModal"
-    @update:visible="showFilterModal = $event"
+    v-model:visible="showFilterModal"
     :filter-sections="filterSections"
     :selected-filters="selectedFilters"
     @apply="handleApplyFilters"
@@ -100,66 +175,81 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useUserStore } from '@/store/modules/user'
+import { ref, computed } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
+import useUserStore from '@/store/modules/user'
 import AppTopBar from '@/components/app/AppTopBar.vue'
 import AppBottomBar from '@/components/app/AppBottomBar.vue'
 import FilterModal from '@/components/app/FilterModal.vue'
 import SearchOverlay from '@/components/app/SearchOverlay.vue'
 import Icon from '@/components/ui/Icon.vue'
-import Chip from '@/components/ui/Chip.vue'
-import Card from '@/components/ui/Card.vue'
-import CardSection from '@/components/ui/CardSection.vue'
+import Badge from '@/components/ui/Badge.vue'
+import Button from '@/components/ui/Button.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
+import BottomSheet from '@/components/ui/BottomSheet.vue'
+import { listSku, addSku, updateSku, delSku, listSkuClass } from '@/api/manage/sku'
 import { getInfo } from '@/api/login'
 
 const userStore = useUserStore()
 
 const activeTab = ref('inventory')
-const unreadCount = ref(3)
+const unreadCount = ref(0)
 const showSearch = ref(false)
 const showFilterModal = ref(false)
 const activeFilter = ref('all')
 const selectedFilters = ref({})
+const loading = ref(false)
+const isRefreshing = ref(false)
 
-const filterTabs = ref([
+const products = ref([])
+const classOptions = ref([])
+const showDetail = ref(false)
+const isEditing = ref(false)
+const detailData = ref({})
+const formData = ref({})
+const classIndex = ref(0)
+
+const filterTabs = computed(() => [
   { label: 'All', value: 'all' },
-  { label: 'In Stock', value: 'in-stock' },
-  { label: 'Low Stock', value: 'low-stock' },
-  { label: 'Out of Stock', value: 'out-of-stock' }
+  { label: 'Discount', value: 'discount' },
+  ...classOptions.value.map(c => ({ label: c.className, value: String(c.classId) }))
 ])
 
-const filterSections = ref([
+const filterSections = computed(() => [
   {
     key: 'category',
     title: 'Category',
-    options: [
-      { value: 'beverages', label: 'Beverages' },
-      { value: 'snacks', label: 'Snacks' },
-      { value: 'food', label: 'Food' },
-      { value: 'other', label: 'Other' }
-    ]
+    options: classOptions.value.map(c => ({ value: String(c.classId), label: c.className }))
   },
   {
-    key: 'status',
-    title: 'Stock Status',
+    key: 'discount',
+    title: 'Discount',
     options: [
-      { value: 'in-stock', label: 'In Stock' },
-      { value: 'low-stock', label: 'Low Stock' },
-      { value: 'out-of-stock', label: 'Out of Stock' }
+      { value: 'true', label: 'On Discount' },
+      { value: 'false', label: 'Regular Price' }
     ]
   }
 ])
 
-const handleFilterTab = (value) => {
-  activeFilter.value = value
-}
-
-const handleMasterFilter = () => {
-  showFilterModal.value = true
-}
-
-const profilePicture = computed(() => userStore.avatar || '/static/default-avatar.png')
+const profilePicture = computed(() => userStore.avatar || '')
 const userName = computed(() => userStore.name)
+
+const totalProducts = computed(() => products.value.length)
+const discountCount = computed(() => products.value.filter(p => p.isDiscount).length)
+const classCount = computed(() => classOptions.value.length)
+
+const filteredProducts = computed(() => {
+  if (activeFilter.value === 'all') return products.value
+  if (activeFilter.value === 'discount') return products.value.filter(p => p.isDiscount)
+  const classIdNum = Number(activeFilter.value)
+  if (!Number.isNaN(classIdNum)) return products.value.filter(p => p.classId === classIdNum)
+  return products.value
+})
+
+const getClassName = (classId) => {
+  const c = classOptions.value.find(x => x.classId === classId)
+  return c ? c.className : ''
+}
 
 const fetchUserInfo = async () => {
   try {
@@ -173,59 +263,180 @@ const fetchUserInfo = async () => {
       })
     }
   } catch (error) {
-    console.error('Failed to fetch user info', error)
+    console.error(error)
   }
 }
 
-const products = ref([
-  { id: 1, name: 'Coca Cola 330ml', sku: 'BEV-001', stock: 150, category: 'beverages', price: 1.50 },
-  { id: 2, name: 'Pepsi 330ml', sku: 'BEV-002', stock: 120, category: 'beverages', price: 1.50 },
-  { id: 3, name: 'Lays Classic', sku: 'SNK-001', stock: 8, category: 'snacks', price: 2.00 },
-  { id: 4, name: 'Doritos Nacho Cheese', sku: 'SNK-002', stock: 0, category: 'snacks', price: 2.50 },
-  { id: 5, name: 'Sandwich Chicken', sku: 'FOD-001', stock: 45, category: 'food', price: 4.00 },
-  { id: 6, name: 'Bottled Water 500ml', sku: 'BEV-003', stock: 200, category: 'beverages', price: 1.00 },
-  { id: 7, name: 'Chocolate Bar', sku: 'SNK-003', stock: 5, category: 'snacks', price: 1.75 },
-  { id: 8, name: 'Energy Drink', sku: 'BEV-004', stock: 0, category: 'beverages', price: 3.00 }
-])
-
-const totalProducts = computed(() => products.value.length)
-const lowStockCount = computed(() => products.value.filter(p => p.stock > 0 && p.stock < 10).length)
-const outOfStockCount = computed(() => products.value.filter(p => p.stock === 0).length)
-
-const filteredProducts = computed(() => {
-  if (activeFilter.value === 'all') return products.value
-  if (activeFilter.value === 'in-stock') return products.value.filter(p => p.stock > 10)
-  if (activeFilter.value === 'low-stock') return products.value.filter(p => p.stock > 0 && p.stock < 10)
-  if (activeFilter.value === 'out-of-stock') return products.value.filter(p => p.stock === 0)
-  return products.value
-})
-
-const getStockStatus = (stock) => {
-  if (stock === 0) return 'Out of Stock'
-  if (stock < 10) return 'Low Stock'
-  return 'In Stock'
+const fetchClasses = async () => {
+  try {
+    const res = await listSkuClass({ pageNum: 1, pageSize: 100 })
+    classOptions.value = res.rows || []
+  } catch (error) {
+    console.error(error)
+  }
 }
 
-const getStockVariant = (stock) => {
-  if (stock === 0) return 'error'
-  if (stock < 10) return 'warning'
-  return 'success'
+const fetchProducts = async () => {
+  loading.value = true
+  try {
+    const params = { pageNum: 1, pageSize: 100 }
+    if (selectedFilters.value.category) {
+      params.classId = selectedFilters.value.category
+    }
+    if (selectedFilters.value.discount) {
+      params.isDiscount = selectedFilters.value.discount === 'true'
+    }
+    const res = await listSku(params)
+    products.value = res.rows || []
+  } catch (error) {
+    console.error(error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const onRefresh = async () => {
+  isRefreshing.value = true
+  await Promise.all([fetchClasses(), fetchProducts()])
+  isRefreshing.value = false
+}
+
+const handleFilterTab = (value) => {
+  activeFilter.value = value
+}
+
+const handleMasterFilter = () => {
+  showFilterModal.value = true
+}
+
+const handleProductClick = (product) => {
+  detailData.value = { ...product }
+  isEditing.value = false
+  showDetail.value = true
 }
 
 const handleAdd = () => {
-  uni.navigateTo({ url: '/pages/inventory/add' })
+  detailData.value = {}
+  formData.value = {
+    skuName: '',
+    brandName: '',
+    unit: '',
+    price: 0,
+    classId: classOptions.value[0]?.classId,
+    isDiscount: false
+  }
+  classIndex.value = 0
+  isEditing.value = true
+  showDetail.value = true
+}
+
+const startEdit = () => {
+  formData.value = { ...detailData.value }
+  const idx = classOptions.value.findIndex(c => c.classId === formData.value.classId)
+  classIndex.value = idx >= 0 ? idx : 0
+  isEditing.value = true
+}
+
+const cancelEdit = () => {
+  if (formData.value.skuId) {
+    isEditing.value = false
+  } else {
+    closeDetail()
+  }
+}
+
+const closeDetail = () => {
+  showDetail.value = false
+  isEditing.value = false
+  deleteConfirmMode.value = false
+}
+
+const onClassChange = (e) => {
+  classIndex.value = e.detail.value
+  formData.value.classId = classOptions.value[e.detail.value]?.classId
+}
+
+const saveForm = async () => {
+  if (!formData.value.skuName) {
+    uni.showToast({ title: 'Product name required', icon: 'none' })
+    return
+  }
+  try {
+    if (formData.value.skuId) {
+      await updateSku(formData.value)
+      uni.showToast({ title: 'Product updated', icon: 'success' })
+    } else {
+      await addSku(formData.value)
+      uni.showToast({ title: 'Product added', icon: 'success' })
+    }
+    closeDetail()
+    fetchProducts()
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const deleteConfirmMode = ref(false)
+
+const handleDelete = () => {
+  deleteConfirmMode.value = true
+}
+
+const cancelDeleteConfirm = () => {
+  deleteConfirmMode.value = false
+}
+
+const confirmDelete = async () => {
+  try {
+    await delSku(detailData.value.skuId)
+    uni.showToast({ title: 'Product deleted', icon: 'success' })
+    deleteConfirmMode.value = false
+    closeDetail()
+    fetchProducts()
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const handleApplyFilters = (filters) => {
+  selectedFilters.value = filters
+  showFilterModal.value = false
+  fetchProducts()
+}
+
+const handleResetFilters = () => {
+  selectedFilters.value = {}
+  showFilterModal.value = false
+  fetchProducts()
 }
 
 const handleSearch = () => {
   showSearch.value = true
 }
 
+const handleSearchQuery = async (query) => {
+  if (query) {
+    try {
+      const res = await listSku({ pageNum: 1, pageSize: 50, skuName: query })
+      products.value = res.rows || []
+    } catch (error) {
+      console.error(error)
+    }
+  } else {
+    fetchProducts()
+  }
+}
+
+const handleSearchResult = () => {
+  showSearch.value = false
+}
+
 const handleNotification = () => {
-  uni.navigateTo({ url: '/pages/notification/index' })
+  uni.navigateTo({ url: '/pages/notifications/index' })
 }
 
 const handleProfile = () => {
-  uni.navigateTo({ url: '/pages/profile/index' })
+  uni.navigateTo({ url: '/pages/mine/index' })
 }
 
 const handleTabChange = (tabId) => {
@@ -234,40 +445,17 @@ const handleTabChange = (tabId) => {
     machines: '/pages/manage/index',
     tasks: '/pages/manage/task/index',
     inventory: '/pages/inventory/index',
-    analytics: '/pages/data/index'
+    analytics: '/pages/analytics/index'
   }
   if (routes[tabId] && tabId !== 'inventory') {
     uni.navigateTo({ url: routes[tabId] })
   }
 }
 
-const handleProductClick = (product) => {
-  uni.navigateTo({ url: `/pages/inventory/detail?id=${product.id}` })
-}
-
-const handleApplyFilters = (filters) => {
-  console.log('Applied filters:', filters)
-  selectedFilters.value = filters
-  showFilterModal.value = false
-}
-
-const handleResetFilters = () => {
-  selectedFilters.value = {}
-  showFilterModal.value = false
-}
-
-const handleSearchQuery = (query) => {
-  console.log('Search query:', query)
-}
-
-const handleSearchResult = (result) => {
-  console.log('Search result:', result)
-  showSearch.value = false
-}
-
-onMounted(() => {
+onShow(() => {
   fetchUserInfo()
-  // Fetch inventory data from backend
+  fetchClasses()
+  fetchProducts()
 })
 </script>
 
@@ -380,6 +568,7 @@ onMounted(() => {
   padding: $spacing-3;
   background: $color-bg-tertiary;
   border-radius: $radius-md;
+  border: 1px solid $color-border-subtle;
 }
 
 .stat-value {
@@ -397,7 +586,6 @@ onMounted(() => {
 .product-list {
   display: flex;
   flex-direction: column;
-  gap: $spacing-3;
   margin-bottom: $spacing-6;
 }
 
@@ -413,11 +601,19 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: $spacing-3;
-  padding: $spacing-4;
-  background: $color-bg-secondary;
-  border-radius: $radius-md;
+  padding: $spacing-4 0;
+  border-bottom: 1px solid $color-border-subtle;
   cursor: pointer;
   transition: background-color $transition-normal;
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
 
   &:active {
     background: $color-bg-elevated;
@@ -433,6 +629,14 @@ onMounted(() => {
   background: $color-bg-elevated;
   border-radius: $radius-sm;
   color: $color-text-tertiary;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .product-info {
@@ -440,12 +644,16 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: $spacing-1;
+  min-width: 0;
 }
 
 .product-name {
   @include text-body;
   color: $color-text-primary;
   font-weight: $font-weight-semibold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .product-sku {
@@ -461,7 +669,8 @@ onMounted(() => {
 
 .stock-count {
   @include text-caption;
-  color: $color-text-secondary;
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
 }
 
 .product-actions {
@@ -473,8 +682,121 @@ onMounted(() => {
   text-align: center;
 }
 
+.empty-state-wrapper {
+  padding: $spacing-6 0;
+}
+
 .empty-text {
   @include text-body;
   color: $color-text-tertiary;
+}
+
+.detail-view {
+  display: flex;
+  flex-direction: column;
+}
+
+.action-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-1 $spacing-3;
+  background: $color-bg-tertiary;
+  border-radius: $radius-full;
+  cursor: pointer;
+
+  &:active { opacity: 0.7; }
+  &--primary { background: $color-primary; }
+  &--danger { background: $color-error; }
+}
+
+.action-pill-text {
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+
+  .action-pill--primary & { color: #fff; }
+  .action-pill--danger & { color: #fff; }
+}
+
+.delete-confirm {
+  padding: $spacing-4 0;
+}
+
+.delete-confirm-message {
+  @include text-body;
+  color: $color-text-secondary;
+  line-height: 1.5;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-3 0;
+  border-bottom: 1px solid $color-border-subtle;
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.detail-label {
+  @include text-caption;
+  color: $color-text-secondary;
+}
+
+.detail-value {
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.form-view {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-4;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+}
+
+.form-toggle {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-label {
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.form-input {
+  @include text-body;
+  color: $color-text-primary;
+  padding: $spacing-3;
+  background: $color-bg-tertiary;
+  border: 1px solid $color-border-subtle;
+  border-radius: $radius-sm;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-picker {
+  @include text-body;
+  color: $color-text-primary;
+  padding: $spacing-3;
+  background: $color-bg-tertiary;
+  border: 1px solid $color-border-subtle;
+  border-radius: $radius-sm;
 }
 </style>

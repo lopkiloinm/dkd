@@ -46,7 +46,14 @@ const cardClasses = computed(() => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
+:host {
+  display: block;
+  height: 100%;
+}
+
 .card {
+  height: 100%;
+  box-sizing: border-box;
   background: transparent;
   overflow: hidden;
   transition: transform $transition-fast, background-color $transition-fast, border-color $transition-fast, box-shadow $transition-fast;

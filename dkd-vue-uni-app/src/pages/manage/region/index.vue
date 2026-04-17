@@ -29,25 +29,25 @@
     <AppBottomBar :active-tab="'machines'" @tab-change="handleTabChange" />
   </view>
 
-  <Modal :visible="showModal" @update:visible="closeModal" :title="isEdit ? 'Edit Region' : 'Add Region'">
+  <BottomSheet :visible="showModal" @update:visible="val => !val && closeModal()" @close="closeModal" :title="isEdit ? 'Edit Region' : 'Add Region'">
       <Input v-model="form.regionName" label="Region Name *" placeholder="Enter region name" />
       <view class="form-item">
         <text class="form-label">Remark *</text>
         <textarea class="n-textarea" v-model="form.remark" placeholder="Enter remark" />
       </view>
-      <template #footer>
-        <Button variant="secondary" @click="closeModal">Cancel</Button>
-        <Button :loading="isSubmitting" @click="submitForm">{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</Button>
+      <template #header-actions>
+        <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
+        <view class="action-pill action-pill--primary" @click="submitForm"><text class="action-pill-text">{{ isSubmitting ? 'Saving...' : 'Save' }}</text></view>
       </template>
-    </Modal>
+    </BottomSheet>
 
-    <Modal :visible="showDetailModal" @update:visible="closeDetailModal" title="Region Detail">
+    <BottomSheet :visible="showDetailModal" @update:visible="val => !val && closeDetailModal()" @close="closeDetailModal" title="Region Detail">
       <view class="detail-info-row">
-        <text class="detail-label">Region Name:</text>
+        <text class="detail-label">Region Name</text>
         <text class="detail-value">{{ detailData.regionName }}</text>
       </view>
       <view class="detail-info-row">
-        <text class="detail-label">Remark:</text>
+        <text class="detail-label">Remark</text>
         <text class="detail-value">{{ detailData.remark || 'N/A' }}</text>
       </view>
       <view class="detail-section-title">Nodes in this region</view>
@@ -60,10 +60,7 @@
           <text class="empty-text">No nodes in this region</text>
         </EmptyState>
       </view>
-      <template #footer>
-        <Button variant="secondary" @click="closeDetailModal">Close</Button>
-      </template>
-    </Modal>
+    </BottomSheet>
 </template>
 
 <script setup>
@@ -73,7 +70,7 @@ import { useI18n } from 'vue-i18n'
 import AppTopBar from '@/components/app/AppTopBar.vue'
 import AppBottomBar from '@/components/app/AppBottomBar.vue'
 import Card from '@/components/ui/Card.vue'
-import Modal from '@/components/ui/Modal.vue'
+import BottomSheet from '@/components/ui/BottomSheet.vue'
 import Input from '@/components/ui/Input.vue'
 import Button from '@/components/ui/Button.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
@@ -250,6 +247,27 @@ const handleTabChange = (tabId) => {
 
 <style scoped lang="scss">
 @import "@/styles/_variables.scss";
+@import "@/styles/_mixins.scss";
+
+.action-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-1 $spacing-3;
+  background: $color-bg-tertiary;
+  border-radius: $radius-full;
+
+  &:active { opacity: 0.7; }
+  &--primary { background: $color-primary; }
+}
+
+.action-pill-text {
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+
+  .action-pill--primary & { color: #fff; }
+}
 
 .layout-container {
   display: flex;
@@ -369,9 +387,9 @@ const handleTabChange = (tabId) => {
 
 .form-label {
   display: block;
-  font-size: 14px;
+  @include text-caption;
   font-weight: $font-weight-semibold;
-  color: $color-text-primary;
+  color: $color-text-secondary;
   margin-bottom: $spacing-2;
 }
 
@@ -380,15 +398,19 @@ const handleTabChange = (tabId) => {
   justify-content: space-between;
   align-items: center;
   padding: $spacing-3 0;
+  border-bottom: 1px solid $color-border-subtle;
+
+  &:first-child { padding-top: 0; }
+  &:last-child { border-bottom: none; }
 }
 
 .detail-label {
-  font-size: 14px;
+  @include text-caption;
   color: $color-text-secondary;
 }
 
 .detail-value {
-  font-size: 15px;
+  @include text-body;
   color: $color-text-primary;
   font-weight: $font-weight-semibold;
 }

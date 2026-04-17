@@ -21,4 +21,10 @@ public class TaskDetailsServiceImpl implements ITaskDetailsService
     {
         return taskDetailsMapper.insertBatch(taskDetailsList);
     }
+
+    @Override
+    public List<TaskDetails> listByTaskId(Long taskId)
+    {
+        return taskDetailsMapper.listByTaskId(taskId);
+    }
 }

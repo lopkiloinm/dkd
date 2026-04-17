@@ -98,12 +98,53 @@
     @search="handleSearchQuery"
     @result-click="handleSearchResult"
   />
+
+  <BottomSheet :visible="showDetailModal" title="Machine Details" @update:visible="val => !val && closeDetailModal()" @close="closeDetailModal">
+    <view class="vm-detail-row"><text class="vm-detail-label">Code</text><text class="vm-detail-value">{{ detailData.innerCode }}</text></view>
+    <view class="vm-detail-row"><text class="vm-detail-label">Address</text><text class="vm-detail-value">{{ detailData.addr }}</text></view>
+    <view class="vm-detail-row"><text class="vm-detail-label">Node</text><text class="vm-detail-value">{{ detailData.nodeName }}</text></view>
+    <view class="vm-detail-row"><text class="vm-detail-label">Region</text><text class="vm-detail-value">{{ detailData.regionName }}</text></view>
+    <view class="vm-detail-row"><text class="vm-detail-label">Partner</text><text class="vm-detail-value">{{ detailData.partnerName }}</text></view>
+    <view class="vm-detail-row"><text class="vm-detail-label">Type</text><text class="vm-detail-value">{{ detailData.vmTypeName }}</text></view>
+    <view class="vm-detail-row"><text class="vm-detail-label">Status</text><Badge :variant="getStatusVariant(detailData.vmStatus)">{{ getStatusText(detailData.vmStatus) }}</Badge></view>
+    <view class="vm-detail-row"><text class="vm-detail-label">Update Status</text>
+      <picker mode="selector" :range="vmStatusLabels" :value="detailStatusIndex" @change="onDetailStatusChange">
+        <view class="vm-form-picker">{{ vmStatusLabels[detailStatusIndex] }}</view>
+      </picker>
+    </view>
+    <template #header-actions>
+      <view class="action-pill action-pill--primary" @click="saveStatusUpdate"><text class="action-pill-text">Save Status</text></view>
+    </template>
+  </BottomSheet>
+
+  <BottomSheet :visible="showModal" :title="isEdit ? 'Edit Machine' : 'New Machine'" @update:visible="val => !val && closeModal()" @close="closeModal">
+    <view class="vm-form-group">
+      <text class="vm-form-label">Inner Code *</text>
+      <input class="vm-form-input" v-model="form.innerCode" placeholder="Machine inner code" />
+    </view>
+    <view class="vm-form-group">
+      <text class="vm-form-label">Node *</text>
+      <picker mode="selector" :range="nodeList" range-key="nodeName" :value="nodeIndex" @change="onNodeChange">
+        <view class="vm-form-picker">{{ nodeList[nodeIndex]?.nodeName || 'Select node' }}</view>
+      </picker>
+    </view>
+    <view class="vm-form-group">
+      <text class="vm-form-label">VM Type *</text>
+      <picker mode="selector" :range="vmTypeList" range-key="name" :value="vmTypeIndex" @change="onVmTypeChange">
+        <view class="vm-form-picker">{{ vmTypeList[vmTypeIndex]?.name || 'Select type' }}</view>
+      </picker>
+    </view>
+    <template #header-actions>
+      <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
+      <view class="action-pill action-pill--primary" @click="submitForm"><text class="action-pill-text">Save</text></view>
+    </template>
+  </BottomSheet>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import { useUserStore } from '@/store/modules/user'
+import useUserStore from '@/store/modules/user'
 import AppTopBar from '@/components/app/AppTopBar.vue'
 import AppBottomBar from '@/components/app/AppBottomBar.vue'
 import FilterModal from '@/components/app/FilterModal.vue'
@@ -112,9 +153,10 @@ import Icon from '@/components/ui/Icon.vue'
 import Card from '@/components/ui/Card.vue'
 import CardSection from '@/components/ui/CardSection.vue'
 import SectionCard from '@/components/app/SectionCard.vue'
+import BottomSheet from '@/components/ui/BottomSheet.vue'
 import Badge from '@/components/ui/Badge.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
-import { listVm } from '@/api/manage/vm'
+import { listVm, getVm, addVm, updateVm, delVm } from '@/api/manage/vm'
 import { listPartner } from '@/api/manage/partner'
 import { listVmType } from '@/api/manage/vmType'
 import { getInfo } from '@/api/login'
@@ -237,6 +279,31 @@ const regionList = ref([])
 const partnerList = ref([])
 const nodeIndex = ref(0)
 const vmTypeIndex = ref(0)
+const detailStatusIndex = ref(0)
+const vmStatusLabels = ['Unoperated', 'Operating', '-', 'Fault']
+const vmStatusValues = [0, 1, 2, 3]
+
+const onDetailStatusChange = (e) => {
+  detailStatusIndex.value = e.detail.value
+}
+
+const saveStatusUpdate = async () => {
+  try {
+    const newStatus = vmStatusValues[detailStatusIndex.value]
+    if (newStatus === detailData.value.vmStatus) {
+      closeDetailModal()
+      return
+    }
+    const full = await getVm(detailData.value.id || detailData.value.vmId)
+    const payload = { ...full.data, vmStatus: newStatus }
+    await updateVm(payload)
+    uni.showToast({ title: 'Status updated', icon: 'success' })
+    closeDetailModal()
+    fetchList(true)
+  } catch (e) {
+    uni.showToast({ title: 'Failed to update status', icon: 'none' })
+  }
+}
 
 const fetchList = async (reset = false) => {
   if (reset) {
@@ -393,6 +460,7 @@ const handleViewDetail = async (item) => {
   try {
     const res = await getVm(item.id)
     detailData.value = {
+      id: res.data.id,
       innerCode: res.data.innerCode,
       addr: res.data.addr,
       nodeName: res.data.node?.nodeName || 'Unknown',
@@ -401,6 +469,8 @@ const handleViewDetail = async (item) => {
       vmTypeName: res.data.vmType?.name || 'Unknown',
       vmStatus: res.data.vmStatus
     }
+    const idx = vmStatusValues.indexOf(res.data.vmStatus)
+    detailStatusIndex.value = idx >= 0 ? idx : 0
     showDetailModal.value = true
   } catch (error) {
     uni.showToast({ title: 'Failed to load device detail', icon: 'none' })
@@ -472,13 +542,13 @@ const handleTabChange = (tabId) => {
   activeTab.value = tabId
   const routes = {
     dashboard: '/pages/index/index',
-    machines: '/pages/manage/vm/index',
+    machines: '/pages/manage/index',
     tasks: '/pages/manage/task/index',
     inventory: '/pages/inventory/index',
     analytics: '/pages/analytics/index'
   }
   if (routes[tabId] && tabId !== 'machines') {
-    uni.switchTab({ url: routes[tabId] })
+    uni.navigateTo({ url: routes[tabId] })
   }
 }
 
@@ -542,8 +612,7 @@ const handleFilterReset = () => {
 }
 
 const handlePartnerClick = (partner) => {
-  // Navigate to partner detail page
-  uni.navigateTo({ url: `/pages/manage/partner/detail?id=${partner.id}` })
+  uni.showToast({ title: partner.partnerName || 'Partner', icon: 'none' })
 }
 
 const getStatusVariant = (status) => {
@@ -557,6 +626,26 @@ const getStatusVariant = (status) => {
 <style scoped lang="scss">
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
+
+.action-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-1 $spacing-3;
+  background: $color-bg-tertiary;
+  border-radius: $radius-full;
+
+  &:active { opacity: 0.7; }
+  &--primary { background: $color-primary; }
+}
+
+.action-pill-text {
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+
+  .action-pill--primary & { color: #fff; }
+}
 
 .layout-container {
   display: flex;
@@ -661,5 +750,27 @@ const getStatusVariant = (status) => {
 
 .empty-state {
   padding: $spacing-8 0;
+}
+
+.vm-detail-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: $spacing-3 0; border-bottom: 1px solid $color-border-subtle;
+
+  &:first-child { padding-top: 0; }
+  &:last-child { border-bottom: none; }
+}
+.vm-detail-label { @include text-caption; color: $color-text-secondary; }
+.vm-detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
+.vm-form-group { display: flex; flex-direction: column; gap: $spacing-2; margin-bottom: $spacing-4; }
+.vm-form-label { @include text-caption; color: $color-text-secondary; font-weight: $font-weight-medium; }
+.vm-form-input {
+  @include text-body; color: $color-text-primary; padding: $spacing-3;
+  background: $color-bg-tertiary; border: 1px solid $color-border-subtle;
+  border-radius: $radius-sm; width: 100%; box-sizing: border-box;
+}
+.vm-form-picker {
+  @include text-body; color: $color-text-primary; padding: $spacing-3;
+  background: $color-bg-tertiary; border: 1px solid $color-border-subtle;
+  border-radius: $radius-sm;
 }
 </style>

@@ -190,7 +190,7 @@
   justify-content: center;
   min-height: $touch-target-min;
   padding: 0 $spacing-4;
-  border-radius: $radius-control;
+  border-radius: $radius-pill;
   font-family: $font-family-body;
   font-size: $font-size-body-md;
   font-weight: $font-weight-semibold;
@@ -209,9 +209,8 @@
 
 @mixin button-primary {
   @include button-base;
-  background: $gradient-primary;
-  color: $color-text-primary;
-  box-shadow: 0 14px 28px rgba($color-primary, 0.22);
+  background: $color-primary;
+  color: #fff;
 }
 
 @mixin button-secondary {
@@ -232,7 +231,6 @@
   @include button-base;
   background: $color-error;
   color: $color-text-primary;
-  box-shadow: 0 14px 28px rgba($color-error, 0.2);
 }
 
 @mixin input-base {
@@ -266,14 +264,14 @@
 
 // Scrollbars and safe areas
 @mixin scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
   &::-webkit-scrollbar {
     display: none;
     width: 0;
     height: 0;
   }
-
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 }
 
 @mixin safe-area-top {

@@ -56,74 +56,61 @@
       </view>
     </scroll-view>
 
-    <view class="modal-overlay" v-if="showDetailModal" @click="closeDetailModal">
-      <view class="modal-content detail-modal" @click.stop>
-        <view class="modal-header">
-          <text class="modal-title">Dictionary Type Detail</text>
-          <text class="modal-close" @click="closeDetailModal">×</text>
-        </view>
-        <view class="modal-body">
-          <view class="detail-info-row">
-            <text class="detail-label">Dict Name:</text>
-            <text class="detail-value">{{ detailData.dictName }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Dict Type:</text>
-            <text class="detail-value">{{ detailData.dictType }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Status:</text>
-            <text class="detail-value">{{ detailData.status === '0' ? 'Active' : 'Inactive' }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Remark:</text>
-            <text class="detail-value">{{ detailData.remark || 'N/A' }}</text>
-          </view>
-        </view>
-        <view class="modal-footer">
-          <view class="modal-btn cancel" @click="closeDetailModal">
-            <text>Close</text>
-          </view>
-        </view>
+    <BottomSheet
+      :visible="showDetailModal"
+      title="Dictionary Type Detail"
+      @update:visible="val => !val && closeDetailModal()"
+      @close="closeDetailModal"
+    >
+      <view class="detail-info-row">
+        <text class="detail-label">Dict Name</text>
+        <text class="detail-value">{{ detailData.dictName }}</text>
       </view>
-    </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Dict Type</text>
+        <text class="detail-value">{{ detailData.dictType }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Status</text>
+        <text class="detail-value">{{ detailData.status === '0' ? 'Active' : 'Inactive' }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Remark</text>
+        <text class="detail-value">{{ detailData.remark || 'N/A' }}</text>
+      </view>
 
-    <view class="modal-overlay" v-if="showModal" @click="closeModal">
-      <view class="modal-content" @click.stop>
-        <view class="modal-header">
-          <text class="modal-title">{{ isEdit ? 'Edit Dictionary Type' : 'Add Dictionary Type' }}</text>
-          <text class="modal-close" @click="closeModal">×</text>
-        </view>
-        <view class="modal-body">
-          <view class="form-item">
-            <text class="form-label">Dict Name *</text>
-            <input class="n-input" v-model="form.dictName" placeholder="Enter dict name" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Dict Type *</text>
-            <input class="n-input" v-model="form.dictType" placeholder="Enter dict type" :disabled="isEdit" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Status</text>
-            <picker mode="selector" :range="statusOptions" :value="statusIndex" @change="onStatusChange">
-              <view class="picker-input">{{ statusOptions[statusIndex] }}</view>
-            </picker>
-          </view>
-          <view class="form-item">
-            <text class="form-label">Remark</text>
-            <textarea class="n-textarea" v-model="form.remark" placeholder="Enter remark" />
-          </view>
-        </view>
-        <view class="modal-footer">
-          <view class="modal-btn cancel" @click="closeModal">
-            <text>Cancel</text>
-          </view>
-          <view class="modal-btn confirm" :class="{ disabled: isSubmitting }" @click="submitForm">
-            <text>{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</text>
-          </view>
-        </view>
+    </BottomSheet>
+
+    <BottomSheet
+      :visible="showModal"
+      :title="isEdit ? 'Edit Dictionary Type' : 'Add Dictionary Type'"
+      @update:visible="val => !val && closeModal()"
+      @close="closeModal"
+    >
+      <view class="form-item">
+        <text class="form-label">Dict Name *</text>
+        <input class="n-input" v-model="form.dictName" placeholder="Enter dict name" />
       </view>
-    </view>
+      <view class="form-item">
+        <text class="form-label">Dict Type *</text>
+        <input class="n-input" v-model="form.dictType" placeholder="Enter dict type" :disabled="isEdit" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">Status</text>
+        <picker mode="selector" :range="statusOptions" :value="statusIndex" @change="onStatusChange">
+          <view class="picker-input">{{ statusOptions[statusIndex] }}</view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">Remark</text>
+        <textarea class="n-textarea" v-model="form.remark" placeholder="Enter remark" />
+      </view>
+
+      <template #header-actions>
+        <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
+        <view class="action-pill action-pill--primary" @click="submitForm"><text class="action-pill-text">{{ isSubmitting ? 'Saving...' : 'Save' }}</text></view>
+      </template>
+    </BottomSheet>
   </view>
 </template>
 
@@ -131,6 +118,7 @@
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import TopBar from '@/components/TopBar/index.vue'
+import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listType, getType, addType, updateType, delType, refreshCache } from '@/api/system/dict/type'
 import { hasPermission } from '@/utils/permission'
 
@@ -320,6 +308,26 @@ const onRefresh = () => {
 <style scoped lang="scss">
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
+
+.action-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-1 $spacing-3;
+  background: $color-bg-tertiary;
+  border-radius: $radius-full;
+
+  &:active { opacity: 0.7; }
+  &--primary { background: $color-primary; }
+}
+
+.action-pill-text {
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+
+  .action-pill--primary & { color: #fff; }
+}
 
 .layout-container {
   display: flex;
@@ -544,55 +552,6 @@ const onRefresh = () => {
   color: #ff3b30;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
-}
-
-.modal-content {
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: $spacing-5 $spacing-6;
-  border-bottom: 1px solid $apple-glass-border;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: $apple-text-primary;
-  letter-spacing: -0.5px;
-}
-
-.modal-close {
-  font-size: 32px;
-  color: $apple-text-secondary;
-  line-height: 1;
-  padding: 0 $spacing-2;
-}
-
-.modal-body {
-  padding: $spacing-6;
-}
-
 .form-item {
   margin-bottom: $spacing-5;
 }
@@ -603,9 +562,9 @@ const onRefresh = () => {
 
 .form-label {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: $apple-text-primary;
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
   margin-bottom: $spacing-2;
 }
 
@@ -614,7 +573,7 @@ const onRefresh = () => {
   height: 44px;
   line-height: 44px;
   padding: 0 $spacing-4;
-  font-size: 16px;
+  @include text-body;
   width: 100%;
   box-sizing: border-box;
 }
@@ -623,73 +582,33 @@ const onRefresh = () => {
   @include glass-input;
   min-height: 80px;
   padding: $spacing-3 $spacing-4;
-  font-size: 16px;
+  @include text-body;
   width: 100%;
   box-sizing: border-box;
-  border-radius: $radius-lg;
-}
-
-.modal-footer {
-  display: flex;
-  gap: $spacing-3;
-  padding: $spacing-4 $spacing-6 $spacing-6;
-}
-
-.modal-btn {
-  flex: 1;
-  padding: 14px;
-  border-radius: 12px;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 600;
-  transition: opacity 0.2s;
-}
-
-.modal-btn:active {
-  opacity: 0.7;
-}
-
-.modal-btn.cancel {
-  background-color: rgba(118, 118, 128, 0.1);
-  color: $apple-text-primary;
-}
-
-.modal-btn.confirm {
-  background-color: #007aff;
-  color: white;
-}
-
-.modal-btn.confirm.disabled {
-  background-color: rgba(0, 122, 255, 0.5);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.detail-modal {
-  max-width: 500px;
+  border-radius: $radius-sm;
 }
 
 .detail-info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
+  padding: $spacing-3 0;
+  border-bottom: 1px solid $color-border-subtle;
 
-.detail-info-row:last-child {
-  border-bottom: none;
+  &:first-child { padding-top: 0; }
+  &:last-child { border-bottom: none; }
 }
 
 .detail-label {
-  font-size: 14px;
-  color: $apple-text-secondary;
-  font-weight: 500;
+  @include text-caption;
+  color: $color-text-secondary;
 }
 
 .detail-value {
-  font-size: 15px;
-  color: $apple-text-primary;
-  font-weight: 600;
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
 }
+
+
 </style>

@@ -1,45 +1,44 @@
 <template>
-  <Sheet :visible="visible" @update:visible="handleVisibleChange" position="bottom" @close="handleClose" class="filter-sheet">
-    <template #header>
-      <view class="filter-header">
-        <text class="filter-title">{{ title }}</text>
-        <view class="filter-actions">
-          <view class="action-button" @click="handleReset">
-            <text class="action-text">Reset</text>
-          </view>
-          <view class="action-button primary" @click="handleApply">
-            <text class="action-text">Apply</text>
-          </view>
-        </view>
+  <BottomSheet
+    :visible="visible"
+    :title="title"
+    @update:visible="handleVisibleChange"
+    @close="handleClose"
+  >
+    <template #header-actions>
+      <view class="action-pill" @click="handleReset">
+        <text class="action-pill-text">Reset</text>
+      </view>
+      <view class="action-pill action-pill--primary" @click="handleApply">
+        <text class="action-pill-text">Apply</text>
       </view>
     </template>
-    <scroll-view class="filter-body" scroll-y>
-      <view class="filter-content">
-        <view v-for="(section, index) in filterSections" :key="index" class="filter-section">
-          <text class="section-title">{{ section.title }}</text>
-          <view class="section-content">
-            <view
-              v-for="(option, optIndex) in section.options"
-              :key="optIndex"
-              class="filter-option"
-              :class="{ 'filter-option-selected': isOptionSelected(section.key, option.value) }"
-              @click="toggleOption(section.key, option.value)"
-            >
-              <text class="option-label">{{ option.label }}</text>
-              <view class="option-checkbox" :class="{ 'checked': isOptionSelected(section.key, option.value) }">
-                <Icon v-if="isOptionSelected(section.key, option.value)" name="check" size="14" color="currentColor" class="checkbox-check" />
-              </view>
+
+    <view class="filter-content">
+      <view v-for="(section, index) in filterSections" :key="index" class="filter-section">
+        <text class="section-title">{{ section.title }}</text>
+        <view class="section-content">
+          <view
+            v-for="(option, optIndex) in section.options"
+            :key="optIndex"
+            class="filter-option"
+            :class="{ 'filter-option-selected': isOptionSelected(section.key, option.value) }"
+            @click="toggleOption(section.key, option.value)"
+          >
+            <text class="option-label">{{ option.label }}</text>
+            <view class="option-checkbox" :class="{ 'checked': isOptionSelected(section.key, option.value) }">
+              <Icon v-if="isOptionSelected(section.key, option.value)" name="check" size="14" color="currentColor" class="checkbox-check" />
             </view>
           </view>
         </view>
       </view>
-    </scroll-view>
-  </Sheet>
+    </view>
+  </BottomSheet>
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
-import Sheet from '@/components/ui/Sheet.vue'
+import { ref, watch } from 'vue'
+import BottomSheet from '@/components/ui/BottomSheet.vue'
 import Icon from '@/components/ui/Icon.vue'
 
 const props = defineProps({
@@ -111,74 +110,37 @@ const handleVisibleChange = (value) => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.filter-sheet :deep(.sheet-header) {
-  padding: $spacing-2;
-  border-bottom: none;
-}
-
-.filter-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: $spacing-2;
-  padding: $spacing-2;
-}
-
-.filter-title {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
-}
-
-.filter-actions {
-  display: flex;
-  gap: $spacing-2;
-  align-items: center;
-}
-
-.action-button {
-  display: flex;
+.action-pill {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 32px;
-  padding: 0 $spacing-2;
-  border-radius: $radius-sm;
+  padding: $spacing-1 $spacing-3;
+  background: $color-bg-tertiary;
+  border-radius: $radius-full;
   cursor: pointer;
-  transition: background-color $transition-normal;
 
   &:active {
     opacity: 0.7;
   }
 
-  &.primary {
+  &--primary {
     background: $color-primary;
-  }
-
-  .action-text {
-    @include text-caption;
-    color: $color-text-primary;
-    font-weight: $font-weight-medium;
-
-    .primary & {
-      color: $color-text-primary;
-    }
   }
 }
 
-.filter-body {
-  padding: 0;
-  @include scrollbar-hidden;
-  max-width: 100%;
-  width: 100%;
-  box-sizing: border-box;
+.action-pill-text {
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+
+  .action-pill--primary & {
+    color: #fff;
+  }
 }
 
 .filter-content {
-  padding: $spacing-4;
   max-width: 100%;
-  width: 100%;
   box-sizing: border-box;
-  overflow: hidden;
 }
 
 .filter-section {

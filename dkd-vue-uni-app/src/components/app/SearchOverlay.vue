@@ -198,12 +198,15 @@ const getResultIcon = (type) => {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   z-index: $z-index-modal-backdrop;
+  display: flex;
+  flex-direction: column;
   padding: $spacing-4;
 }
 
 .search-content {
   background: $color-bg-secondary;
   border-radius: $radius-lg;
+  border: 1px solid $color-border-subtle;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
@@ -214,8 +217,7 @@ const getResultIcon = (type) => {
   display: flex;
   align-items: center;
   gap: $spacing-3;
-  padding: $spacing-4;
-  border-bottom: 1px solid $color-border-subtle;
+  padding: $spacing-3 $spacing-4;
 }
 
 .search-input-wrapper {
@@ -223,14 +225,14 @@ const getResultIcon = (type) => {
   display: flex;
   align-items: center;
   background: $color-bg-tertiary;
-  border-radius: $radius-md;
+  border-radius: $radius-full;
   padding: 0 $spacing-3;
-  height: 44px;
+  height: 40px;
 }
 
 .search-icon {
-  font-size: 16px;
   margin-right: $spacing-2;
+  color: $color-text-tertiary;
 }
 
 .search-input {
@@ -240,7 +242,7 @@ const getResultIcon = (type) => {
   border: none;
   outline: none;
   color: $color-text-primary;
-  font-size: $font-size-body-md;
+  @include text-body;
   
   &::placeholder {
     color: $color-text-tertiary;
@@ -251,26 +253,19 @@ const getResultIcon = (type) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
   cursor: pointer;
-  
-  .icon {
-    font-size: 20px;
-    line-height: 1;
-    color: $color-text-tertiary;
-  }
+  color: $color-text-tertiary;
 }
 
 .cancel-button {
   cursor: pointer;
   padding: $spacing-2;
-  
-  .cancel-text {
-    @include text-body;
-    color: $color-primary;
-    font-weight: $font-weight-semibold;
-  }
+}
+
+.cancel-text {
+  @include text-body;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
 }
 
 .search-results {
@@ -284,12 +279,12 @@ const getResultIcon = (type) => {
   align-items: center;
   justify-content: center;
   padding: $spacing-8;
-  
-  .loading-text {
-    @include text-caption;
-    color: $color-text-secondary;
-    margin-top: $spacing-2;
-  }
+}
+
+.loading-text {
+  @include text-caption;
+  color: $color-text-secondary;
+  margin-top: $spacing-2;
 }
 
 .empty-state {
@@ -297,15 +292,15 @@ const getResultIcon = (type) => {
   align-items: center;
   justify-content: center;
   padding: $spacing-8;
-  
-  .empty-text {
-    @include text-body;
-    color: $color-text-tertiary;
-  }
+}
+
+.empty-text {
+  @include text-body;
+  color: $color-text-tertiary;
 }
 
 .recent-searches {
-  padding: $spacing-4;
+  padding: $spacing-3 $spacing-4;
 }
 
 .section-title {
@@ -320,22 +315,17 @@ const getResultIcon = (type) => {
   display: flex;
   align-items: center;
   gap: $spacing-3;
-  padding: $spacing-3;
-  border-radius: $radius-sm;
+  padding: $spacing-3 0;
+  border-bottom: 1px solid $color-border-subtle;
   cursor: pointer;
-  transition: background-color $transition-normal;
-  
-  &:active {
-    background: $color-bg-tertiary;
-  }
-  
-  &:not(:last-child) {
-    margin-bottom: $spacing-1;
+
+  &:last-child {
+    border-bottom: none;
   }
 }
 
 .recent-icon {
-  font-size: 16px;
+  color: $color-text-tertiary;
 }
 
 .recent-text {
@@ -344,24 +334,19 @@ const getResultIcon = (type) => {
 }
 
 .results-list {
-  padding: $spacing-4;
+  padding: 0 $spacing-4;
 }
 
 .result-item {
   display: flex;
   align-items: center;
   gap: $spacing-3;
-  padding: $spacing-3;
-  border-radius: $radius-sm;
+  padding: $spacing-3 0;
+  border-bottom: 1px solid $color-border-subtle;
   cursor: pointer;
-  transition: background-color $transition-normal;
-  
-  &:active {
-    background: $color-bg-tertiary;
-  }
-  
-  &:not(:last-child) {
-    margin-bottom: $spacing-1;
+
+  &:last-child {
+    border-bottom: none;
   }
 }
 
@@ -369,11 +354,11 @@ const getResultIcon = (type) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   background: $color-bg-tertiary;
-  border-radius: $radius-md;
-  font-size: 20px;
+  border-radius: $radius-sm;
+  color: $color-text-secondary;
 }
 
 .result-info {

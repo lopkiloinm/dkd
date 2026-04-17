@@ -64,10 +64,8 @@ const handleSegmentClick = (index) => {
 
 .segment {
   position: relative;
-  flex: 1;
-  padding: $spacing-2 $spacing-4;
-  font-family: $font-family-body;
-  font-size: $font-size-body-sm;
+  padding: $spacing-2 $spacing-3;
+  @include text-caption;
   font-weight: $font-weight-medium;
   color: $color-text-primary;
   text-align: center;
@@ -77,6 +75,7 @@ const handleSegmentClick = (index) => {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   background: $color-bg-tertiary;
+  white-space: nowrap;
   
   &:active {
     opacity: 0.7;

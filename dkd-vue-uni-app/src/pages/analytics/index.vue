@@ -9,32 +9,29 @@
     @profile="handleProfile"
   />
   <view class="layout-container">
+    <view class="filter-tabs">
+      <SegmentedControl
+        :options="timeRangeOptions"
+        v-model="selectedTimeRange"
+        @change="handleTimeRangeChange"
+      />
+    </view>
+
     <scroll-view class="scroll-area" scroll-y>
       <view class="content-wrapper">
-        <!-- Time Range Selector -->
-        <view class="time-range-selector">
-          <SegmentedControl
-            :options="timeRangeOptions"
-            v-model="selectedTimeRange"
-            @change="handleTimeRangeChange"
-          />
-        </view>
-
         <!-- Revenue Overview -->
-        <view class="section">
-          <text class="section-title">Revenue Overview</text>
-          <Card>
-            <CardSection variant="body">
-              <view class="revenue-overview">
-                <text class="revenue-value">${{ totalRevenue }}</text>
-                <view class="revenue-change">
-                  <Icon :name="revenueTrend === 'up' ? 'trend-up' : revenueTrend === 'down' ? 'trend-down' : 'trend-neutral'" size="16" :color="revenueTrendColor" />
-                  <text class="revenue-change-value" :style="{ color: revenueTrendColor }">{{ revenueChange }}</text>
-                </view>
+        <text class="section-title">Revenue Overview</text>
+        <Card padding="none">
+          <CardSection variant="body">
+            <view class="revenue-overview">
+              <text class="revenue-value">{{ totalRevenue }}</text>
+              <view class="revenue-change">
+                <Icon :name="revenueTrend === 'up' ? 'trend-up' : revenueTrend === 'down' ? 'trend-down' : 'trend-neutral'" size="16" :color="revenueTrendColor" />
+                <text class="revenue-change-value" :style="{ color: revenueTrendColor }">{{ revenueChange }}</text>
               </view>
-            </CardSection>
-          </Card>
-        </view>
+            </view>
+          </CardSection>
+        </Card>
 
         <!-- Financial Metrics -->
         <text class="section-title">Financial Metrics</text>
@@ -71,16 +68,29 @@
 
         <!-- Cost Breakdown -->
         <text class="section-title">Cost Breakdown</text>
-        <Card>
+        <Card padding="none">
           <CardSection variant="body">
             <view class="cost-breakdown">
-              <view class="cost-item" v-for="cost in costBreakdown" :key="cost.category">
-                <view class="cost-info">
+              <view class="donut-container">
+                <svg viewBox="0 0 120 120" class="donut-chart">
+                  <circle
+                    v-for="(seg, i) in donutSegments"
+                    :key="i"
+                    cx="60" cy="60" r="50"
+                    fill="none"
+                    :stroke="seg.color"
+                    stroke-width="12"
+                    :stroke-dasharray="seg.dash"
+                    :stroke-dashoffset="seg.offset"
+                  />
+                </svg>
+              </view>
+              <view class="cost-legend">
+                <view class="cost-legend-item" v-for="cost in costBreakdown" :key="cost.category">
+                  <view class="cost-dot" :style="{ background: variantColor(cost.variant) }"></view>
                   <text class="cost-category">{{ cost.category }}</text>
                   <text class="cost-percentage">{{ cost.percentage }}%</text>
                 </view>
-                <ProgressBar :value="cost.amount" :max="totalCosts" :variant="cost.variant" />
-                <text class="cost-amount">${{ cost.amount }}</text>
               </view>
             </view>
           </CardSection>
@@ -88,13 +98,13 @@
 
         <!-- Revenue by Location -->
         <text class="section-title">Revenue by Location</text>
-        <Card>
+        <Card padding="none">
           <CardSection variant="body">
             <view class="location-revenue">
               <view class="location-item" v-for="location in locationRevenue" :key="location.id">
                 <text class="location-name">{{ location.name }}</text>
                 <ProgressBar :value="location.revenue" :max="maxLocationRevenue" />
-                <text class="location-amount">${{ location.revenue }}</text>
+                <text class="location-amount">¥{{ location.revenue }}</text>
               </view>
             </view>
           </CardSection>
@@ -102,13 +112,13 @@
 
         <!-- Partner Performance -->
         <text class="section-title">Partner Performance</text>
-        <Card>
+        <Card padding="none">
           <CardSection variant="body">
             <view class="partner-performance">
               <view class="partner-item" v-for="partner in partnerPerformance" :key="partner.id">
                 <text class="partner-name">{{ partner.name }}</text>
                 <view class="partner-metrics">
-                  <text class="partner-revenue">${{ partner.revenue }}</text>
+                  <text class="partner-revenue">¥{{ partner.revenue }}</text>
                   <text class="partner-roi">ROI: {{ partner.roi }}</text>
                 </view>
               </view>
@@ -119,34 +129,34 @@
         <!-- Performance KPIs -->
         <text class="section-title">Performance KPIs</text>
         <Grid :columns="2" :gap="16">
-          <Card>
-            <CardSection variant="body">
-              <text class="kpi-label">Machine Uptime</text>
-              <text class="kpi-value">{{ machineUptime }}%</text>
-              <text class="kpi-trend" :class="{ positive: uptimeTrend > 0, negative: uptimeTrend < 0 }">{{ uptimeTrend > 0 ? '+' : '' }}{{ uptimeTrend }}%</text>
-            </CardSection>
-          </Card>
-          <Card>
-            <CardSection variant="body">
-              <text class="kpi-label">Revenue Per Machine</text>
-              <text class="kpi-value">${{ revenuePerMachine }}</text>
-              <text class="kpi-trend" :class="{ positive: rpmTrend > 0, negative: rpmTrend < 0 }">{{ rpmTrend > 0 ? '+' : '' }}{{ rpmTrend }}%</text>
-            </CardSection>
-          </Card>
-          <Card>
-            <CardSection variant="body">
-              <text class="kpi-label">Task Completion Rate</text>
-              <text class="kpi-value">{{ taskCompletionRate }}%</text>
-              <text class="kpi-trend" :class="{ positive: taskTrend > 0, negative: taskTrend < 0 }">{{ taskTrend > 0 ? '+' : '' }}{{ taskTrend }}%</text>
-            </CardSection>
-          </Card>
-          <Card>
-            <CardSection variant="body">
-              <text class="kpi-label">Customer Satisfaction</text>
-              <text class="kpi-value">{{ customerSatisfaction }}/5.0</text>
-              <text class="kpi-trend" :class="{ positive: csatTrend > 0, negative: csatTrend < 0 }">{{ csatTrend > 0 ? '+' : '' }}{{ csatTrend }}%</text>
-            </CardSection>
-          </Card>
+          <StatCard
+            label="Machine Uptime"
+            :value="machineUptime + '%'"
+            :trend="(uptimeTrend > 0 ? '+' : '') + uptimeTrend + '%'"
+            :trend-direction="uptimeTrend > 0 ? 'up' : uptimeTrend < 0 ? 'down' : 'neutral'"
+            variant="success"
+          />
+          <StatCard
+            label="Revenue Per Machine"
+            :value="'¥' + revenuePerMachine"
+            :trend="(rpmTrend > 0 ? '+' : '') + rpmTrend + '%'"
+            :trend-direction="rpmTrend > 0 ? 'up' : rpmTrend < 0 ? 'down' : 'neutral'"
+            variant="primary"
+          />
+          <StatCard
+            label="Task Completion"
+            :value="taskCompletionRate + '%'"
+            :trend="(taskTrend > 0 ? '+' : '') + taskTrend + '%'"
+            :trend-direction="taskTrend > 0 ? 'up' : taskTrend < 0 ? 'down' : 'neutral'"
+            variant="default"
+          />
+          <StatCard
+            label="Satisfaction"
+            :value="customerSatisfaction + '/5.0'"
+            :trend="(csatTrend > 0 ? '+' : '') + csatTrend + '%'"
+            :trend-direction="csatTrend > 0 ? 'up' : csatTrend < 0 ? 'down' : 'neutral'"
+            variant="warning"
+          />
         </Grid>
 
         <!-- Analytics Tabs -->
@@ -157,7 +167,6 @@
             :class="['analytics-tab', { active: activeAnalyticsTab === tab.id }]"
             @click="handleAnalyticsTab(tab.id)"
           >
-            <Icon :name="tab.icon" size="16" color="currentColor" />
             <text class="analytics-tab-text">{{ tab.label }}</text>
           </view>
         </view>
@@ -165,7 +174,7 @@
         <!-- Sales Chart -->
         <view v-if="activeAnalyticsTab === 'sales'" class="chart-section">
           <text class="section-title">Sales Trend</text>
-          <Card>
+          <Card padding="none">
             <CardSection variant="body">
               <view class="chart-placeholder">
                 <Icon name="bar-chart" size="48" color="currentColor" />
@@ -178,7 +187,7 @@
         <!-- Orders Chart -->
         <view v-if="activeAnalyticsTab === 'orders'" class="chart-section">
           <text class="section-title">Orders Trend</text>
-          <Card>
+          <Card padding="none">
             <CardSection variant="body">
               <view class="chart-placeholder">
                 <Icon name="line-chart" size="48" color="currentColor" />
@@ -191,7 +200,7 @@
         <!-- Products Chart -->
         <view v-if="activeAnalyticsTab === 'products'" class="chart-section">
           <text class="section-title">Top Products</text>
-          <Card>
+          <Card padding="none">
             <CardSection variant="body">
               <view class="chart-placeholder">
                 <Icon name="pie-chart" size="48" color="currentColor" />
@@ -204,7 +213,7 @@
         <!-- Machines Chart -->
         <view v-if="activeAnalyticsTab === 'machines'" class="chart-section">
           <text class="section-title">Machine Performance</text>
-          <Card>
+          <Card padding="none">
             <CardSection variant="body">
               <view class="chart-placeholder">
                 <Icon name="activity" size="48" color="currentColor" />
@@ -215,39 +224,37 @@
         </view>
 
         <!-- Key Metrics -->
-        <view class="metrics-section">
-          <text class="section-title">Key Metrics</text>
-          <Grid :columns="2" :gap="16">
-            <StatCard
-              label="Total Orders"
-              :value="totalOrders"
-              trend="+12.5%"
-              trend-direction="up"
-              variant="default"
-            />
-            <StatCard
-              label="Avg Order Value"
-              :value="avgOrderValue"
-              trend="+5.2%"
-              trend-direction="up"
-              variant="default"
-            />
-            <StatCard
-              label="Active Machines"
-              :value="activeMachines"
-              trend="95%"
-              trend-direction="neutral"
-              variant="default"
-            />
-            <StatCard
-              label="Conversion Rate"
-              :value="conversionRate"
-              trend="-2.1%"
-              trend-direction="down"
-              variant="default"
-            />
-          </Grid>
-        </view>
+        <text class="section-title">Key Metrics</text>
+        <Grid :columns="2" :gap="16">
+          <StatCard
+            label="Total Orders"
+            :value="totalOrders"
+            trend="+12.5%"
+            trend-direction="up"
+            variant="default"
+          />
+          <StatCard
+            label="Avg Order Value"
+            :value="avgOrderValue"
+            trend="+5.2%"
+            trend-direction="up"
+            variant="default"
+          />
+          <StatCard
+            label="Active Machines"
+            :value="activeMachines"
+            trend="95%"
+            trend-direction="neutral"
+            variant="default"
+          />
+          <StatCard
+            label="Conversion Rate"
+            :value="conversionRate"
+            trend="-2.1%"
+            trend-direction="down"
+            variant="default"
+          />
+        </Grid>
       </view>
     </scroll-view>
   </view>
@@ -316,7 +323,7 @@ const analyticsTabs = [
   { id: 'machines', label: 'Machines', icon: 'monitor' }
 ]
 
-const totalRevenue = ref('$0')
+const totalRevenue = ref('¥0')
 const revenueChange = ref('+0%')
 const revenueTrend = ref('up')
 const revenueTrendColor = computed(() => {
@@ -325,8 +332,8 @@ const revenueTrendColor = computed(() => {
   return '#6b7280'
 })
 
-const totalCosts = ref('$0')
-const netProfit = ref('$0')
+const totalCosts = ref('¥0')
+const netProfit = ref('¥0')
 const profitMargin = ref('0%')
 const costBreakdown = ref([
   { category: 'Inventory', amount: 15000, percentage: 45, variant: 'primary' },
@@ -334,6 +341,27 @@ const costBreakdown = ref([
   { category: 'Operations', amount: 6000, percentage: 18, variant: 'default' },
   { category: 'Personnel', amount: 4400, percentage: 13, variant: 'secondary' }
 ])
+
+const variantColor = (variant) => {
+  const map = { primary: '#3d8bff', warning: '#f59e0b', success: '#22c55e', error: '#ef4444', default: '#6b7280', secondary: '#8b5cf6' }
+  return map[variant] || map.default
+}
+
+const donutSegments = computed(() => {
+  const r = 50
+  const circumference = 2 * Math.PI * r
+  let accumulated = 0
+  return costBreakdown.value.map(cost => {
+    const arcLength = (cost.percentage / 100) * circumference
+    const seg = {
+      color: variantColor(cost.variant),
+      dash: `${arcLength} ${circumference - arcLength}`,
+      offset: -(accumulated - circumference / 4)
+    }
+    accumulated += arcLength
+    return seg
+  })
+})
 const locationRevenue = ref([
   { id: 1, name: 'Downtown', revenue: 25000 },
   { id: 2, name: 'Mall A', revenue: 18000 },
@@ -428,7 +456,7 @@ const fetchAnalyticsData = async () => {
 }
 
 const handleAdd = () => {
-  uni.navigateTo({ url: '/pages/analytics/custom' })
+  uni.navigateTo({ url: '/pages/reports/index' })
 }
 
 const handleSearch = () => {
@@ -436,40 +464,38 @@ const handleSearch = () => {
 }
 
 const handleNotification = () => {
-  uni.navigateTo({ url: '/pages/notification/index' })
+  uni.navigateTo({ url: '/pages/notifications/index' })
 }
 
 const handleProfile = () => {
-  uni.navigateTo({ url: '/pages/profile/index' })
+  uni.navigateTo({ url: '/pages/mine/index' })
 }
 
 const handleTabChange = (tabId) => {
   const routes = {
     dashboard: '/pages/index/index',
-    machines: '/pages/manage/vm/index',
+    machines: '/pages/manage/index',
     tasks: '/pages/manage/task/index',
     inventory: '/pages/inventory/index',
     analytics: '/pages/analytics/index'
   }
   if (routes[tabId] && tabId !== 'analytics') {
-    uni.switchTab({ url: routes[tabId] })
+    uni.navigateTo({ url: routes[tabId] })
   }
 }
 
 const handleTimeRangeChange = (value) => {
-  console.log('Time range changed:', value)
+  selectedTimeRange.value = value
+  fetchAnalyticsData()
 }
 
 const handleAnalyticsTab = (tabId) => {
   activeAnalyticsTab.value = tabId
 }
 
-const handleSearchQuery = (query) => {
-  console.log('Search query:', query)
-}
+const handleSearchQuery = () => {}
 
-const handleSearchResult = (result) => {
-  console.log('Search result:', result)
+const handleSearchResult = () => {
   showSearch.value = false
 }
 
@@ -497,22 +523,27 @@ onMounted(() => {
 }
 
 .content-wrapper {
-  padding: $spacing-4 $spacing-4 calc(#{$bottom-bar-height} + env(safe-area-inset-bottom, 0px) + #{$spacing-4}) $spacing-4;
+  padding: $spacing-4 $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
-.time-range-selector {
-  margin-bottom: $spacing-4;
-}
-
-.section {
-  margin-bottom: $spacing-6;
+.filter-tabs {
+  display: flex;
+  align-items: center;
+  padding: $spacing-3 $spacing-4;
 }
 
 .section-title {
   @include text-body;
   color: $color-text-primary;
   font-weight: $font-weight-semibold;
-  margin: $spacing-6 0 $spacing-4 0;
+  margin: $spacing-6 0 $spacing-3 0;
+  display: block;
+
+  &:first-child {
+    margin-top: 0;
+  }
 }
 
 .revenue-overview {
@@ -522,7 +553,7 @@ onMounted(() => {
 }
 
 .revenue-value {
-  @include text-display-sm;
+  @include text-display($font-size-display-sm);
   color: $color-text-primary;
   font-weight: $font-weight-bold;
 }
@@ -535,26 +566,46 @@ onMounted(() => {
 
 .cost-breakdown {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: $spacing-4;
 }
 
-.cost-item {
+.donut-container {
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.donut-chart {
+  width: 100%;
+  height: 100%;
+}
+
+.cost-legend {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  gap: $spacing-3;
+}
+
+.cost-legend-item {
+  display: flex;
+  align-items: center;
   gap: $spacing-2;
 }
 
-.cost-info {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.cost-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .cost-category {
-  @include text-body;
+  @include text-caption;
   color: $color-text-primary;
   font-weight: $font-weight-medium;
+  flex: 1;
 }
 
 .cost-percentage {
@@ -562,22 +613,26 @@ onMounted(() => {
   color: $color-text-secondary;
 }
 
-.cost-amount {
-  @include text-caption;
-  color: $color-text-primary;
-  text-align: right;
-}
-
 .location-revenue {
   display: flex;
   flex-direction: column;
-  gap: $spacing-4;
 }
 
 .location-item {
   display: flex;
   flex-direction: column;
   gap: $spacing-2;
+  padding: $spacing-4 0;
+  border-bottom: 1px solid $color-border-subtle;
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
 }
 
 .location-name {
@@ -595,14 +650,23 @@ onMounted(() => {
 .partner-performance {
   display: flex;
   flex-direction: column;
-  gap: $spacing-3;
 }
 
 .partner-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: $spacing-3 0;
+  padding: $spacing-4 0;
+  border-bottom: 1px solid $color-border-subtle;
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
 }
 
 .partner-name {
@@ -630,33 +694,6 @@ onMounted(() => {
   font-weight: $font-weight-medium;
 }
 
-.kpi-label {
-  @include text-caption;
-  color: $color-text-secondary;
-  margin-bottom: $spacing-2;
-}
-
-.kpi-value {
-  @include text-title;
-  color: $color-text-primary;
-  font-weight: $font-weight-bold;
-  margin-bottom: $spacing-1;
-}
-
-.kpi-trend {
-  @include text-caption;
-  color: $color-success;
-  font-weight: $font-weight-medium;
-  
-  &.positive {
-    color: $color-success;
-  }
-  
-  &.negative {
-    color: $color-error;
-  }
-}
-
 .revenue-change-value {
   @include text-body;
   font-weight: $font-weight-semibold;
@@ -665,21 +702,26 @@ onMounted(() => {
 .analytics-tabs {
   display: flex;
   gap: $spacing-2;
-  margin-bottom: $spacing-4;
+  margin: $spacing-6 0 $spacing-3 0;
   overflow-x: auto;
   padding-bottom: $spacing-1;
 }
 
 .analytics-tab {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: $spacing-2;
   padding: $spacing-2 $spacing-3;
   background: $color-bg-tertiary;
-  border-radius: $radius-lg;
+  border-radius: $radius-full;
   white-space: nowrap;
   color: $color-text-secondary;
+  cursor: pointer;
   transition: all $transition-normal;
+
+  &:active {
+    opacity: 0.7;
+  }
 
   &.active {
     background: $color-primary;
@@ -693,7 +735,9 @@ onMounted(() => {
 }
 
 .chart-section {
-  margin-bottom: $spacing-6;
+  .section-title {
+    margin-top: 0;
+  }
 }
 
 .chart-placeholder {
@@ -708,9 +752,5 @@ onMounted(() => {
 .chart-placeholder-text {
   @include text-caption;
   margin-top: $spacing-3;
-}
-
-.metrics-section {
-  margin-bottom: $spacing-6;
 }
 </style>

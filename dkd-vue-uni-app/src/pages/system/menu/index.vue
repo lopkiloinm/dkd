@@ -62,106 +62,82 @@
       </view>
     </scroll-view>
 
-    <view class="modal-overlay" v-if="showDetailModal" @click="closeDetailModal">
-      <view class="modal-content detail-modal" @click.stop>
-        <view class="modal-header">
-          <text class="modal-title">Menu Detail</text>
-          <text class="modal-close" @click="closeDetailModal">×</text>
-        </view>
-        <view class="modal-body">
-          <view class="detail-info-row">
-            <text class="detail-label">Menu Name:</text>
-            <text class="detail-value">{{ detailData.menuName }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Menu Type:</text>
-            <text class="detail-value">{{ detailData.menuType === 'M' ? 'Directory' : (detailData.menuType === 'C' ? 'Menu' : 'Button') }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Order Num:</text>
-            <text class="detail-value">{{ detailData.orderNum }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Path:</text>
-            <text class="detail-value">{{ detailData.path || 'N/A' }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Component:</text>
-            <text class="detail-value">{{ detailData.component || 'N/A' }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Perms:</text>
-            <text class="detail-value">{{ detailData.perms || 'N/A' }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Visible:</text>
-            <text class="detail-value">{{ detailData.visible === '0' ? 'Yes' : 'No' }}</text>
-          </view>
-        </view>
-        <view class="modal-footer">
-          <view class="modal-btn cancel" @click="closeDetailModal">
-            <text>Close</text>
-          </view>
-        </view>
+    <BottomSheet :visible="showDetailModal" title="Menu Detail" @update:visible="val => !val && closeDetailModal()" @close="closeDetailModal">
+      <view class="detail-info-row">
+        <text class="detail-label">Menu Name</text>
+        <text class="detail-value">{{ detailData.menuName }}</text>
       </view>
-    </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Menu Type</text>
+        <text class="detail-value">{{ detailData.menuType === 'M' ? 'Directory' : (detailData.menuType === 'C' ? 'Menu' : 'Button') }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Order Num</text>
+        <text class="detail-value">{{ detailData.orderNum }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Path</text>
+        <text class="detail-value">{{ detailData.path || 'N/A' }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Component</text>
+        <text class="detail-value">{{ detailData.component || 'N/A' }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Perms</text>
+        <text class="detail-value">{{ detailData.perms || 'N/A' }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Visible</text>
+        <text class="detail-value">{{ detailData.visible === '0' ? 'Yes' : 'No' }}</text>
+      </view>
+      
+    </BottomSheet>
 
-    <view class="modal-overlay" v-if="showModal" @click="closeModal">
-      <view class="modal-content" @click.stop>
-        <view class="modal-header">
-          <text class="modal-title">{{ isEdit ? 'Edit Menu' : 'Add Menu' }}</text>
-          <text class="modal-close" @click="closeModal">×</text>
-        </view>
-        <view class="modal-body">
-          <view class="form-item" v-if="form.parentId !== 0">
-            <text class="form-label">Parent Menu</text>
-            <picker mode="selector" :range="parentMenuOptions" range-key="menuName" :value="parentMenuIndex" @change="onParentMenuChange">
-              <view class="picker-input">{{ form.parentId ? parentMenuOptions[parentMenuIndex]?.menuName : 'Select Parent' }}</view>
-            </picker>
-          </view>
-          <view class="form-item">
-            <text class="form-label">Menu Type *</text>
-            <picker mode="selector" :range="menuTypeOptions" :value="menuTypeIndex" @change="onMenuTypeChange">
-              <view class="picker-input">{{ menuTypeOptions[menuTypeIndex] }}</view>
-            </picker>
-          </view>
-          <view class="form-item">
-            <text class="form-label">Menu Name *</text>
-            <input class="n-input" v-model="form.menuName" placeholder="Enter menu name" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Order Num *</text>
-            <input class="n-input" v-model="form.orderNum" type="number" placeholder="Enter order num" />
-          </view>
-          <view class="form-item" v-if="form.menuType !== 'F'">
-            <text class="form-label">Path</text>
-            <input class="n-input" v-model="form.path" placeholder="Enter path" />
-          </view>
-          <view class="form-item" v-if="form.menuType === 'C'">
-            <text class="form-label">Component</text>
-            <input class="n-input" v-model="form.component" placeholder="Enter component" />
-          </view>
-          <view class="form-item" v-if="form.menuType !== 'M'">
-            <text class="form-label">Perms</text>
-            <input class="n-input" v-model="form.perms" placeholder="Enter perms" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Visible</text>
-            <picker mode="selector" :range="visibleOptions" :value="visibleIndex" @change="onVisibleChange">
-              <view class="picker-input">{{ visibleOptions[visibleIndex] }}</view>
-            </picker>
-          </view>
-        </view>
-        <view class="modal-footer">
-          <view class="modal-btn cancel" @click="closeModal">
-            <text>Cancel</text>
-          </view>
-          <view class="modal-btn confirm" :class="{ disabled: isSubmitting }" @click="submitForm">
-            <text>{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</text>
-          </view>
-        </view>
+    <BottomSheet :visible="showModal" :title="isEdit ? 'Edit Menu' : 'Add Menu'" @update:visible="val => !val && closeModal()" @close="closeModal">
+      <view class="form-item" v-if="form.parentId !== 0">
+        <text class="form-label">Parent Menu</text>
+        <picker mode="selector" :range="parentMenuOptions" range-key="menuName" :value="parentMenuIndex" @change="onParentMenuChange">
+          <view class="picker-input">{{ form.parentId ? parentMenuOptions[parentMenuIndex]?.menuName : 'Select Parent' }}</view>
+        </picker>
       </view>
-    </view>
+      <view class="form-item">
+        <text class="form-label">Menu Type *</text>
+        <picker mode="selector" :range="menuTypeOptions" :value="menuTypeIndex" @change="onMenuTypeChange">
+          <view class="picker-input">{{ menuTypeOptions[menuTypeIndex] }}</view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">Menu Name *</text>
+        <input class="n-input" v-model="form.menuName" placeholder="Enter menu name" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">Order Num *</text>
+        <input class="n-input" v-model="form.orderNum" type="number" placeholder="Enter order num" />
+      </view>
+      <view class="form-item" v-if="form.menuType !== 'F'">
+        <text class="form-label">Path</text>
+        <input class="n-input" v-model="form.path" placeholder="Enter path" />
+      </view>
+      <view class="form-item" v-if="form.menuType === 'C'">
+        <text class="form-label">Component</text>
+        <input class="n-input" v-model="form.component" placeholder="Enter component" />
+      </view>
+      <view class="form-item" v-if="form.menuType !== 'M'">
+        <text class="form-label">Perms</text>
+        <input class="n-input" v-model="form.perms" placeholder="Enter perms" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">Visible</text>
+        <picker mode="selector" :range="visibleOptions" :value="visibleIndex" @change="onVisibleChange">
+          <view class="picker-input">{{ visibleOptions[visibleIndex] }}</view>
+        </picker>
+      </view>
+      <template #header-actions>
+        <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
+        <view class="action-pill action-pill--primary" @click="submitForm"><text class="action-pill-text">{{ isSubmitting ? 'Saving...' : 'Save' }}</text></view>
+      </template>
+    </BottomSheet>
   </view>
 </template>
 
@@ -169,6 +145,7 @@
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import TopBar from '@/components/TopBar/index.vue'
+import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listMenu, getMenu, addMenu, updateMenu, delMenu } from '@/api/system/menu'
 import { hasPermission } from '@/utils/permission'
 
@@ -405,6 +382,26 @@ const onRefresh = () => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
+.action-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-1 $spacing-3;
+  background: $color-bg-tertiary;
+  border-radius: $radius-full;
+
+  &:active { opacity: 0.7; }
+  &--primary { background: $color-primary; }
+}
+
+.action-pill-text {
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+
+  .action-pill--primary & { color: #fff; }
+}
+
 .layout-container {
   display: flex;
   flex-direction: column;
@@ -634,57 +631,8 @@ const onRefresh = () => {
   color: #ff3b30;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
-}
-
-.modal-content {
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid $apple-glass-border;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: $apple-text-primary;
-  letter-spacing: -0.5px;
-}
-
-.modal-close {
-  font-size: 32px;
-  color: $apple-text-secondary;
-  line-height: 1;
-  padding: 0 8px;
-}
-
-.modal-body {
-  padding: 24px;
-}
-
 .form-item {
-  margin-bottom: 20px;
+  margin-bottom: $spacing-4;
 }
 
 .form-item:last-child {
@@ -693,83 +641,33 @@ const onRefresh = () => {
 
 .form-label {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: $apple-text-primary;
-  margin-bottom: 8px;
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  margin-bottom: $spacing-2;
 }
 
 .picker-input {
   @include glass-input;
   height: 44px;
   line-height: 44px;
-  padding: 0 16px;
-  font-size: 16px;
+  padding: 0 $spacing-4;
+  @include text-body;
   width: 100%;
   box-sizing: border-box;
-}
-
-.modal-footer {
-  display: flex;
-  gap: $spacing-4;
-  padding: 16px 24px 24px;
-}
-
-.modal-btn {
-  flex: 1;
-  padding: 14px;
-  border-radius: 12px;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 600;
-  transition: opacity 0.2s;
-}
-
-.modal-btn:active {
-  opacity: 0.7;
-}
-
-.modal-btn.cancel {
-  background-color: rgba(118, 118, 128, 0.1);
-  color: $apple-text-primary;
-}
-
-.modal-btn.confirm {
-  background-color: #007aff;
-  color: white;
-}
-
-.modal-btn.confirm.disabled {
-  background-color: rgba(0, 122, 255, 0.5);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.detail-modal {
-  max-width: 500px;
 }
 
 .detail-info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: $spacing-3 0;
+  border-bottom: 1px solid $color-border-subtle;
+
+  &:first-child { padding-top: 0; }
+  &:last-child { border-bottom: none; }
 }
 
-.detail-info-row:last-child {
-  border-bottom: none;
-}
-
-.detail-label {
-  font-size: 14px;
-  color: $apple-text-secondary;
-  font-weight: 500;
-}
-
-.detail-value {
-  font-size: 15px;
-  color: $apple-text-primary;
-  font-weight: 600;
-}
+.detail-label { @include text-caption; color: $color-text-secondary; }
+.detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
 </style>

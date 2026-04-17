@@ -12,7 +12,7 @@
     <scroll-view class="scroll-area" scroll-y>
       <view class="content-wrapper">
         <!-- Quick Stats -->
-        <text class="section-title section-title-first">Operations Overview</text>
+        <text class="section-title">Operations Overview</text>
         <view class="quick-stats">
           <Grid :columns="2" :gap="16">
             <StatCard
@@ -47,8 +47,9 @@
         </view>
 
         <!-- Real-Time Alerts -->
-        <view v-if="alerts.length > 0" class="alerts-section">
-          <text class="section-title">Real-Time Alerts</text>
+        <template v-if="alerts.length > 0">
+        <text class="section-title">Real-Time Alerts</text>
+        <view class="alerts-section">
           <view class="alerts-list">
             <Alert
               v-for="alert in alerts"
@@ -60,6 +61,7 @@
             </Alert>
           </view>
         </view>
+        </template>
 
         <!-- Quick Actions -->
         <text class="section-title">Quick Actions</text>
@@ -131,7 +133,9 @@
                   <text class="task-title">{{ task.title }}</text>
                   <text class="task-assignee">{{ task.assignee }}</text>
                 </view>
-                <Badge :variant="task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'secondary'">{{ task.priority }}</Badge>
+                <Badge :variant="task.priority === 'high' ? 'error' : task.priority === 'medium' ? 'warning' : 'default'">
+                  {{ task.priority.charAt(0).toUpperCase() + task.priority.slice(1) }}
+                </Badge>
               </view>
             </view>
           </CardSection>
@@ -143,9 +147,18 @@
           <CardSection variant="body">
             <view class="inventory-levels">
               <view class="inventory-item" v-for="item in inventoryItems" :key="item.id">
-                <text class="inventory-name">{{ item.name }}</text>
-                <ProgressBar :value="item.stock" :max="item.maxStock" :variant="item.stock < item.maxStock * 0.2 ? 'danger' : 'default'" />
-                <text class="inventory-count">{{ item.stock }}/{{ item.maxStock }}</text>
+                <view class="inventory-header">
+                  <view class="inventory-info">
+                    <text class="inventory-name">{{ item.name }}</text>
+                  </view>
+                  <view class="inventory-stats">
+                    <text class="stat-highlight" :class="{ 'text-danger': item.stock < item.maxStock * 0.2 }">{{ item.stock }}</text>
+                    <text class="stat-label">/ {{ item.maxStock }} Units</text>
+                  </view>
+                </view>
+                <view class="inventory-progress">
+                  <ProgressBar :value="item.stock" :max="item.maxStock" :color="item.stock < item.maxStock * 0.2 ? 'error' : 'primary'" />
+                </view>
               </view>
             </view>
           </CardSection>
@@ -157,10 +170,19 @@
           <CardSection variant="body">
             <view class="team-workload">
               <view class="team-member" v-for="member in teamMembers" :key="member.id">
-                <Avatar :src="member.avatar" :text="member.name.charAt(0)" size="sm" />
-                <text class="member-name">{{ member.name }}</text>
-                <ProgressBar :value="member.tasksCompleted" :max="member.totalTasks" />
-                <text class="task-count">{{ member.tasksCompleted }}/{{ member.totalTasks }}</text>
+                <view class="member-header">
+                  <view class="member-info">
+                    <Avatar :src="member.avatar" :text="member.name.charAt(0)" size="sm" />
+                    <text class="member-name">{{ member.name }}</text>
+                  </view>
+                  <view class="member-stats">
+                    <text class="stat-highlight">{{ member.tasksCompleted }}</text>
+                    <text class="stat-label">/ {{ member.totalTasks }} Tasks</text>
+                  </view>
+                </view>
+                <view class="member-progress">
+                  <ProgressBar :value="member.tasksCompleted" :max="member.totalTasks" />
+                </view>
               </view>
             </view>
           </CardSection>
@@ -493,9 +515,14 @@ const handleInventoryUpdate = () => {
 }
 
 const handleEmergency = () => {
-  uni.showToast({
-    title: 'Emergency mode activated',
-    icon: 'none'
+  uni.showModal({
+    title: 'Emergency Mode',
+    content: 'This will show all machines with fault status. Continue?',
+    success: (r) => {
+      if (r.confirm) {
+        uni.navigateTo({ url: '/pages/manage/vm/index?vmStatus=3' })
+      }
+    }
   })
 }
 
@@ -531,7 +558,7 @@ const handleTabChange = (tabId) => {
     machines: '/pages/manage/index',
     tasks: '/pages/manage/task/index',
     inventory: '/pages/inventory/index',
-    analytics: '/pages/data/index'
+    analytics: '/pages/analytics/index'
   }
   if (routes[tabId] && tabId !== 'dashboard') {
     uni.navigateTo({ url: routes[tabId] })
@@ -566,22 +593,24 @@ const handleTimeRangeChange = (value) => {
 }
 
 .section-title {
-  @include text-title;
+  @include text-body;
   color: $color-text-primary;
   font-weight: $font-weight-semibold;
-  margin: $spacing-6 0 $spacing-4 0;
+  margin-top: $spacing-5;
+  margin-bottom: $spacing-3;
+  display: block;
 
-  &.section-title-first {
+  &:first-child {
     margin-top: 0;
   }
 }
 
 .quick-stats {
-  margin-bottom: $spacing-6;
+  margin-bottom: 0;
 }
 
 .alerts-section {
-  margin-bottom: $spacing-6;
+  margin-bottom: 0;
 }
 
 .alerts-list {
@@ -596,7 +625,7 @@ const handleTimeRangeChange = (value) => {
 }
 
 .quick-actions {
-  margin-bottom: $spacing-6;
+  margin-bottom: 0;
 }
 
 .machine-status-overview {
@@ -648,14 +677,23 @@ const handleTimeRangeChange = (value) => {
 .task-queue {
   display: flex;
   flex-direction: column;
-  gap: $spacing-3;
 }
 
 .task-item {
   display: flex;
   align-items: center;
   gap: $spacing-3;
-  padding: $spacing-3 0;
+  padding: $spacing-4 0;
+  border-bottom: 1px solid $color-border-subtle;
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
 }
 
 .task-info {
@@ -679,49 +717,119 @@ const handleTimeRangeChange = (value) => {
 .inventory-levels {
   display: flex;
   flex-direction: column;
-  gap: $spacing-3;
 }
 
 .inventory-item {
   display: flex;
   flex-direction: column;
   gap: $spacing-2;
+  padding: $spacing-4 0;
+  border-bottom: 1px solid $color-border-subtle;
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inventory-info {
+  display: flex;
+  align-items: center;
 }
 
 .inventory-name {
   @include text-body;
   color: $color-text-primary;
-  font-weight: $font-weight-medium;
+  font-weight: $font-weight-semibold;
 }
 
-.inventory-count {
-  @include text-caption;
-  color: $color-text-secondary;
-  text-align: right;
+.inventory-stats {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.inventory-progress {
+  width: 100%;
+}
+
+.text-danger {
+  color: $color-error !important;
 }
 
 .team-workload {
   display: flex;
   flex-direction: column;
-  gap: $spacing-3;
 }
 
 .team-member {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+  padding: $spacing-4 0;
+  border-bottom: 1px solid $color-border-subtle;
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.member-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.member-info {
   display: flex;
   align-items: center;
   gap: $spacing-3;
 }
 
 .member-name {
-  flex: 1;
   @include text-body;
   color: $color-text-primary;
-  font-weight: $font-weight-medium;
+  font-weight: $font-weight-semibold;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.task-count {
+.member-stats {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.stat-highlight {
+  @include text-body;
+  color: $color-primary;
+  font-weight: $font-weight-bold;
+}
+
+.stat-label {
   @include text-caption;
   color: $color-text-secondary;
+}
+
+.member-progress {
+  width: 100%;
 }
 
 .profile-section {
@@ -780,15 +888,7 @@ const handleTimeRangeChange = (value) => {
 }
 
 .section-cards {
-  margin-bottom: $spacing-6;
-}
-
-.section-title {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
-  margin-bottom: $spacing-3;
-  display: block;
+  margin-bottom: 0;
 }
 
 .hot-products-section,

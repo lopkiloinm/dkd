@@ -31,7 +31,8 @@
 		{
 			"path": "pages/mine/index",
 			"style": {
-				"navigationBarTitleText": "Mine"
+				"navigationBarTitleText": "Mine",
+				"navigationStyle": "custom"
 			}
 		},
 		{
@@ -43,7 +44,29 @@
 		{
 			"path": "pages/profile/index",
 			"style": {
-				"navigationBarTitleText": "Profile"
+				"navigationBarTitleText": "Profile",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/notifications/index",
+			"style": {
+				"navigationBarTitleText": "Notifications",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/analytics/index",
+			"style": {
+				"navigationBarTitleText": "Analytics",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/reports/index",
+			"style": {
+				"navigationBarTitleText": "Reports",
+				"navigationStyle": "custom"
 			}
 		}
 	],
@@ -78,6 +101,18 @@
 				{
 					"path": "task/index",
 					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Work Orders" }
+				},
+				{
+					"path": "channel/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Channel Management" }
+				},
+				{
+					"path": "replenish/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Replenish" }
+				},
+				{
+					"path": "orders/index",
+					"style": { "navigationStyle": "custom", "navigationBarTitleText": "Orders" }
 				}
 			]
 		},

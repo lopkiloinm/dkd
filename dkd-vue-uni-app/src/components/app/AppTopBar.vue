@@ -71,7 +71,8 @@ const handleProfile = () => {
   left: 0;
   right: 0;
   height: $top-bar-total-height;
-  background: $color-bg-secondary;
+  @include glass($surface-overlay-strong, transparent);
+  border-bottom: 1px solid $color-border-subtle;
   display: flex;
   align-items: center;
   justify-content: space-between;

@@ -4,11 +4,26 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dkd.manage.mapper.TaskDetailsMapper">
     
+    <resultMap type="TaskDetails" id="TaskDetailsResult">
+        <result property="detailsId"       column="details_id"      />
+        <result property="taskId"          column="task_id"         />
+        <result property="channelCode"     column="channel_code"    />
+        <result property="expectCapacity"  column="expect_capacity" />
+        <result property="skuId"           column="sku_id"          />
+        <result property="skuName"         column="sku_name"        />
+        <result property="skuImage"        column="sku_image"       />
+    </resultMap>
+
     <insert id="insertBatch">
         insert into tb_task_details(task_id, channel_code, expect_capacity, sku_id, sku_name, sku_image) values
         <foreach item="item" index="index" collection="list" separator=",">
             (#{item.taskId}, #{item.channelCode}, #{item.expectCapacity}, #{item.skuId}, #{item.skuName}, #{item.skuImage})
         </foreach>
     </insert>
+
+    <select id="listByTaskId" parameterType="Long" resultMap="TaskDetailsResult">
+        select details_id, task_id, channel_code, expect_capacity, sku_id, sku_name, sku_image
+        from tb_task_details where task_id = #{taskId}
+    </select>
 
 </mapper>

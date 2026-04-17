@@ -5,7 +5,9 @@
         <slot name="header"></slot>
       </view>
       <scroll-view class="sheet-body" scroll-y>
-        <slot></slot>
+        <view class="sheet-body-inner">
+          <slot></slot>
+        </view>
       </scroll-view>
       <view v-if="$slots.footer" class="sheet-footer">
         <slot name="footer"></slot>
@@ -70,8 +72,8 @@ watch(() => props.visible, (newVal) => {
   bottom: 0;
   z-index: $z-index-modal-backdrop;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .sheet {
@@ -81,6 +83,8 @@ watch(() => props.visible, (newVal) => {
   box-shadow: $shadow-xl;
   transition: transform $transition-normal ease-out;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 100vw;
 
@@ -89,7 +93,7 @@ watch(() => props.visible, (newVal) => {
     left: 0;
     right: 0;
     border-radius: $radius-lg $radius-lg 0 0;
-    max-height: 80vh;
+    max-height: 85vh;
   }
   
   &.sheet-top {
@@ -97,7 +101,7 @@ watch(() => props.visible, (newVal) => {
     left: 0;
     right: 0;
     border-radius: 0 0 $radius-lg $radius-lg;
-    max-height: 80vh;
+    max-height: 85vh;
   }
   
   &.sheet-left {
@@ -120,18 +124,21 @@ watch(() => props.visible, (newVal) => {
 }
 
 .sheet-header {
-  padding: $spacing-4;
+  flex-shrink: 0;
 }
 
 .sheet-body {
-  flex: 1;
-  max-height: calc(80vh - 120px);
+  flex: 1 1 auto;
+  min-height: 0;
+  box-sizing: border-box;
   @include scrollbar-hidden;
+}
+
+.sheet-body-inner {
   box-sizing: border-box;
 }
 
 .sheet-footer {
-  padding: $spacing-4;
-  border-top: 1px solid $color-border-subtle;
+  flex-shrink: 0;
 }
 </style>

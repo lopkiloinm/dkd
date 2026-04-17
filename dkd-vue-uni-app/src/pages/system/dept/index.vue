@@ -58,96 +58,72 @@
       </view>
     </scroll-view>
 
-    <view class="modal-overlay" v-if="showDetailModal" @click="closeDetailModal">
-      <view class="modal-content detail-modal" @click.stop>
-        <view class="modal-header">
-          <text class="modal-title">Department Detail</text>
-          <text class="modal-close" @click="closeDetailModal">×</text>
-        </view>
-        <view class="modal-body">
-          <view class="detail-info-row">
-            <text class="detail-label">Dept Name:</text>
-            <text class="detail-value">{{ detailData.deptName }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Order Num:</text>
-            <text class="detail-value">{{ detailData.orderNum }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Leader:</text>
-            <text class="detail-value">{{ detailData.leader || 'N/A' }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Phone:</text>
-            <text class="detail-value">{{ detailData.phone || 'N/A' }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Email:</text>
-            <text class="detail-value">{{ detailData.email || 'N/A' }}</text>
-          </view>
-          <view class="detail-info-row">
-            <text class="detail-label">Status:</text>
-            <text class="detail-value">{{ detailData.status === '0' ? 'Active' : 'Inactive' }}</text>
-          </view>
-        </view>
-        <view class="modal-footer">
-          <view class="modal-btn cancel" @click="closeDetailModal">
-            <text>Close</text>
-          </view>
-        </view>
+    <BottomSheet :visible="showDetailModal" title="Department Detail" @update:visible="val => !val && closeDetailModal()" @close="closeDetailModal">
+      <view class="detail-info-row">
+        <text class="detail-label">Dept Name</text>
+        <text class="detail-value">{{ detailData.deptName }}</text>
       </view>
-    </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Order Num</text>
+        <text class="detail-value">{{ detailData.orderNum }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Leader</text>
+        <text class="detail-value">{{ detailData.leader || 'N/A' }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Phone</text>
+        <text class="detail-value">{{ detailData.phone || 'N/A' }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Email</text>
+        <text class="detail-value">{{ detailData.email || 'N/A' }}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-label">Status</text>
+        <text class="detail-value">{{ detailData.status === '0' ? 'Active' : 'Inactive' }}</text>
+      </view>
+      
+    </BottomSheet>
 
-    <view class="modal-overlay" v-if="showModal" @click="closeModal">
-      <view class="modal-content" @click.stop>
-        <view class="modal-header">
-          <text class="modal-title">{{ isEdit ? 'Edit Department' : 'Add Department' }}</text>
-          <text class="modal-close" @click="closeModal">×</text>
-        </view>
-        <view class="modal-body">
-          <view class="form-item" v-if="form.parentId !== 0">
-            <text class="form-label">Parent Dept</text>
-            <picker mode="selector" :range="parentDeptOptions" range-key="deptName" :value="parentDeptIndex" @change="onParentDeptChange">
-              <view class="picker-input">{{ form.parentId ? parentDeptOptions[parentDeptIndex]?.deptName : 'Select Parent' }}</view>
-            </picker>
-          </view>
-          <view class="form-item">
-            <text class="form-label">Dept Name *</text>
-            <input class="n-input" v-model="form.deptName" placeholder="Enter dept name" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Order Num *</text>
-            <input class="n-input" v-model="form.orderNum" type="number" placeholder="Enter order num" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Leader</text>
-            <input class="n-input" v-model="form.leader" placeholder="Enter leader" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Phone</text>
-            <input class="n-input" v-model="form.phone" placeholder="Enter phone" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Email</text>
-            <input class="n-input" v-model="form.email" placeholder="Enter email" />
-          </view>
-          <view class="form-item">
-            <text class="form-label">Status</text>
-            <picker mode="selector" :range="statusOptions" :value="statusIndex" @change="onStatusChange">
-              <view class="picker-input">{{ statusOptions[statusIndex] }}</view>
-            </picker>
-          </view>
-        </view>
-        <view class="modal-footer">
-          <view class="modal-btn cancel" @click="closeModal">
-            <text>Cancel</text>
-          </view>
-          <view class="modal-btn confirm" :class="{ disabled: isSubmitting }" @click="submitForm">
-            <text>{{ isSubmitting ? 'Submitting...' : 'Confirm' }}</text>
-          </view>
-        </view>
+    <BottomSheet :visible="showModal" :title="isEdit ? 'Edit Department' : 'Add Department'" @update:visible="val => !val && closeModal()" @close="closeModal">
+      <view class="form-item" v-if="form.parentId !== 0">
+        <text class="form-label">Parent Dept</text>
+        <picker mode="selector" :range="parentDeptOptions" range-key="deptName" :value="parentDeptIndex" @change="onParentDeptChange">
+          <view class="picker-input">{{ form.parentId ? parentDeptOptions[parentDeptIndex]?.deptName : 'Select Parent' }}</view>
+        </picker>
       </view>
-    </view>
+      <view class="form-item">
+        <text class="form-label">Dept Name *</text>
+        <input class="n-input" v-model="form.deptName" placeholder="Enter dept name" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">Order Num *</text>
+        <input class="n-input" v-model="form.orderNum" type="number" placeholder="Enter order num" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">Leader</text>
+        <input class="n-input" v-model="form.leader" placeholder="Enter leader" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">Phone</text>
+        <input class="n-input" v-model="form.phone" placeholder="Enter phone" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">Email</text>
+        <input class="n-input" v-model="form.email" placeholder="Enter email" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">Status</text>
+        <picker mode="selector" :range="statusOptions" :value="statusIndex" @change="onStatusChange">
+          <view class="picker-input">{{ statusOptions[statusIndex] }}</view>
+        </picker>
+      </view>
+      <template #header-actions>
+        <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
+        <view class="action-pill action-pill--primary" @click="submitForm"><text class="action-pill-text">{{ isSubmitting ? 'Saving...' : 'Save' }}</text></view>
+      </template>
+    </BottomSheet>
   </view>
 </template>
 
@@ -155,6 +131,7 @@
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import TopBar from '@/components/TopBar/index.vue'
+import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listDept, getDept, addDept, updateDept, delDept } from '@/api/system/dept'
 import { hasPermission } from '@/utils/permission'
 
@@ -377,6 +354,26 @@ const onRefresh = () => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
+.action-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-1 $spacing-3;
+  background: $color-bg-tertiary;
+  border-radius: $radius-full;
+
+  &:active { opacity: 0.7; }
+  &--primary { background: $color-primary; }
+}
+
+.action-pill-text {
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+
+  .action-pill--primary & { color: #fff; }
+}
+
 .layout-container {
   display: flex;
   flex-direction: column;
@@ -593,57 +590,8 @@ const onRefresh = () => {
   color: #ff3b30;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
-}
-
-.modal-content {
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: $spacing-5 $spacing-6;
-  border-bottom: 1px solid $apple-glass-border;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: $apple-text-primary;
-  letter-spacing: -0.5px;
-}
-
-.modal-close {
-  font-size: 32px;
-  color: $apple-text-secondary;
-  line-height: 1;
-  padding: 0 $spacing-2;
-}
-
-.modal-body {
-  padding: $spacing-6;
-}
-
 .form-item {
-  margin-bottom: $spacing-5;
+  margin-bottom: $spacing-4;
 }
 
 .form-item:last-child {
@@ -652,9 +600,9 @@ const onRefresh = () => {
 
 .form-label {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: $apple-text-primary;
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
   margin-bottom: $spacing-2;
 }
 
@@ -663,72 +611,28 @@ const onRefresh = () => {
   height: 44px;
   line-height: 44px;
   padding: 0 $spacing-4;
-  font-size: 16px;
+  @include text-body;
   width: 100%;
   box-sizing: border-box;
-}
-
-.modal-footer {
-  display: flex;
-  gap: $spacing-3;
-  padding: $spacing-4 $spacing-6 $spacing-6;
-}
-
-.modal-btn {
-  flex: 1;
-  padding: $spacing-3;
-  border-radius: $radius-lg;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 600;
-  transition: opacity $transition-normal;
-}
-
-.modal-btn:active {
-  opacity: 0.7;
-}
-
-.modal-btn.cancel {
-  background-color: rgba(118, 118, 128, 0.1);
-  color: $apple-text-primary;
-}
-
-.modal-btn.confirm {
-  background-color: #007aff;
-  color: white;
-}
-
-.modal-btn.confirm.disabled {
-  background-color: rgba(0, 122, 255, 0.5);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.detail-modal {
-  max-width: 500px;
 }
 
 .detail-info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
+  padding: $spacing-3 0;
+  border-bottom: 1px solid $color-border-subtle;
 
-.detail-info-row:last-child {
-  border-bottom: none;
+  &:first-child { padding-top: 0; }
+  &:last-child { border-bottom: none; }
 }
 
 .detail-label {
-  font-size: 14px;
-  color: $apple-text-secondary;
-  font-weight: 500;
+  @include text-caption;
+  color: $color-text-secondary;
 }
 
 .detail-value {
-  font-size: 15px;
-  color: $apple-text-primary;
-  font-weight: 600;
-}
-</style>
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium

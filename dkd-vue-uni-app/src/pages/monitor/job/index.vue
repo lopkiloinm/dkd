@@ -67,6 +67,33 @@
         </view>
       </view>
     </scroll-view>
+
+    <view class="fab" @click="handleAdd" v-if="hasPermission('monitor:job:add')">+</view>
+
+    <BottomSheet :visible="showModal" :title="isEdit ? 'Edit Job' : 'New Job'" @update:visible="val => !val && closeModal()" @close="closeModal">
+      <view class="form-view">
+        <view class="form-group">
+          <text class="form-label">Job Name *</text>
+          <input class="form-input" v-model="form.jobName" placeholder="Job name" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">Job Group</text>
+          <input class="form-input" v-model="form.jobGroup" placeholder="DEFAULT" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">Invoke Target *</text>
+          <input class="form-input" v-model="form.invokeTarget" placeholder="e.g. ryTask.ryParams('ry')" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">Cron Expression *</text>
+          <input class="form-input" v-model="form.cronExpression" placeholder="0/10 * * * * ?" />
+        </view>
+      </view>
+      <template #header-actions>
+        <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
+        <view class="action-pill action-pill--primary" @click="submitForm"><text class="action-pill-text">Save</text></view>
+      </template>
+    </BottomSheet>
   </view>
 </template>
 
@@ -74,12 +101,25 @@
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import TopBar from '@/components/TopBar/index.vue'
-import { listJob, getJob, addJob, updateJob, delJob, executeJob, changeJobStatus } from '@/api/monitor/job'
+import BottomSheet from '@/components/ui/BottomSheet.vue'
+import { listJob, getJob, addJob, updateJob, delJob, runJob, changeJobStatus } from '@/api/monitor/job'
 import { hasPermission } from '@/utils/permission'
 
 const jobList = ref([])
 const loading = ref(false)
 const isRefreshing = ref(false)
+
+const showModal = ref(false)
+const isEdit = ref(false)
+const form = ref({
+  jobName: '',
+  jobGroup: 'DEFAULT',
+  invokeTarget: '',
+  cronExpression: '',
+  misfirePolicy: '1',
+  concurrent: '1',
+  status: '1'
+})
 
 const queryParams = ref({
   pageNum: 1,
@@ -174,12 +214,53 @@ const handleViewLog = (item) => {
   })
 }
 
-const handleEdit = (item) => {
-  uni.showToast({ title: 'Edit functionality not implemented yet', icon: 'none' })
+const handleEdit = async (item) => {
+  try {
+    const res = await getJob(item.jobId)
+    form.value = { ...res.data }
+    isEdit.value = true
+    showModal.value = true
+  } catch (e) {
+    uni.showToast({ title: 'Failed to load job', icon: 'none' })
+  }
 }
 
 const handleAdd = () => {
-  uni.showToast({ title: 'Add functionality not implemented yet', icon: 'none' })
+  form.value = {
+    jobName: '',
+    jobGroup: 'DEFAULT',
+    invokeTarget: '',
+    cronExpression: '',
+    misfirePolicy: '1',
+    concurrent: '1',
+    status: '1'
+  }
+  isEdit.value = false
+  showModal.value = true
+}
+
+const closeModal = () => {
+  showModal.value = false
+}
+
+const submitForm = async () => {
+  if (!form.value.jobName || !form.value.invokeTarget || !form.value.cronExpression) {
+    uni.showToast({ title: 'Name, target & cron required', icon: 'none' })
+    return
+  }
+  try {
+    if (isEdit.value) {
+      await updateJob(form.value)
+      uni.showToast({ title: 'Job updated', icon: 'success' })
+    } else {
+      await addJob(form.value)
+      uni.showToast({ title: 'Job created', icon: 'success' })
+    }
+    closeModal()
+    fetchList(true)
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const handleDelete = (item) => {
@@ -216,6 +297,26 @@ const onRefresh = () => {
 <style scoped lang="scss">
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
+
+.action-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-1 $spacing-3;
+  background: $color-bg-tertiary;
+  border-radius: $radius-full;
+
+  &:active { opacity: 0.7; }
+  &--primary { background: $color-primary; }
+}
+
+.action-pill-text {
+  @include text-caption;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+
+  .action-pill--primary & { color: #fff; }
+}
 
 .layout-container {
   display: flex;
@@ -425,5 +526,32 @@ const onRefresh = () => {
 
 .action-btn.delete .action-text {
   color: #ff3b30;
+}
+
+.fab {
+  position: fixed;
+  right: $spacing-4;
+  bottom: calc($bottom-bar-height + $spacing-4 + env(safe-area-inset-bottom, 0px));
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: $color-primary;
+  color: white;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(61, 139, 255, 0.4);
+  z-index: 100;
+}
+
+.form-view { display: flex; flex-direction: column; gap: $spacing-4; }
+.form-group { display: flex; flex-direction: column; gap: $spacing-2; }
+.form-label { @include text-caption; color: $color-text-secondary; font-weight: $font-weight-medium; }
+
+.form-input {
+  @include text-body; color: $color-text-primary; padding: $spacing-3;
+  background: $color-bg-tertiary; border: 1px solid $color-border-subtle;
+  border-radius: $radius-sm; width: 100%; box-sizing: border-box;
 }
 </style>

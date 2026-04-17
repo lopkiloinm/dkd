@@ -204,7 +204,7 @@ const handleTabChange = (tabId) => {
     machines: '/pages/manage/index',
     tasks: '/pages/manage/task/index',
     inventory: '/pages/inventory/index',
-    analytics: '/pages/data/index'
+    analytics: '/pages/analytics/index'
   }
   if (routes[tabId] && tabId !== 'analytics') {
     uni.navigateTo({ url: routes[tabId] })

@@ -1,5 +1,14 @@
 <template>
   <view class="layout-container">
+    <view class="page-header">
+      <view class="header-back" @click="handleBack">
+        <Icon name="chevron-left" size="18" color="currentColor" />
+        <text class="header-back-text">Back</text>
+      </view>
+      <text class="page-title">Profile</text>
+      <view class="header-placeholder"></view>
+    </view>
+
     <view class="content-wrapper">
       <!-- Profile Header -->
       <view class="profile-header">
@@ -52,7 +61,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
 import { useUserStore } from '@/store/modules/user'
 import Avatar from '@/components/ui/Avatar.vue'
 import Icon from '@/components/ui/Icon.vue'
@@ -83,7 +93,19 @@ const fetchUserInfo = async () => {
 }
 
 const handleSettings = (type) => {
-  console.log('Settings:', type)
+  if (type === 'notifications') {
+    uni.navigateTo({ url: '/pages/notifications/index' })
+    return
+  }
+  if (type === 'account') {
+    uni.showToast({ title: 'Account settings coming soon', icon: 'none' })
+    return
+  }
+  if (type === 'language') {
+    uni.showToast({ title: 'Language settings coming soon', icon: 'none' })
+    return
+  }
+  uni.showToast({ title: 'About page coming soon', icon: 'none' })
 }
 
 const handleLogout = () => {
@@ -91,7 +113,16 @@ const handleLogout = () => {
   uni.reLaunch({ url: '/pages/login/index' })
 }
 
-onMounted(() => {
+const handleBack = () => {
+  const pages = getCurrentPages()
+  if (pages.length > 1) {
+    uni.navigateBack()
+    return
+  }
+  uni.reLaunch({ url: '/pages/index/index' })
+}
+
+onShow(() => {
   fetchUserInfo()
 })
 </script>
@@ -103,6 +134,43 @@ onMounted(() => {
 .layout-container {
   min-height: 100vh;
   background: $color-bg-primary;
+}
+
+.page-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: $top-bar-total-height;
+  @include glass($surface-overlay-strong, transparent);
+  border-bottom: 1px solid $color-border-subtle;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(env(safe-area-inset-top, 0px) + $spacing-2) $spacing-4 $spacing-2;
+  z-index: $z-index-sticky;
+}
+
+.header-back {
+  display: flex;
+  align-items: center;
+  gap: $spacing-1;
+  color: $color-text-secondary;
+}
+
+.header-back-text {
+  @include text-caption;
+  color: inherit;
+}
+
+.page-title {
+  @include text-title;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.header-placeholder {
+  width: 44px;
 }
 
 .content-wrapper {
