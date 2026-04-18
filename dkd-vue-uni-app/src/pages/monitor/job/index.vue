@@ -1,8 +1,8 @@
 <template>
-  <TopBar title="Job Management" :showBack="true" />
+  <AppTopBar title="Job Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.jobName" placeholder="Search by Job Name" @confirm="handleSearch" />
+      <input class="n-input search-input" :value="queryParams.jobName" @input="queryParams.jobName = $event.detail.value" placeholder="Search by Job Name" @confirm="handleSearch" />
       <view class="filter-toggle" @click="toggleFilters">
         <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
         <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
@@ -74,19 +74,19 @@
       <view class="form-view">
         <view class="form-group">
           <text class="form-label">Job Name *</text>
-          <input class="form-input" v-model="form.jobName" placeholder="Job name" />
+          <input class="form-input" :value="form.jobName" @input="form.jobName = $event.detail.value" placeholder="Job name" />
         </view>
         <view class="form-group">
           <text class="form-label">Job Group</text>
-          <input class="form-input" v-model="form.jobGroup" placeholder="DEFAULT" />
+          <input class="form-input" :value="form.jobGroup" @input="form.jobGroup = $event.detail.value" placeholder="DEFAULT" />
         </view>
         <view class="form-group">
           <text class="form-label">Invoke Target *</text>
-          <input class="form-input" v-model="form.invokeTarget" placeholder="e.g. ryTask.ryParams('ry')" />
+          <input class="form-input" :value="form.invokeTarget" @input="form.invokeTarget = $event.detail.value" placeholder="e.g. ryTask.ryParams('ry')" />
         </view>
         <view class="form-group">
           <text class="form-label">Cron Expression *</text>
-          <input class="form-input" v-model="form.cronExpression" placeholder="0/10 * * * * ?" />
+          <input class="form-input" :value="form.cronExpression" @input="form.cronExpression = $event.detail.value" placeholder="0/10 * * * * ?" />
         </view>
       </view>
       <template #header-actions>
@@ -100,7 +100,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listJob, getJob, addJob, updateJob, delJob, runJob, changeJobStatus } from '@/api/monitor/job'
 import { hasPermission } from '@/utils/permission'
@@ -552,6 +552,6 @@ const onRefresh = () => {
 .form-input {
   @include text-body; color: $color-text-primary; padding: $spacing-3;
   background: $color-bg-tertiary; border: 1px solid $color-border-subtle;
-  border-radius: $radius-sm; width: 100%; box-sizing: border-box;
+  border-radius: $radius-pill; width: 100%; box-sizing: border-box;
 }
 </style>

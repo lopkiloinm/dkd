@@ -22,7 +22,7 @@
 			}
 		},
 		{
-			"path": "pages/data/index",
+			"path": "pages/analytics/index",
 			"style": {
 				"navigationBarTitleText": "Analytics",
 				"navigationStyle": "custom"
@@ -42,13 +42,6 @@
 			}
 		},
 		{
-			"path": "pages/profile/index",
-			"style": {
-				"navigationBarTitleText": "Profile",
-				"navigationStyle": "custom"
-			}
-		},
-		{
 			"path": "pages/notifications/index",
 			"style": {
 				"navigationBarTitleText": "Notifications",
@@ -56,16 +49,30 @@
 			}
 		},
 		{
-			"path": "pages/analytics/index",
+			"path": "pages/preferences/index",
 			"style": {
-				"navigationBarTitleText": "Analytics",
+				"navigationBarTitleText": "Preferences",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "pages/reports/index",
+			"path": "pages/security/index",
 			"style": {
-				"navigationBarTitleText": "Reports",
+				"navigationBarTitleText": "Security",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/history/index",
+			"style": {
+				"navigationBarTitleText": "History",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/help/index",
+			"style": {
+				"navigationBarTitleText": "Help & Support",
 				"navigationStyle": "custom"
 			}
 		}

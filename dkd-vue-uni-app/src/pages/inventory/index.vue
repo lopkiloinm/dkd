@@ -3,10 +3,8 @@
     :unread-count="unreadCount"
     :profile-picture="profilePicture"
     :user-name="userName"
-    @add="handleAdd"
     @search="handleSearch"
     @notification="handleNotification"
-    @profile="handleProfile"
   />
   <view class="layout-container">
     <view class="filter-tabs">
@@ -28,7 +26,7 @@
       </scroll-view>
     </view>
 
-    <scroll-view class="scroll-area" scroll-y refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
+    <scroll-view class="scroll-area" scroll-y refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing" @scrolltolower="loadMore">
       <view class="content-wrapper">
         <!-- Quick Stats -->
         <view class="stats-row">
@@ -132,19 +130,19 @@
     <view v-else class="form-view">
       <view class="form-group">
         <text class="form-label">Product Name *</text>
-        <input class="form-input" v-model="formData.skuName" placeholder="Enter product name" />
+        <input class="form-input" :value="formData.skuName" @input="formData.skuName = $event.detail.value" placeholder="Enter product name" />
       </view>
       <view class="form-group">
         <text class="form-label">Brand</text>
-        <input class="form-input" v-model="formData.brandName" placeholder="Enter brand name" />
+        <input class="form-input" :value="formData.brandName" @input="formData.brandName = $event.detail.value" placeholder="Enter brand name" />
       </view>
       <view class="form-group">
         <text class="form-label">Unit</text>
-        <input class="form-input" v-model="formData.unit" placeholder="e.g. bottle, pack" />
+        <input class="form-input" :value="formData.unit" @input="formData.unit = $event.detail.value" placeholder="e.g. bottle, pack" />
       </view>
       <view class="form-group">
         <text class="form-label">Price (¥) *</text>
-        <input class="form-input" v-model.number="formData.price" type="number" placeholder="0" />
+        <input class="form-input" :value="formData.price" @input="formData.price = Number($event.detail.value || 0)" type="number" placeholder="0" />
       </view>
       <view class="form-group">
         <text class="form-label">Category</text>
@@ -208,6 +206,9 @@ const isEditing = ref(false)
 const detailData = ref({})
 const formData = ref({})
 const classIndex = ref(0)
+const pageNum = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
 
 const filterTabs = computed(() => [
   { label: 'All', value: 'all' },
@@ -276,10 +277,13 @@ const fetchClasses = async () => {
   }
 }
 
-const fetchProducts = async () => {
+const fetchProducts = async (reset = true) => {
   loading.value = true
   try {
-    const params = { pageNum: 1, pageSize: 100 }
+    if (reset) {
+      pageNum.value = 1
+    }
+    const params = { pageNum: pageNum.value, pageSize: pageSize.value }
     if (selectedFilters.value.category) {
       params.classId = selectedFilters.value.category
     }
@@ -287,7 +291,9 @@ const fetchProducts = async () => {
       params.isDiscount = selectedFilters.value.discount === 'true'
     }
     const res = await listSku(params)
-    products.value = res.rows || []
+    const rows = res.rows || []
+    products.value = reset ? rows : [...products.value, ...rows]
+    total.value = res.total || 0
   } catch (error) {
     console.error(error)
   } finally {
@@ -295,9 +301,16 @@ const fetchProducts = async () => {
   }
 }
 
+const loadMore = () => {
+  if (loading.value) return
+  if (products.value.length >= total.value) return
+  pageNum.value++
+  fetchProducts(false)
+}
+
 const onRefresh = async () => {
   isRefreshing.value = true
-  await Promise.all([fetchClasses(), fetchProducts()])
+  await Promise.all([fetchClasses(), fetchProducts(true)])
   isRefreshing.value = false
 }
 
@@ -786,7 +799,7 @@ onShow(() => {
   padding: $spacing-3;
   background: $color-bg-tertiary;
   border: 1px solid $color-border-subtle;
-  border-radius: $radius-sm;
+  border-radius: $radius-pill;
   width: 100%;
   box-sizing: border-box;
 }
@@ -797,6 +810,6 @@ onShow(() => {
   padding: $spacing-3;
   background: $color-bg-tertiary;
   border: 1px solid $color-border-subtle;
-  border-radius: $radius-sm;
+  border-radius: $radius-pill;
 }
 </style>

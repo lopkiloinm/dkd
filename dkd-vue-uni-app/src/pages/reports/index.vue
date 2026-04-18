@@ -3,10 +3,8 @@
     :unread-count="unreadCount"
     :profile-picture="profilePicture"
     :user-name="userName"
-    @add="handleAdd"
     @search="handleSearch"
     @notification="handleNotification"
-    @profile="handleProfile"
   />
   <view class="layout-container">
     <scroll-view class="scroll-area" scroll-y>

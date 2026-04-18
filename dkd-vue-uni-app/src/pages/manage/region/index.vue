@@ -33,7 +33,7 @@
       <Input v-model="form.regionName" label="Region Name *" placeholder="Enter region name" />
       <view class="form-item">
         <text class="form-label">Remark *</text>
-        <textarea class="n-textarea" v-model="form.remark" placeholder="Enter remark" />
+        <textarea class="n-textarea" :value="form.remark" @input="form.remark = $event.detail.value" placeholder="Enter remark" />
       </view>
       <template #header-actions>
         <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>

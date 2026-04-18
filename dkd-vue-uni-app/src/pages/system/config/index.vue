@@ -1,14 +1,14 @@
 <template>
-  <TopBar title="Config Management" :showBack="true" />
+  <AppTopBar title="Config Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.configName" placeholder="Search by Config Name" @confirm="handleSearch" />
+      <input class="n-input search-input" :value="queryParams.configName" @input="queryParams.configName = $event.detail.value" placeholder="Search by Config Name" @confirm="handleSearch" />
       <view class="filter-toggle" @click="toggleFilters">
         <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
         <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
       </view>
       <view class="filters-container" :class="{ expanded: filtersExpanded }">
-        <input class="n-input search-input" v-model="queryParams.configKey" placeholder="Search by Config Key" @confirm="handleSearch" />
+        <input class="n-input search-input" :value="queryParams.configKey" @input="queryParams.configKey = $event.detail.value" placeholder="Search by Config Key" @confirm="handleSearch" />
         <picker mode="selector" :range="configTypeOptions" :value="filterConfigTypeIndex" @change="onFilterConfigTypeChange">
           <view class="filter-picker">{{ configTypeOptions[filterConfigTypeIndex] }}</view>
         </picker>
@@ -83,15 +83,15 @@
     <BottomSheet :visible="showModal" :title="isEdit ? 'Edit Config' : 'Add Config'" @update:visible="val => !val && closeModal()" @close="closeModal">
       <view class="form-item">
         <text class="form-label">Config Name *</text>
-        <input class="n-input" v-model="form.configName" placeholder="Enter config name" />
+        <input class="n-input" :value="form.configName" @input="form.configName = $event.detail.value" placeholder="Enter config name" />
       </view>
       <view class="form-item">
         <text class="form-label">Config Key *</text>
-        <input class="n-input" v-model="form.configKey" placeholder="Enter config key" />
+        <input class="n-input" :value="form.configKey" @input="form.configKey = $event.detail.value" placeholder="Enter config key" />
       </view>
       <view class="form-item">
         <text class="form-label">Config Value *</text>
-        <input class="n-input" v-model="form.configValue" placeholder="Enter config value" />
+        <input class="n-input" :value="form.configValue" @input="form.configValue = $event.detail.value" placeholder="Enter config value" />
       </view>
       <view class="form-item">
         <text class="form-label">Config Type *</text>
@@ -101,7 +101,7 @@
       </view>
       <view class="form-item">
         <text class="form-label">Remark</text>
-        <textarea class="n-textarea" v-model="form.remark" placeholder="Enter remark" />
+        <textarea class="n-textarea" :value="form.remark" @input="form.remark = $event.detail.value" placeholder="Enter remark" />
       </view>
       <template #header-actions>
         <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
@@ -114,7 +114,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listConfig, getConfig, addConfig, updateConfig, delConfig } from '@/api/system/config'
 import { hasPermission } from '@/utils/permission'
@@ -583,7 +583,7 @@ const onRefresh = () => {
   @include text-body;
   width: 100%;
   box-sizing: border-box;
-  border-radius: $radius-sm;
+  border-radius: $radius-lg;
 }
 
 .detail-info-row {

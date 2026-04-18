@@ -1,5 +1,5 @@
 <template>
-  <TopBar title="Operation Logs" :showBack="true" />
+  <AppTopBar title="Operation Logs" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.operName" placeholder="Search by Operation" @confirm="handleSearch" />
@@ -78,7 +78,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
 import { list, delOperlog, cleanOperlog } from '@/api/monitor/operlog'
 
 const logList = ref([])

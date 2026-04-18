@@ -6,7 +6,6 @@
       :unread-count="unreadCount"
       @search="handleSearch"
       @notification="handleNotification"
-      @profile="handleProfile"
     />
 
     <view class="page-header">
@@ -203,8 +202,18 @@ const formatDate = (d) => {
 
 const handleSearch = () => {}
 const handleNotification = () => { uni.navigateTo({ url: '/pages/notifications/index' }) }
-const handleProfile = () => { uni.navigateTo({ url: '/pages/profile/index' }) }
-const handleTabChange = (tab) => { activeTab.value = tab }
+const handleTabChange = (tabId) => {
+  const routes = {
+    dashboard: '/pages/index/index',
+    machines: '/pages/manage/index',
+    tasks: '/pages/manage/task/index',
+    inventory: '/pages/inventory/index',
+    analytics: '/pages/analytics/index'
+  }
+  if (routes[tabId]) {
+    uni.redirectTo({ url: routes[tabId] })
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -235,7 +244,7 @@ const handleTabChange = (tab) => { activeTab.value = tab }
   flex: 1;
   background: $color-surface-raised;
   border: 1px solid $color-border-subtle;
-  border-radius: $radius-md;
+  border-radius: $radius-pill;
   padding: $spacing-2 $spacing-3;
   @include text-body;
   color: $color-text-primary;
@@ -289,7 +298,7 @@ const handleTabChange = (tab) => { activeTab.value = tab }
   text-align: center;
   background: $color-surface-subtle;
   border: 1px solid $color-border-subtle;
-  border-radius: $radius-sm;
+  border-radius: $radius-pill;
   @include text-body;
   color: $color-text-primary;
 }

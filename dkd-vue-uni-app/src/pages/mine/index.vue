@@ -1,9 +1,6 @@
 <template>
+  <AppTopBar title="Account" :show-back="true" :show-actions="false" />
   <view class="layout-container">
-    <view class="page-header">
-      <text class="page-title">Profile</text>
-    </view>
-
     <scroll-view class="scroll-area" scroll-y>
       <view class="content-wrapper">
         <view class="profile-card">
@@ -45,15 +42,13 @@
         <Button variant="error" size="lg" @click="handleLogout">Log Out</Button>
       </view>
     </scroll-view>
-
-    <AppBottomBar :active-tab="''" @tab-change="handleTabChange" />
   </view>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import AppBottomBar from '@/components/app/AppBottomBar.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import Icon from '@/components/ui/Icon.vue'
 import Card from '@/components/ui/Card.vue'
@@ -98,19 +93,6 @@ const handleLogout = () => {
   uni.reLaunch({ url: '/pages/login/index' })
 }
 
-const handleTabChange = (tabId) => {
-  const routes = {
-    dashboard: '/pages/index/index',
-    machines: '/pages/manage/index',
-    tasks: '/pages/manage/task/index',
-    inventory: '/pages/inventory/index',
-    analytics: '/pages/analytics/index'
-  }
-  if (routes[tabId]) {
-    uni.navigateTo({ url: routes[tabId] })
-  }
-}
-
 onShow(() => {
   fetchUserInfo()
 })
@@ -128,27 +110,6 @@ onShow(() => {
   padding-top: $top-bar-total-height;
 }
 
-.page-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: $top-bar-total-height;
-  @include glass($surface-overlay-strong, transparent);
-  border-bottom: 1px solid $color-border-subtle;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: calc(env(safe-area-inset-top, 0px) + $spacing-2) $spacing-4 $spacing-2;
-  z-index: $z-index-sticky;
-}
-
-.page-title {
-  @include text-title;
-  color: $color-text-primary;
-  font-weight: $font-weight-bold;
-}
-
 .scroll-area {
   flex: 1;
 }
@@ -158,7 +119,7 @@ onShow(() => {
   flex-direction: column;
   gap: $spacing-4;
   padding: $spacing-4;
-  padding-bottom: calc(#{$bottom-bar-height} + env(safe-area-inset-bottom, 0px) + $spacing-4);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + $spacing-4);
 }
 
 .profile-card {

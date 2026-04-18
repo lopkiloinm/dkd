@@ -1,6 +1,6 @@
 <template>
   <view v-if="visible" class="drawer-overlay" @click="handleOverlayClick">
-    <view :class="drawerClasses" @click.stop>
+    <view :class="drawerClasses" :style="drawerStyle" @click.stop>
       <scroll-view class="drawer-body" scroll-y>
         <slot></slot>
       </scroll-view>
@@ -86,12 +86,14 @@ watch(() => props.visible, (newVal) => {
   transition: transform $transition-normal ease-out;
   display: flex;
   flex-direction: column;
-  
+  box-sizing: border-box;
+  overflow: hidden;
+
   &.drawer-left {
     left: 0;
     border-right: 1px solid $color-border-subtle;
   }
-  
+
   &.drawer-right {
     right: 0;
     border-left: 1px solid $color-border-subtle;
@@ -100,7 +102,9 @@ watch(() => props.visible, (newVal) => {
 
 .drawer-body {
   flex: 1;
+  width: 100%;
   padding: $spacing-4;
+  box-sizing: border-box;
   @include scrollbar-hidden;
 }
 </style>

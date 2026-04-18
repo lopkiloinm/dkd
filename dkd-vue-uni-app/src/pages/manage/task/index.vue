@@ -3,10 +3,8 @@
     :unread-count="unreadCount"
     :profile-picture="profilePicture"
     :user-name="userName"
-    @add="handleAdd"
     @search="handleSearch"
     @notification="handleNotification"
-    @profile="handleProfile"
   />
   <view class="layout-container">
     <view class="filter-tabs">
@@ -143,29 +141,6 @@
         <text class="detail-label">Description</text>
         <text class="detail-value detail-desc">{{ detailData.desc || 'No description' }}</text>
       </view>
-      <view class="detail-actions">
-        <view
-          v-if="detailData.taskStatus === 1"
-          class="detail-action-btn detail-action-btn--primary"
-          @click="confirmAccept"
-        >
-          <text class="detail-action-text">Accept</text>
-        </view>
-        <view
-          v-if="detailData.taskStatus === 2"
-          class="detail-action-btn detail-action-btn--success"
-          @click="confirmComplete"
-        >
-          <text class="detail-action-text">Complete</text>
-        </view>
-        <view
-          v-if="detailData.taskStatus === 1 || detailData.taskStatus === 2"
-          class="detail-action-btn detail-action-btn--danger"
-          @click="confirmReject"
-        >
-          <text class="detail-action-text">Reject</text>
-        </view>
-      </view>
     </view>
     <view v-else class="form-view">
       <view class="form-group">
@@ -176,25 +151,32 @@
       </view>
       <view class="form-group">
         <text class="form-label">Machine Code *</text>
-        <input class="form-input" v-model="formData.innerCode" placeholder="Enter machine inner code" />
+        <input class="form-input" :value="formData.innerCode" @input="formData.innerCode = $event.detail.value" placeholder="Enter machine inner code" />
       </view>
       <view class="form-group">
         <text class="form-label">Assignee</text>
-        <input class="form-input" v-model="formData.userName" placeholder="Operator name" />
+        <input class="form-input" :value="formData.userName" @input="formData.userName = $event.detail.value" placeholder="Operator name" />
       </view>
       <view class="form-group">
         <text class="form-label">Address</text>
-        <input class="form-input" v-model="formData.addr" placeholder="Machine location" />
+        <input class="form-input" :value="formData.addr" @input="formData.addr = $event.detail.value" placeholder="Machine location" />
       </view>
       <view class="form-group">
         <text class="form-label">Description</text>
-        <textarea class="form-input form-textarea" v-model="formData.desc" placeholder="Task description" />
+        <textarea class="form-input form-textarea" :value="formData.desc" @input="formData.desc = $event.detail.value" placeholder="Task description" />
       </view>
     </view>
 
-    <template v-if="formMode !== 'detail'" #header-actions>
-      <view class="action-pill" @click="closeDetail"><text class="action-pill-text">Cancel</text></view>
-      <view class="action-pill action-pill--primary" @click="saveTask"><text class="action-pill-text">Save</text></view>
+    <template #header-actions>
+      <template v-if="formMode === 'detail'">
+        <view v-if="detailData.taskStatus === 1" class="action-pill action-pill--primary" @click="confirmAccept"><text class="action-pill-text">Accept</text></view>
+        <view v-if="detailData.taskStatus === 2" class="action-pill action-pill--success" @click="confirmComplete"><text class="action-pill-text">Complete</text></view>
+        <view v-if="detailData.taskStatus === 1 || detailData.taskStatus === 2" class="action-pill action-pill--danger" @click="confirmReject"><text class="action-pill-text">Reject</text></view>
+      </template>
+      <template v-else>
+        <view class="action-pill" @click="closeDetail"><text class="action-pill-text">Cancel</text></view>
+        <view class="action-pill action-pill--primary" @click="saveTask"><text class="action-pill-text">Save</text></view>
+      </template>
     </template>
   </BottomSheet>
 </template>
@@ -214,7 +196,7 @@ import Grid from '@/components/ui/Grid.vue'
 import Icon from '@/components/ui/Icon.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
-import { listTask, completeTask, cancelTask, acceptTask, rejectTask, addTask, updateTask, delTask, getTask } from '@/api/manage/task'
+import { listTask, completeTask, acceptTask, rejectTask, addTask, updateTask, delTask, getTask } from '@/api/manage/task'
 import { getInfo } from '@/api/login'
 import useUserStore from '@/store/modules/user'
 
@@ -279,7 +261,9 @@ const queryParams = ref({
   pageSize: 10,
   taskCode: '',
   taskStatus: null,
-  productTypeId: null
+  productTypeId: null,
+  orderByColumn: 'createTime',
+  isAsc: 'desc'
 })
 const total = ref(0)
 
@@ -496,22 +480,6 @@ const confirmComplete = () => {
       if (r.confirm) {
         await completeTask(detailData.value.taskId)
         uni.showToast({ title: 'Task completed', icon: 'success' })
-        closeDetail()
-        fetchList(true)
-      }
-    }
-  })
-}
-
-const confirmCancel = () => {
-  uni.showModal({
-    title: 'Cancel Task',
-    content: 'Cancel this task?',
-    confirmColor: '#ef4444',
-    success: async (r) => {
-      if (r.confirm) {
-        await cancelTask(detailData.value.taskId)
-        uni.showToast({ title: 'Task cancelled', icon: 'success' })
         closeDetail()
         fetchList(true)
       }
@@ -819,28 +787,6 @@ const handleSearchResult = () => {}
 .detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
 .detail-desc { font-weight: $font-weight-regular; }
 
-.detail-actions {
-  display: flex;
-  gap: $spacing-3;
-  padding-top: $spacing-4;
-  margin-top: $spacing-3;
-}
-.detail-action-btn {
-  flex: 1;
-  padding: $spacing-3 0;
-  border-radius: $radius-md;
-  text-align: center;
-  background: $color-surface-raised;
-  border: 1px solid $color-border-subtle;
-}
-.detail-action-btn--primary { background: $color-primary; border-color: $color-primary; }
-.detail-action-btn--success { background: $color-success; border-color: $color-success; }
-.detail-action-btn--danger  { background: $color-danger;  border-color: $color-danger;  }
-.detail-action-btn--primary .detail-action-text,
-.detail-action-btn--success .detail-action-text,
-.detail-action-btn--danger  .detail-action-text { color: #fff; }
-.detail-action-text { @include text-body; font-weight: $font-weight-medium; }
-
 .form-view { display: flex; flex-direction: column; gap: $spacing-4; }
 .form-group { display: flex; flex-direction: column; gap: $spacing-2; }
 .form-label { @include text-caption; color: $color-text-secondary; font-weight: $font-weight-medium; }
@@ -851,12 +797,12 @@ const handleSearchResult = () => {}
   padding: $spacing-3;
   background: $color-bg-tertiary;
   border: 1px solid $color-border-subtle;
-  border-radius: $radius-sm;
+  border-radius: $radius-pill;
   width: 100%;
   box-sizing: border-box;
 }
 
-.form-textarea { min-height: 80px; }
+.form-textarea { min-height: 80px; border-radius: $radius-lg; }
 
 .form-picker {
   @include text-body;
@@ -864,6 +810,6 @@ const handleSearchResult = () => {}
   padding: $spacing-3;
   background: $color-bg-tertiary;
   border: 1px solid $color-border-subtle;
-  border-radius: $radius-sm;
+  border-radius: $radius-pill;
 }
 </style>

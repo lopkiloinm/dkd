@@ -1,5 +1,5 @@
 <template>
-  <TopBar title="User Management" :showBack="true" />
+  <AppTopBar title="User Management" :showBack="true" />
   <view class="layout-container">
     <!-- Bulk Actions Bar -->
     <view v-if="selectedUsers.length > 0" class="bulk-actions-bar">
@@ -13,13 +13,13 @@
     </view>
 
     <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.userName" placeholder="Search by User Name" @confirm="handleSearch" />
+      <input class="n-input search-input" :value="queryParams.userName" @input="queryParams.userName = $event.detail.value" placeholder="Search by User Name" @confirm="handleSearch" />
       <view class="filter-toggle" @click="toggleFilters">
         <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
         <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
       </view>
       <view class="filters-container" :class="{ expanded: filtersExpanded }">
-        <input class="n-input search-input" v-model="queryParams.phonenumber" placeholder="Search by Phone" @confirm="handleSearch" />
+        <input class="n-input search-input" :value="queryParams.phonenumber" @input="queryParams.phonenumber = $event.detail.value" placeholder="Search by Phone" @confirm="handleSearch" />
         <picker mode="selector" :range="statusOptions" :value="filterStatusIndex" @change="onFilterStatusChange">
           <view class="filter-picker">{{ statusOptions[filterStatusIndex] }}</view>
         </picker>
@@ -141,11 +141,11 @@
     <BottomSheet :visible="showModal" :title="isEdit ? 'Edit User' : 'Add User'" @update:visible="val => !val && closeModal()" @close="closeModal">
       <view class="form-item">
         <text class="form-label">User Name *</text>
-        <input class="n-input" v-model="form.userName" placeholder="Enter user name" />
+        <input class="n-input" :value="form.userName" @input="form.userName = $event.detail.value" placeholder="Enter user name" />
       </view>
       <view class="form-item">
         <text class="form-label">Nickname *</text>
-        <input class="n-input" v-model="form.nickName" placeholder="Enter nickname" />
+        <input class="n-input" :value="form.nickName" @input="form.nickName = $event.detail.value" placeholder="Enter nickname" />
       </view>
       <view class="form-item">
         <text class="form-label">Department *</text>
@@ -155,15 +155,15 @@
       </view>
       <view class="form-item">
         <text class="form-label">Phone</text>
-        <input class="n-input" v-model="form.phonenumber" placeholder="Enter phone number" />
+        <input class="n-input" :value="form.phonenumber" @input="form.phonenumber = $event.detail.value" placeholder="Enter phone number" />
       </view>
       <view class="form-item">
         <text class="form-label">Email</text>
-        <input class="n-input" v-model="form.email" placeholder="Enter email" />
+        <input class="n-input" :value="form.email" @input="form.email = $event.detail.value" placeholder="Enter email" />
       </view>
       <view class="form-item" v-if="!isEdit">
         <text class="form-label">Password *</text>
-        <input class="n-input" v-model="form.password" type="password" placeholder="Enter password" />
+        <input class="n-input" :value="form.password" @input="form.password = $event.detail.value" type="password" placeholder="Enter password" />
       </view>
       <view class="form-item">
         <text class="form-label">Status</text>
@@ -182,7 +182,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
 import Button from '@/components/ui/Button.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listUser, getUser, addUser, updateUser, delUser, resetUserPwd } from '@/api/system/user'

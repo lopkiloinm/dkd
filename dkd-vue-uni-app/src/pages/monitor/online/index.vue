@@ -1,5 +1,5 @@
 <template>
-  <TopBar title="Online Users" :showBack="true" />
+  <AppTopBar title="Online Users" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.ipaddr" placeholder="Search by IP" @confirm="handleSearch" />
@@ -51,7 +51,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
 import { list, forceLogout } from '@/api/monitor/online'
 
 const onlineList = ref([])

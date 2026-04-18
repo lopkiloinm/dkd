@@ -121,15 +121,4 @@ public class TaskController extends BaseController
     {
         return toAjax(taskService.rejectTask(taskId, reason));
     }
-
-    /**
-     * 拒绝/取消工单 (legacy endpoint, kept for compatibility)
-     */
-    @PreAuthorize("@ss.hasPermi('manage:task:edit')")
-    @Log(title = "工单", businessType = BusinessType.UPDATE)
-    @PutMapping("/{taskId}/cancel")
-    public AjaxResult cancel(@PathVariable("taskId") Long taskId)
-    {
-        return toAjax(taskService.rejectTask(taskId, null));
-    }
 }

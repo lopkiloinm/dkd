@@ -1,8 +1,8 @@
 <template>
-  <TopBar title="Menu Management" :showBack="true" />
+  <AppTopBar title="Menu Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.menuName" placeholder="Search by Menu Name" @confirm="handleSearch" />
+      <input class="n-input search-input" :value="queryParams.menuName" @input="queryParams.menuName = $event.detail.value" placeholder="Search by Menu Name" @confirm="handleSearch" />
       <view class="filter-toggle" @click="toggleFilters">
         <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
         <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
@@ -109,23 +109,23 @@
       </view>
       <view class="form-item">
         <text class="form-label">Menu Name *</text>
-        <input class="n-input" v-model="form.menuName" placeholder="Enter menu name" />
+        <input class="n-input" :value="form.menuName" @input="form.menuName = $event.detail.value" placeholder="Enter menu name" />
       </view>
       <view class="form-item">
         <text class="form-label">Order Num *</text>
-        <input class="n-input" v-model="form.orderNum" type="number" placeholder="Enter order num" />
+        <input class="n-input" :value="form.orderNum" @input="form.orderNum = $event.detail.value" type="number" placeholder="Enter order num" />
       </view>
       <view class="form-item" v-if="form.menuType !== 'F'">
         <text class="form-label">Path</text>
-        <input class="n-input" v-model="form.path" placeholder="Enter path" />
+        <input class="n-input" :value="form.path" @input="form.path = $event.detail.value" placeholder="Enter path" />
       </view>
       <view class="form-item" v-if="form.menuType === 'C'">
         <text class="form-label">Component</text>
-        <input class="n-input" v-model="form.component" placeholder="Enter component" />
+        <input class="n-input" :value="form.component" @input="form.component = $event.detail.value" placeholder="Enter component" />
       </view>
       <view class="form-item" v-if="form.menuType !== 'M'">
         <text class="form-label">Perms</text>
-        <input class="n-input" v-model="form.perms" placeholder="Enter perms" />
+        <input class="n-input" :value="form.perms" @input="form.perms = $event.detail.value" placeholder="Enter perms" />
       </view>
       <view class="form-item">
         <text class="form-label">Visible</text>
@@ -144,7 +144,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listMenu, getMenu, addMenu, updateMenu, delMenu } from '@/api/system/menu'
 import { hasPermission } from '@/utils/permission'

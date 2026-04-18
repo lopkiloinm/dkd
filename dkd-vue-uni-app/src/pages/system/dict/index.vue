@@ -1,14 +1,14 @@
 <template>
-  <TopBar title="Dictionary Management" :showBack="true" />
+  <AppTopBar title="Dictionary Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.dictName" placeholder="Search by Dict Name" @confirm="handleSearch" />
+      <input class="n-input search-input" :value="queryParams.dictName" @input="queryParams.dictName = $event.detail.value" placeholder="Search by Dict Name" @confirm="handleSearch" />
       <view class="filter-toggle" @click="toggleFilters">
         <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
         <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
       </view>
       <view class="filters-container" :class="{ expanded: filtersExpanded }">
-        <input class="n-input search-input" v-model="queryParams.dictType" placeholder="Search by Dict Type" @confirm="handleSearch" />
+        <input class="n-input search-input" :value="queryParams.dictType" @input="queryParams.dictType = $event.detail.value" placeholder="Search by Dict Type" @confirm="handleSearch" />
         <picker mode="selector" :range="statusOptions" :value="filterStatusIndex" @change="onFilterStatusChange">
           <view class="filter-picker">{{ statusOptions[filterStatusIndex] }}</view>
         </picker>
@@ -89,11 +89,11 @@
     >
       <view class="form-item">
         <text class="form-label">Dict Name *</text>
-        <input class="n-input" v-model="form.dictName" placeholder="Enter dict name" />
+        <input class="n-input" :value="form.dictName" @input="form.dictName = $event.detail.value" placeholder="Enter dict name" />
       </view>
       <view class="form-item">
         <text class="form-label">Dict Type *</text>
-        <input class="n-input" v-model="form.dictType" placeholder="Enter dict type" :disabled="isEdit" />
+        <input class="n-input" :value="form.dictType" @input="form.dictType = $event.detail.value" placeholder="Enter dict type" :disabled="isEdit" />
       </view>
       <view class="form-item">
         <text class="form-label">Status</text>
@@ -103,7 +103,7 @@
       </view>
       <view class="form-item">
         <text class="form-label">Remark</text>
-        <textarea class="n-textarea" v-model="form.remark" placeholder="Enter remark" />
+        <textarea class="n-textarea" :value="form.remark" @input="form.remark = $event.detail.value" placeholder="Enter remark" />
       </view>
 
       <template #header-actions>
@@ -117,7 +117,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listType, getType, addType, updateType, delType, refreshCache } from '@/api/system/dict/type'
 import { hasPermission } from '@/utils/permission'
@@ -585,7 +585,7 @@ const onRefresh = () => {
   @include text-body;
   width: 100%;
   box-sizing: border-box;
-  border-radius: $radius-sm;
+  border-radius: $radius-lg;
 }
 
 .detail-info-row {

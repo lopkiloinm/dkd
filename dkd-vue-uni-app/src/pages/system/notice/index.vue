@@ -1,8 +1,8 @@
 <template>
-  <TopBar title="Notice Management" :showBack="true" />
+  <AppTopBar title="Notice Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.noticeTitle" placeholder="Search by Title" @confirm="handleSearch" />
+      <input class="n-input search-input" :value="queryParams.noticeTitle" @input="queryParams.noticeTitle = $event.detail.value" placeholder="Search by Title" @confirm="handleSearch" />
       <view class="filter-toggle" @click="toggleFilters">
         <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
         <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
@@ -86,7 +86,7 @@
     <BottomSheet :visible="showModal" :title="isEdit ? 'Edit Notice' : 'Add Notice'" @update:visible="val => !val && closeModal()" @close="closeModal">
       <view class="form-item">
         <text class="form-label">Title *</text>
-        <input class="n-input" v-model="form.noticeTitle" placeholder="Enter title" />
+        <input class="n-input" :value="form.noticeTitle" @input="form.noticeTitle = $event.detail.value" placeholder="Enter title" />
       </view>
       <view class="form-item">
         <text class="form-label">Type *</text>
@@ -102,7 +102,7 @@
       </view>
       <view class="form-item">
         <text class="form-label">Content *</text>
-        <textarea class="n-textarea" v-model="form.noticeContent" placeholder="Enter content" />
+        <textarea class="n-textarea" :value="form.noticeContent" @input="form.noticeContent = $event.detail.value" placeholder="Enter content" />
       </view>
       <template #header-actions>
         <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
@@ -115,7 +115,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listNotice, getNotice, addNotice, updateNotice, delNotice } from '@/api/system/notice'
 import { hasPermission } from '@/utils/permission'
@@ -602,7 +602,7 @@ const onRefresh = () => {
   @include text-body;
   width: 100%;
   box-sizing: border-box;
-  border-radius: $radius-sm;
+  border-radius: $radius-lg;
 }
 
 .detail-info-row {

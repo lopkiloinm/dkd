@@ -3,10 +3,8 @@
     :unread-count="unreadCount"
     :profile-picture="profilePicture"
     :user-name="userName"
-    @add="handleAdd"
     @search="handleSearch"
     @notification="handleNotification"
-    @profile="handleProfile"
   />
   <view class="layout-container">
     <view class="filter-tabs">
@@ -102,9 +100,11 @@
           <CardSection variant="body">
             <view class="location-revenue">
               <view class="location-item" v-for="location in locationRevenue" :key="location.id">
-                <text class="location-name">{{ location.name }}</text>
+                <view class="location-header">
+                  <text class="location-name">{{ location.name }}</text>
+                  <text class="location-amount">¥{{ location.revenue }}</text>
+                </view>
                 <ProgressBar :value="location.revenue" :max="maxLocationRevenue" />
-                <text class="location-amount">¥{{ location.revenue }}</text>
               </view>
             </view>
           </CardSection>
@@ -455,9 +455,7 @@ const fetchAnalyticsData = async () => {
   }
 }
 
-const handleAdd = () => {
-  uni.navigateTo({ url: '/pages/reports/index' })
-}
+const handleAdd = () => {}
 
 const handleSearch = () => {
   showSearch.value = true
@@ -641,10 +639,17 @@ onMounted(() => {
   font-weight: $font-weight-medium;
 }
 
+.location-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-3;
+}
+
 .location-amount {
-  @include text-caption;
+  @include text-body;
   color: $color-text-primary;
-  text-align: right;
+  font-weight: $font-weight-semibold;
 }
 
 .partner-performance {

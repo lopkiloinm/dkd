@@ -1,5 +1,5 @@
 <template>
-  <TopBar title="Server Monitor" :showBack="true" />
+  <AppTopBar title="Server Monitor" :showBack="true" />
   <view class="layout-container">
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
       <view class="server-info">
@@ -163,7 +163,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
 import { getServer } from '@/api/monitor/server'
 
 const server = ref({

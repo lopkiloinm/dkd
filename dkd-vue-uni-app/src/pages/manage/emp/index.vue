@@ -574,7 +574,7 @@ const handleTabChange = (tabId) => {
   padding: 0 $spacing-4;
   background: $color-bg-secondary;
   border: 1px solid $color-border-subtle;
-  border-radius: $radius-md;
+  border-radius: $radius-pill;
   font-size: 16px;
   color: $color-text-primary;
   box-sizing: border-box;

@@ -368,7 +368,7 @@ const handleTabChange = (tabId) => {
   box-sizing: border-box;
   color: $color-text-primary;
   background: $color-bg-secondary;
-  border-radius: $radius-md;
+  border-radius: $radius-pill;
 }
 
 .n-input::placeholder {

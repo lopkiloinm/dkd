@@ -3,15 +3,16 @@
     :unread-count="unreadCount"
     :profile-picture="profilePicture"
     :user-name="userName"
-    @add="handleAdd"
     @search="handleSearch"
     @notification="handleNotification"
-    @profile="handleProfile"
   />
   <view class="layout-container">
     <view class="filter-tabs">
       <scroll-view class="tabs-scroll" scroll-x :show-scrollbar="false">
         <view class="tabs-list">
+          <view class="master-filter-tab" @click="handleMasterFilter">
+            <Icon name="settings" size="18" color="currentColor" />
+          </view>
           <view
             v-for="tab in filterTabs"
             :key="tab.value"
@@ -24,70 +25,60 @@
           </view>
         </view>
       </scroll-view>
-      <view class="master-filter-btn" @click="handleMasterFilter">
-        <text class="filter-icon">⚙</text>
-      </view>
     </view>
 
-    <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
+    <scroll-view
+      class="scroll-area"
+      scroll-y
+      @scrolltolower="loadMore"
+      refresher-enabled
+      @refresherrefresh="onRefresh"
+      :refresher-triggered="isRefreshing"
+    >
       <view class="content-wrapper">
-        <!-- Section Cards -->
-        <view class="section-cards">
-          <SectionCard
-            title="Machines"
-            :stats="`${totalMachines} Total • ${onlineMachines} Online`"
-            @click="showMachineSection = true"
-          />
-          <SectionCard
-            title="Partners"
-            :stats="`${partnerCount} Active Partners`"
-            @click="showPartnerSection = true"
-          />
-        </view>
-
-        <!-- Machine List -->
-        <view v-if="showMachineSection" class="machine-list">
-          <text class="list-title">Machines</text>
+        <text class="section-title">Machines</text>
+        <view class="vm-list">
           <view v-if="vmList.length === 0 && !loading" class="empty-state">
-            <EmptyState title="No machines found" description="Try adjusting your filters" />
+            <EmptyState title="No machines found" description="Try adjusting your filters or add a new machine" />
           </view>
-          <Card v-for="item in vmList" :key="item.id" class="machine-card" @click="handleViewDetail(item)">
-            <CardSection variant="body">
-              <view class="card-header">
-                <text class="machine-code">{{ item.innerCode }}</text>
-                <Badge :variant="getStatusVariant(item.vmStatus)">{{ getStatusText(item.vmStatus) }}</Badge>
+          <Card
+            v-for="item in vmList"
+            :key="item.id"
+            class="vm-card"
+            @click="handleViewDetail(item)"
+          >
+            <view class="card-header">
+              <text class="vm-code">{{ item.innerCode }}</text>
+              <Badge :variant="getStatusVariant(item.vmStatus)">{{ getStatusText(item.vmStatus) }}</Badge>
+            </view>
+            <view class="vm-info">
+              <view class="info-row">
+                <text class="info-label">Address</text>
+                <text class="info-value">{{ item.addr || 'N/A' }}</text>
               </view>
-              <view class="machine-info">
-                <text class="info-text">{{ item.addr || 'Unknown address' }}</text>
-                <text class="info-sub">{{ item.partnerName || 'No partner assigned' }}</text>
+              <view class="info-row">
+                <text class="info-label">Node</text>
+                <text class="info-value">{{ item.nodeName || 'Unassigned' }}</text>
               </view>
-            </CardSection>
-          </Card>
-        </view>
-
-        <!-- Partner List -->
-        <view v-if="showPartnerSection" class="partner-list">
-          <text class="list-title">Partners</text>
-          <view v-if="partnerList.length === 0" class="empty-state">
-            <EmptyState title="No partners found" description="Add partners to get started" />
-          </view>
-          <Card v-for="partner in partnerList" :key="partner.id" class="partner-card" @click="handlePartnerClick(partner)">
-            <CardSection variant="body">
-              <view class="partner-header">
-                <text class="partner-name">{{ partner.partnerName }}</text>
-                <Badge variant="success">Active</Badge>
+              <view class="info-row">
+                <text class="info-label">Partner</text>
+                <text class="info-value">{{ item.partnerName || 'None' }}</text>
               </view>
-              <text class="partner-contact">{{ partner.contactPhone || 'No contact info' }}</text>
-            </CardSection>
+              <view class="info-row">
+                <text class="info-label">Type</text>
+                <text class="info-value">{{ item.vmTypeName || '—' }}</text>
+              </view>
+            </view>
           </Card>
         </view>
       </view>
     </scroll-view>
   </view>
   <AppBottomBar :active-tab="activeTab" @tab-change="handleTabChange" />
+
   <FilterModal
     v-model:visible="showFilterModal"
-    :title="'Filter Machines'"
+    title="Filter Machines"
     :filter-sections="filterSections"
     :selected-filters="selectedFilters"
     @apply="handleFilterApply"
@@ -99,50 +90,98 @@
     @result-click="handleSearchResult"
   />
 
-  <BottomSheet :visible="showDetailModal" title="Machine Details" @update:visible="val => !val && closeDetailModal()" @close="closeDetailModal">
-    <view class="vm-detail-row"><text class="vm-detail-label">Code</text><text class="vm-detail-value">{{ detailData.innerCode }}</text></view>
-    <view class="vm-detail-row"><text class="vm-detail-label">Address</text><text class="vm-detail-value">{{ detailData.addr }}</text></view>
-    <view class="vm-detail-row"><text class="vm-detail-label">Node</text><text class="vm-detail-value">{{ detailData.nodeName }}</text></view>
-    <view class="vm-detail-row"><text class="vm-detail-label">Region</text><text class="vm-detail-value">{{ detailData.regionName }}</text></view>
-    <view class="vm-detail-row"><text class="vm-detail-label">Partner</text><text class="vm-detail-value">{{ detailData.partnerName }}</text></view>
-    <view class="vm-detail-row"><text class="vm-detail-label">Type</text><text class="vm-detail-value">{{ detailData.vmTypeName }}</text></view>
-    <view class="vm-detail-row"><text class="vm-detail-label">Status</text><Badge :variant="getStatusVariant(detailData.vmStatus)">{{ getStatusText(detailData.vmStatus) }}</Badge></view>
-    <view class="vm-detail-row"><text class="vm-detail-label">Update Status</text>
-      <picker mode="selector" :range="vmStatusLabels" :value="detailStatusIndex" @change="onDetailStatusChange">
-        <view class="vm-form-picker">{{ vmStatusLabels[detailStatusIndex] }}</view>
-      </picker>
+  <BottomSheet
+    :visible="showDetail"
+    :title="formMode === 'detail' ? 'Machine Details' : (formData.id ? 'Edit Machine' : 'New Machine')"
+    @update:visible="val => !val && closeDetail()"
+    @close="closeDetail"
+  >
+    <view v-if="formMode === 'detail'" class="detail-view">
+      <view class="detail-row">
+        <text class="detail-label">Code</text>
+        <text class="detail-value">{{ detailData.innerCode }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Status</text>
+        <Badge :variant="getStatusVariant(detailData.vmStatus)">{{ getStatusText(detailData.vmStatus) }}</Badge>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Address</text>
+        <text class="detail-value">{{ detailData.addr || 'N/A' }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Node</text>
+        <text class="detail-value">{{ detailData.nodeName }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Region</text>
+        <text class="detail-value">{{ detailData.regionName }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Partner</text>
+        <text class="detail-value">{{ detailData.partnerName }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">Type</text>
+        <text class="detail-value">{{ detailData.vmTypeName }}</text>
+      </view>
     </view>
-    <template #header-actions>
-      <view class="action-pill action-pill--primary" @click="saveStatusUpdate"><text class="action-pill-text">Save Status</text></view>
-    </template>
-  </BottomSheet>
 
-  <BottomSheet :visible="showModal" :title="isEdit ? 'Edit Machine' : 'New Machine'" @update:visible="val => !val && closeModal()" @close="closeModal">
-    <view class="vm-form-group">
-      <text class="vm-form-label">Inner Code *</text>
-      <input class="vm-form-input" v-model="form.innerCode" placeholder="Machine inner code" />
+    <view v-else class="form-view">
+      <view class="form-group">
+        <text class="form-label">Inner Code *</text>
+        <input class="form-input" :value="formData.innerCode" @input="formData.innerCode = $event.detail.value" placeholder="Machine inner code" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">Node *</text>
+        <picker mode="selector" :range="nodeList" range-key="nodeName" :value="nodeIndex" @change="onNodeChange">
+          <view class="form-picker">{{ nodeList[nodeIndex]?.nodeName || 'Select node' }}</view>
+        </picker>
+      </view>
+      <view class="form-group">
+        <text class="form-label">VM Type *</text>
+        <picker mode="selector" :range="vmTypeList" range-key="name" :value="vmTypeIndex" @change="onVmTypeChange">
+          <view class="form-picker">{{ vmTypeList[vmTypeIndex]?.name || 'Select type' }}</view>
+        </picker>
+      </view>
     </view>
-    <view class="vm-form-group">
-      <text class="vm-form-label">Node *</text>
-      <picker mode="selector" :range="nodeList" range-key="nodeName" :value="nodeIndex" @change="onNodeChange">
-        <view class="vm-form-picker">{{ nodeList[nodeIndex]?.nodeName || 'Select node' }}</view>
-      </picker>
-    </view>
-    <view class="vm-form-group">
-      <text class="vm-form-label">VM Type *</text>
-      <picker mode="selector" :range="vmTypeList" range-key="name" :value="vmTypeIndex" @change="onVmTypeChange">
-        <view class="vm-form-picker">{{ vmTypeList[vmTypeIndex]?.name || 'Select type' }}</view>
-      </picker>
-    </view>
-    <template #header-actions>
-      <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
+
+    <template v-if="formMode === 'detail'" #header-actions>
+      <view
+        v-if="detailData.vmStatus === 0"
+        class="action-pill action-pill--primary"
+        @click="updateStatus(1)"
+      >
+        <text class="action-pill-text">Activate</text>
+      </view>
+      <view
+        v-if="detailData.vmStatus === 1"
+        class="action-pill"
+        @click="updateStatus(3)"
+      >
+        <text class="action-pill-text">Report Fault</text>
+      </view>
+      <view
+        v-if="detailData.vmStatus === 3"
+        class="action-pill action-pill--primary"
+        @click="updateStatus(1)"
+      >
+        <text class="action-pill-text">Mark Repaired</text>
+      </view>
+      <view class="action-pill" @click="handleEditFromDetail">
+        <text class="action-pill-text">Edit</text>
+      </view>
+    </template>
+
+    <template v-if="formMode !== 'detail'" #header-actions>
+      <view class="action-pill" @click="closeDetail"><text class="action-pill-text">Cancel</text></view>
       <view class="action-pill action-pill--primary" @click="submitForm"><text class="action-pill-text">Save</text></view>
     </template>
   </BottomSheet>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import useUserStore from '@/store/modules/user'
 import AppTopBar from '@/components/app/AppTopBar.vue'
@@ -151,45 +190,23 @@ import FilterModal from '@/components/app/FilterModal.vue'
 import SearchOverlay from '@/components/app/SearchOverlay.vue'
 import Icon from '@/components/ui/Icon.vue'
 import Card from '@/components/ui/Card.vue'
-import CardSection from '@/components/ui/CardSection.vue'
-import SectionCard from '@/components/app/SectionCard.vue'
-import BottomSheet from '@/components/ui/BottomSheet.vue'
 import Badge from '@/components/ui/Badge.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
-import { listVm, getVm, addVm, updateVm, delVm } from '@/api/manage/vm'
+import BottomSheet from '@/components/ui/BottomSheet.vue'
+import { listVm, getVm, addVm, updateVm } from '@/api/manage/vm'
+import { listNode } from '@/api/manage/node'
+import { listRegion } from '@/api/manage/region'
 import { listPartner } from '@/api/manage/partner'
 import { listVmType } from '@/api/manage/vmType'
 import { getInfo } from '@/api/login'
 
 const userStore = useUserStore()
 
-const vmList = ref([])
-const loading = ref(false)
-const isRefreshing = ref(false)
-const showDetailModal = ref(false)
-const detailData = ref({
-  innerCode: '',
-  addr: '',
-  nodeName: '',
-  regionName: '',
-  partnerName: '',
-  vmTypeName: '',
-  vmStatus: ''
-})
-
-// Navigation
-const activeTab = ref('machines')
-const showSearch = ref(false)
-const showFilterModal = ref(false)
-const showMachineSection = ref(true)
-const showPartnerSection = ref(false)
-
-// Profile
+// Top bar
 const userName = computed(() => userStore.name)
 const profilePicture = computed(() => userStore.avatar || '')
 const unreadCount = ref(0)
 
-// Fetch user info
 const fetchUserInfo = async () => {
   try {
     const response = await getInfo()
@@ -206,49 +223,16 @@ const fetchUserInfo = async () => {
   }
 }
 
-// Filter tabs
-const activeFilter = ref('all')
-const filterTabs = ref([
-  { label: 'All', value: 'all', count: 85 },
-  { label: 'Online', value: 'online', count: 80 },
-  { label: 'Offline', value: 'offline', count: 3 },
-  { label: 'Fault', value: 'fault', count: 2 },
-  { label: 'Partner', value: 'partner' }
-])
+// Navigation
+const activeTab = ref('machines')
+const showSearch = ref(false)
+const showFilterModal = ref(false)
 
-// Section stats
-const totalMachines = ref(85)
-const onlineMachines = ref(80)
-const partnerCount = ref(12)
-
-// Filter modal
-const selectedFilters = ref({})
-const filterSections = ref([
-  {
-    key: 'status',
-    title: 'Status',
-    options: [
-      { label: 'Operating', value: 1 },
-      { label: 'Unoperated', value: 0 },
-      { label: 'Fault', value: 3 }
-    ]
-  },
-  {
-    key: 'node',
-    title: 'Node',
-    options: []
-  },
-  {
-    key: 'region',
-    title: 'Region',
-    options: []
-  },
-  {
-    key: 'partner',
-    title: 'Partner',
-    options: []
-  }
-])
+// List state
+const vmList = ref([])
+const total = ref(0)
+const loading = ref(false)
+const isRefreshing = ref(false)
 
 const queryParams = ref({
   pageNum: 1,
@@ -259,51 +243,70 @@ const queryParams = ref({
   partnerId: null,
   vmTypeId: null,
   vmStatus: null,
-  policyId: ''
-})
-const total = ref(0)
-
-const showModal = ref(false)
-const isEdit = ref(false)
-const isSubmitting = ref(false)
-const form = ref({
-  id: null,
-  innerCode: '',
-  nodeId: '',
-  vmTypeId: ''
+  orderByColumn: 'createTime',
+  isAsc: 'desc'
 })
 
+// Filter tabs
+const activeFilter = ref('all')
+const filterTabs = ref([
+  { label: 'All', value: 'all' },
+  { label: 'Operating', value: 'operating' },
+  { label: 'Unoperated', value: 'unoperated' },
+  { label: 'Fault', value: 'fault' }
+])
+
+// Dropdowns
 const nodeList = ref([])
 const vmTypeList = ref([])
 const regionList = ref([])
 const partnerList = ref([])
+
+// Filter modal
+const selectedFilters = ref({})
+const filterSections = computed(() => [
+  {
+    key: 'status',
+    title: 'Status',
+    options: [
+      { label: 'Unoperated', value: 0 },
+      { label: 'Operating', value: 1 },
+      { label: 'Fault', value: 3 }
+    ]
+  },
+  {
+    key: 'node',
+    title: 'Node',
+    options: nodeList.value.map(n => ({ label: n.nodeName, value: n.id }))
+  },
+  {
+    key: 'region',
+    title: 'Region',
+    options: regionList.value.map(r => ({ label: r.regionName, value: r.id }))
+  },
+  {
+    key: 'partner',
+    title: 'Partner',
+    options: partnerList.value.map(p => ({ label: p.partnerName, value: p.id }))
+  },
+  {
+    key: 'vmType',
+    title: 'Machine Type',
+    options: vmTypeList.value.map(v => ({ label: v.name, value: v.id }))
+  }
+])
+
+// Detail / form sheet
+const showDetail = ref(false)
+const formMode = ref('detail') // 'detail' | 'create' | 'edit'
+const detailData = ref({})
+const formData = ref({ id: null, innerCode: '', nodeId: null, vmTypeId: null })
+const isSubmitting = ref(false)
 const nodeIndex = ref(0)
 const vmTypeIndex = ref(0)
-const detailStatusIndex = ref(0)
-const vmStatusLabels = ['Unoperated', 'Operating', '-', 'Fault']
-const vmStatusValues = [0, 1, 2, 3]
 
-const onDetailStatusChange = (e) => {
-  detailStatusIndex.value = e.detail.value
-}
-
-const saveStatusUpdate = async () => {
-  try {
-    const newStatus = vmStatusValues[detailStatusIndex.value]
-    if (newStatus === detailData.value.vmStatus) {
-      closeDetailModal()
-      return
-    }
-    const full = await getVm(detailData.value.id || detailData.value.vmId)
-    const payload = { ...full.data, vmStatus: newStatus }
-    await updateVm(payload)
-    uni.showToast({ title: 'Status updated', icon: 'success' })
-    closeDetailModal()
-    fetchList(true)
-  } catch (e) {
-    uni.showToast({ title: 'Failed to update status', icon: 'none' })
-  }
-}
+// Status values (0=Unoperated, 1=Operating, 3=Fault)
+const vmStatusLabels = { 0: 'Unoperated', 1: 'Operating', 3: 'Fault' }
 
 const fetchList = async (reset = false) => {
   if (reset) {
@@ -318,18 +321,12 @@ const fetchList = async (reset = false) => {
       total.value = res.total
     }
   } catch (error) {
-    uni.showToast({ title: 'Failed to load data', icon: 'none' })
+    uni.showToast({ title: 'Failed to load machines', icon: 'none' })
   } finally {
     loading.value = false
     isRefreshing.value = false
   }
 }
-
-onShow(() => {
-  fetchUserInfo()
-  fetchList(true)
-  fetchDropdownData()
-})
 
 const fetchDropdownData = async () => {
   try {
@@ -348,13 +345,11 @@ const fetchDropdownData = async () => {
   }
 }
 
-const handleSearch = () => {
+onShow(() => {
+  fetchUserInfo()
   fetchList(true)
-}
-
-const toggleFilters = () => {
-  filtersExpanded.value = !filtersExpanded.value
-}
+  fetchDropdownData()
+})
 
 const loadMore = () => {
   if (vmList.value.length < total.value) {
@@ -368,167 +363,12 @@ const onRefresh = () => {
   fetchList(true)
 }
 
-const getStatusText = (status) => {
-  if (status === 0) return 'Unoperated'
-  if (status === 1) return 'Operating'
-  if (status === 3) return 'Fault'
-  return 'Unknown'
+const handleSearch = () => {
+  showSearch.value = true
 }
 
-const handleAdd = () => {
-  isEdit.value = false
-  form.value = { id: null, innerCode: '', nodeId: null, vmTypeId: null }
-  nodeIndex.value = 0
-  vmTypeIndex.value = 0
-  showModal.value = true
-}
-
-const handleEdit = async (item) => {
-  try {
-    const res = await getVm(item.id)
-    form.value = res.data
-    isEdit.value = true
-    
-    nodeIndex.value = nodeList.value.findIndex(n => n.id === form.value.nodeId)
-    vmTypeIndex.value = vmTypeList.value.findIndex(v => v.id === form.value.vmTypeId)
-    
-    showModal.value = true
-  } catch (error) {
-    uni.showToast({ title: 'Failed to load device data', icon: 'none' })
-  }
-}
-
-const handleDelete = (item) => {
-  uni.showModal({
-    title: 'Confirm Delete',
-    content: `Are you sure you want to delete "${item.innerCode}"?`,
-    success: async (res) => {
-      if (res.confirm) {
-        try {
-          await delVm(item.id)
-          uni.showToast({ title: 'Deleted successfully', icon: 'success' })
-          fetchList(true)
-        } catch (error) {
-          uni.showToast({ title: 'Failed to delete', icon: 'none' })
-        }
-      }
-    }
-  })
-}
-
-const onNodeChange = (e) => {
-  nodeIndex.value = e.detail.value
-  form.value.nodeId = nodeList.value[e.detail.value].id
-}
-
-const onVmTypeChange = (e) => {
-  vmTypeIndex.value = e.detail.value
-  form.value.vmTypeId = vmTypeList.value[e.detail.value].id
-}
-
-const onFilterNodeChange = (e) => {
-  filterNodeIndex.value = e.detail.value
-  queryParams.value.nodeId = nodeList.value[e.detail.value]?.id || null
-  handleSearch()
-}
-
-const onFilterRegionChange = (e) => {
-  filterRegionIndex.value = e.detail.value
-  queryParams.value.regionId = regionList.value[e.detail.value]?.id || null
-  handleSearch()
-}
-
-const onFilterPartnerChange = (e) => {
-  filterPartnerIndex.value = e.detail.value
-  queryParams.value.partnerId = partnerList.value[e.detail.value]?.id || null
-  handleSearch()
-}
-
-const onFilterVmTypeChange = (e) => {
-  filterVmTypeIndex.value = e.detail.value
-  queryParams.value.vmTypeId = vmTypeList.value[e.detail.value]?.id || null
-  handleSearch()
-}
-
-const onFilterVmStatusChange = (e) => {
-  filterVmStatusIndex.value = e.detail.value
-  queryParams.value.vmStatus = e.detail.value === 0 ? null : e.detail.value
-  handleSearch()
-}
-
-const handleViewDetail = async (item) => {
-  try {
-    const res = await getVm(item.id)
-    detailData.value = {
-      id: res.data.id,
-      innerCode: res.data.innerCode,
-      addr: res.data.addr,
-      nodeName: res.data.node?.nodeName || 'Unknown',
-      regionName: res.data.region?.regionName || 'Unknown',
-      partnerName: res.data.partner?.partnerName || 'Unknown',
-      vmTypeName: res.data.vmType?.name || 'Unknown',
-      vmStatus: res.data.vmStatus
-    }
-    const idx = vmStatusValues.indexOf(res.data.vmStatus)
-    detailStatusIndex.value = idx >= 0 ? idx : 0
-    showDetailModal.value = true
-  } catch (error) {
-    uni.showToast({ title: 'Failed to load device detail', icon: 'none' })
-  }
-}
-
-const closeDetailModal = () => {
-  showDetailModal.value = false
-  detailData.value = { innerCode: '', addr: '', nodeName: '', regionName: '', partnerName: '', vmTypeName: '', vmStatus: '' }
-}
-
-const closeModal = () => {
-  showModal.value = false
-  form.value = { id: null, innerCode: '', nodeId: null, vmTypeId: null }
-}
-
-const submitForm = async () => {
-  if (isSubmitting.value) return
-  
-  // Validation rules matching webapp
-  if (!form.value.innerCode) {
-    uni.showToast({ title: 'Device Code is required', icon: 'none' })
-    return
-  }
-  if (!form.value.nodeId) {
-    uni.showToast({ title: 'Please select a Node', icon: 'none' })
-    return
-  }
-  if (!form.value.vmTypeId) {
-    uni.showToast({ title: 'Please select a VM Type', icon: 'none' })
-    return
-  }
-
-  isSubmitting.value = true
-  try {
-    if (isEdit.value) {
-      await updateVm(form.value)
-      uni.showToast({ title: 'Updated successfully', icon: 'success' })
-    } else {
-      await addVm(form.value)
-      uni.showToast({ title: 'Added successfully', icon: 'success' })
-    }
-    closeModal()
-    fetchList(true)
-  } catch (error) {
-    uni.showToast({ title: isEdit.value ? 'Failed to update' : 'Failed to add', icon: 'none' })
-  } finally {
-    isSubmitting.value = false
-  }
-}
-
-const handleSearchQuery = (query) => {
-  // Implement search logic
-}
-
-const handleSearchResult = (result) => {
-  // Handle search result click
-}
+const handleSearchQuery = () => {}
+const handleSearchResult = () => {}
 
 const handleNotification = () => {
   uni.navigateTo({ url: '/pages/notifications/index' })
@@ -548,26 +388,21 @@ const handleTabChange = (tabId) => {
     analytics: '/pages/analytics/index'
   }
   if (routes[tabId] && tabId !== 'machines') {
-    uni.navigateTo({ url: routes[tabId] })
+    uni.redirectTo({ url: routes[tabId] })
   }
 }
 
 const handleFilterTab = (value) => {
   activeFilter.value = value
-  showMachineSection.value = value !== 'partner'
-  showPartnerSection.value = value === 'partner'
-  
-  // Update query params based on filter
-  if (value === 'online') {
+  if (value === 'operating') {
     queryParams.value.vmStatus = 1
-  } else if (value === 'offline') {
+  } else if (value === 'unoperated') {
     queryParams.value.vmStatus = 0
   } else if (value === 'fault') {
     queryParams.value.vmStatus = 3
   } else {
     queryParams.value.vmStatus = null
   }
-  
   fetchList(true)
 }
 
@@ -577,43 +412,137 @@ const handleMasterFilter = () => {
 
 const handleFilterApply = (filters) => {
   selectedFilters.value = filters
-  // Apply filters to query params
-  if (filters.status && filters.status.length > 0) {
-    queryParams.value.vmStatus = filters.status[0]
-  }
-  if (filters.node && filters.node.length > 0) {
-    queryParams.value.nodeId = filters.node[0]
-  }
-  if (filters.region && filters.region.length > 0) {
-    queryParams.value.regionId = filters.region[0]
-  }
-  if (filters.partner && filters.partner.length > 0) {
-    queryParams.value.partnerId = filters.partner[0]
-  }
-  
+  queryParams.value.vmStatus = filters.status?.[0] ?? null
+  queryParams.value.nodeId = filters.node?.[0] ?? null
+  queryParams.value.regionId = filters.region?.[0] ?? null
+  queryParams.value.partnerId = filters.partner?.[0] ?? null
+  queryParams.value.vmTypeId = filters.vmType?.[0] ?? null
+  showFilterModal.value = false
   fetchList(true)
 }
 
 const handleFilterReset = () => {
   selectedFilters.value = {}
-  queryParams.value = {
-    pageNum: 1,
-    pageSize: 10,
-    innerCode: '',
-    nodeId: null,
-    regionId: null,
-    partnerId: null,
-    vmTypeId: null,
-    vmStatus: null,
-    policyId: ''
-  }
+  queryParams.value.vmStatus = null
+  queryParams.value.nodeId = null
+  queryParams.value.regionId = null
+  queryParams.value.partnerId = null
+  queryParams.value.vmTypeId = null
   showFilterModal.value = false
   fetchList(true)
 }
 
-const handlePartnerClick = (partner) => {
-  uni.showToast({ title: partner.partnerName || 'Partner', icon: 'none' })
+const handleViewDetail = async (item) => {
+  try {
+    const res = await getVm(item.id)
+    detailData.value = {
+      id: res.data.id,
+      innerCode: res.data.innerCode,
+      addr: res.data.addr,
+      nodeId: res.data.nodeId,
+      nodeName: res.data.node?.nodeName || res.data.nodeName || 'Unknown',
+      regionName: res.data.region?.regionName || res.data.regionName || 'Unknown',
+      partnerName: res.data.partner?.partnerName || res.data.partnerName || 'None',
+      vmTypeId: res.data.vmTypeId,
+      vmTypeName: res.data.vmType?.name || res.data.vmTypeName || 'Unknown',
+      vmStatus: res.data.vmStatus
+    }
+    formMode.value = 'detail'
+    showDetail.value = true
+  } catch (error) {
+    uni.showToast({ title: 'Failed to load machine detail', icon: 'none' })
+  }
 }
+
+const updateStatus = async (newStatus) => {
+  try {
+    const full = await getVm(detailData.value.id)
+    const payload = { ...full.data, vmStatus: newStatus }
+    await updateVm(payload)
+    uni.showToast({ title: 'Status updated', icon: 'success' })
+    closeDetail()
+    fetchList(true)
+  } catch (error) {
+    uni.showToast({ title: 'Failed to update status', icon: 'none' })
+  }
+}
+
+const handleAdd = () => {
+  formMode.value = 'create'
+  formData.value = { id: null, innerCode: '', nodeId: null, vmTypeId: null }
+  nodeIndex.value = 0
+  vmTypeIndex.value = 0
+  showDetail.value = true
+}
+
+const handleEditFromDetail = async () => {
+  try {
+    const res = await getVm(detailData.value.id)
+    formData.value = {
+      id: res.data.id,
+      innerCode: res.data.innerCode,
+      nodeId: res.data.nodeId,
+      vmTypeId: res.data.vmTypeId
+    }
+    nodeIndex.value = Math.max(0, nodeList.value.findIndex(n => n.id === res.data.nodeId))
+    vmTypeIndex.value = Math.max(0, vmTypeList.value.findIndex(v => v.id === res.data.vmTypeId))
+    formMode.value = 'edit'
+  } catch (error) {
+    uni.showToast({ title: 'Failed to load machine', icon: 'none' })
+  }
+}
+
+const onNodeChange = (e) => {
+  nodeIndex.value = e.detail.value
+  formData.value.nodeId = nodeList.value[e.detail.value]?.id ?? null
+}
+
+const onVmTypeChange = (e) => {
+  vmTypeIndex.value = e.detail.value
+  formData.value.vmTypeId = vmTypeList.value[e.detail.value]?.id ?? null
+}
+
+const closeDetail = () => {
+  showDetail.value = false
+  formMode.value = 'detail'
+  detailData.value = {}
+  formData.value = { id: null, innerCode: '', nodeId: null, vmTypeId: null }
+}
+
+const submitForm = async () => {
+  if (isSubmitting.value) return
+  if (!formData.value.innerCode) {
+    uni.showToast({ title: 'Inner Code is required', icon: 'none' })
+    return
+  }
+  if (!formData.value.nodeId) {
+    uni.showToast({ title: 'Please select a Node', icon: 'none' })
+    return
+  }
+  if (!formData.value.vmTypeId) {
+    uni.showToast({ title: 'Please select a Machine Type', icon: 'none' })
+    return
+  }
+
+  isSubmitting.value = true
+  try {
+    if (formData.value.id) {
+      await updateVm(formData.value)
+      uni.showToast({ title: 'Updated successfully', icon: 'success' })
+    } else {
+      await addVm(formData.value)
+      uni.showToast({ title: 'Added successfully', icon: 'success' })
+    }
+    closeDetail()
+    fetchList(true)
+  } catch (error) {
+    uni.showToast({ title: formData.value.id ? 'Failed to update' : 'Failed to add', icon: 'none' })
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+const getStatusText = (status) => vmStatusLabels[status] || 'Unknown'
 
 const getStatusVariant = (status) => {
   if (status === 1) return 'success'
@@ -655,122 +584,188 @@ const getStatusVariant = (status) => {
   padding-top: $top-bar-total-height;
 }
 
+.filter-tabs {
+  display: flex;
+  align-items: center;
+  padding: $spacing-3 $spacing-4;
+}
+
+.tabs-scroll {
+  flex: 1;
+  @include scrollbar-hidden;
+}
+
+.tabs-list {
+  display: flex;
+  gap: $spacing-2;
+}
+
+.tab-item {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-1;
+  padding: $spacing-2 $spacing-3;
+  background: $color-bg-tertiary;
+  border-radius: $radius-full;
+  cursor: pointer;
+  transition: all $transition-normal;
+
+  &:active { opacity: 0.7; }
+  &.tab-active { background: $color-primary; }
+}
+
+.tab-text {
+  @include text-caption;
+  white-space: nowrap;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+
+  .tab-active & { color: white; }
+}
+
+.tab-count {
+  @include text-label;
+  color: $color-text-tertiary;
+
+  .tab-active & { color: rgba(255, 255, 255, 0.8); }
+}
+
+.master-filter-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-1 $spacing-2;
+  background: $color-bg-tertiary;
+  border-radius: $radius-full;
+  cursor: pointer;
+  transition: all $transition-normal;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+
+  &:active { opacity: 0.7; }
+}
+
 .scroll-area {
   flex: 1;
   overflow: hidden;
 }
 
 .content-wrapper {
-  padding: $spacing-4 $spacing-4 calc(#{$bottom-bar-height} + env(safe-area-inset-bottom, 0px) + #{$spacing-4}) $spacing-4;
+  padding: $spacing-4 $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
-.filter-tabs {
-  display: flex;
-  gap: $spacing-2;
-  margin-bottom: $spacing-4;
-  overflow-x: auto;
-  padding-bottom: $spacing-1;
+.section-title {
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-3;
+  display: block;
 }
 
-.filter-tab {
-  display: flex;
-  align-items: center;
-  gap: $spacing-2;
-  padding: $spacing-2 $spacing-3;
-  background: $color-bg-tertiary;
-  border-radius: $radius-lg;
-  white-space: nowrap;
-  color: $color-text-secondary;
-  transition: all $transition-normal;
-
-  &.active {
-    background: $color-primary;
-    color: white;
-  }
-}
-
-.filter-tab-text {
-  @include text-caption;
-  font-weight: $font-weight-medium;
-}
-
-.section-cards {
+.vm-list {
   display: flex;
   flex-direction: column;
-  gap: $spacing-4;
-  margin-bottom: $spacing-6;
+}
+
+.vm-card {
+  cursor: pointer;
+  margin-bottom: $spacing-3;
+
+  &:last-child { margin-bottom: 0; }
 }
 
 .card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: $spacing-2;
+  margin-bottom: $spacing-3;
 }
 
-.machine-code {
+.vm-code {
   @include text-body;
   color: $color-text-primary;
-  font-weight: $font-weight-semibold;
+  font-weight: $font-weight-bold;
 }
 
-.machine-info {
+.vm-info {
   display: flex;
   flex-direction: column;
-  gap: $spacing-1;
+  gap: $spacing-2;
 }
 
-.info-text {
-  @include text-caption;
-  color: $color-text-secondary;
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.info-sub {
+.info-label {
   @include text-caption;
   color: $color-text-tertiary;
 }
 
-.partner-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: $spacing-2;
+.info-value {
+  @include text-caption;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
 }
 
-.partner-name {
+.empty-state { padding: $spacing-4 0; }
+
+.detail-view { display: flex; flex-direction: column; }
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-3 0;
+  border-bottom: 1px solid $color-border-subtle;
+
+  &:last-child { border-bottom: none; }
+  &:first-child { padding-top: 0; }
+}
+
+.detail-label { @include text-caption; color: $color-text-secondary; }
+.detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
+
+.form-view { display: flex; flex-direction: column; gap: $spacing-4; }
+.form-group { display: flex; flex-direction: column; gap: $spacing-2; }
+.form-label { @include text-caption; color: $color-text-secondary; font-weight: $font-weight-medium; }
+
+.form-input {
   @include text-body;
   color: $color-text-primary;
-  font-weight: $font-weight-semibold;
+  padding: $spacing-3;
+  background: $color-bg-tertiary;
+  border: 1px solid $color-border-subtle;
+  border-radius: $radius-pill;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.partner-contact {
-  @include text-caption;
-  color: $color-text-secondary;
+.form-picker {
+  @include text-body;
+  color: $color-text-primary;
+  padding: $spacing-3;
+  background: $color-bg-tertiary;
+  border: 1px solid $color-border-subtle;
+  border-radius: $radius-pill;
+  line-height: 1.4;
+  box-sizing: border-box;
 }
 
-.empty-state {
-  padding: $spacing-8 0;
-}
-
-.vm-detail-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: $spacing-3 0; border-bottom: 1px solid $color-border-subtle;
-
-  &:first-child { padding-top: 0; }
-  &:last-child { border-bottom: none; }
-}
-.vm-detail-label { @include text-caption; color: $color-text-secondary; }
-.vm-detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
-.vm-form-group { display: flex; flex-direction: column; gap: $spacing-2; margin-bottom: $spacing-4; }
-.vm-form-label { @include text-caption; color: $color-text-secondary; font-weight: $font-weight-medium; }
-.vm-form-input {
-  @include text-body; color: $color-text-primary; padding: $spacing-3;
-  background: $color-bg-tertiary; border: 1px solid $color-border-subtle;
-  border-radius: $radius-sm; width: 100%; box-sizing: border-box;
-}
-.vm-form-picker {
-  @include text-body; color: $color-text-primary; padding: $spacing-3;
-  background: $color-bg-tertiary; border: 1px solid $color-border-subtle;
-  border-radius: $radius-sm;
+.form-group {
+  picker,
+  :deep(uni-picker) {
+    display: block;
+    width: 100%;
+    line-height: 0;
+    font-size: 0;
+    margin: 0;
+    padding: 0;
+    vertical-align: top;
+  }
 }
 </style>

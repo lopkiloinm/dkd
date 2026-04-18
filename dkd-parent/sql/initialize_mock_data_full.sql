@@ -2,13 +2,16 @@
 -- DKD Vending Machine System — Comprehensive Mock Data Seed
 -- ------------------------------------------------------------
 -- Schema-accurate (column names match dkd.sql CREATE TABLEs).
--- Covers every business table EXCEPT real payment-gateway artifacts
--- (orders carry pay_type/pay_status fields but no callback / refund
--- records and no consumer wallet state).
+-- Wipes all business tables (TRUNCATE) then re-seeds everything:
+--   regions, partners, nodes, vm types, vending machines,
+--   channels, skus, sku classes, policies, roles, employees,
+--   task types, tasks (60), task details, task daily rollups,
+--   orders (~1 year of history), vendout telemetry, daily &
+--   monthly partner rollups, and the auto-replenish alert config.
 --
 -- Usage:  mysql -uroot -p'' dkd < initialize_mock_data_full.sql
 -- Safety: TRUNCATEs business tables first. sys_* tables untouched.
--- Requires: MySQL 8.0+ (uses WITH RECURSIVE CTE).
+-- Requires: MySQL 8.0+ (uses WITH RECURSIVE CTE). cte_max_recursion_depth raised for order seeding.
 -- ============================================================
 
 SET @OLD_FK = @@FOREIGN_KEY_CHECKS;
@@ -16,6 +19,9 @@ SET FOREIGN_KEY_CHECKS = 0;
 SET NAMES utf8mb4;
 SET @OLD_TZ = @@session.time_zone;
 SET time_zone = '+00:00';
+SET SESSION cte_max_recursion_depth = 5000;
+SET @OLD_SQL_MODE = @@SESSION.sql_mode;
+SET SESSION sql_mode = REPLACE(REPLACE(@@SESSION.sql_mode, 'ONLY_FULL_GROUP_BY,', ''), 'ONLY_FULL_GROUP_BY', '');
 
 TRUNCATE TABLE tb_order_month_collect;
 TRUNCATE TABLE tb_order_collect;
@@ -36,6 +42,7 @@ TRUNCATE TABLE tb_region;
 TRUNCATE TABLE tb_policy;
 TRUNCATE TABLE tb_sku;
 TRUNCATE TABLE tb_sku_class;
+TRUNCATE TABLE tb_job;
 
 -- ============================================================
 -- 1. Regions
@@ -274,74 +281,156 @@ JOIN nums n ON n.n <= t.vm_row * t.vm_col
 WHERE m.id BETWEEN 2 AND 19;
 
 -- ============================================================
--- 13. Tasks  (PK = task_id, status: 1=pending 2=accepted 3=cancelled 4=done)
+-- 13. Tasks  (PK = task_id)
+--     status: 1=pending, 2=in-progress, 3=cancelled, 4=done
+--     product_type_id: 1=Deploy, 2=Supply/Replenish, 3=Maintenance, 4=Revoke
+--     Pending tasks may be UNASSIGNED (user_id = NULL) awaiting dispatch,
+--     or assigned but not yet accepted by the operator.
 -- ============================================================
 INSERT INTO tb_task (task_id, task_code, task_status, create_type, inner_code, user_id, user_name, region_id, `desc`, product_type_id, assignor_id, addr, create_time, update_time) VALUES
--- completed
-( 1, 'T20260201001', 4, 1, 'VM000001',  3, 'Liam Ops',     1, 'Replenish low beverages',  2, 1, 'Central Plaza Lobby',    DATE_SUB(NOW(), INTERVAL 55 DAY), DATE_SUB(NOW(), INTERVAL 55 DAY)),
-( 2, 'T20260201002', 4, 1, 'VM000002',  4, 'Noah Ops',     1, 'Routine restock',          2, 1, 'Central Plaza Lobby',    DATE_SUB(NOW(), INTERVAL 52 DAY), DATE_SUB(NOW(), INTERVAL 52 DAY)),
-( 3, 'T20260205003', 4, 2, 'VM000003',  9, 'James Maint',  1, 'Coin slot stuck',          3, 1, 'Financial Tower',        DATE_SUB(NOW(), INTERVAL 48 DAY), DATE_SUB(NOW(), INTERVAL 48 DAY)),
-( 4, 'T20260210004', 4, 1, 'VM000006',  5, 'Emma Ops',     2, 'Replenish snacks',         2, 1, 'Engineering Building',   DATE_SUB(NOW(), INTERVAL 42 DAY), DATE_SUB(NOW(), INTERVAL 42 DAY)),
-( 5, 'T20260212005', 4, 1, 'VM000007',  5, 'Emma Ops',     2, 'Student union top-up',     2, 1, 'Student Union',          DATE_SUB(NOW(), INTERVAL 40 DAY), DATE_SUB(NOW(), INTERVAL 40 DAY)),
-( 6, 'T20260214006', 4, 2, 'VM000010', 11, 'Ethan Maint',  3, 'Temperature alarm',        3, 2, 'Airport Terminal B',     DATE_SUB(NOW(), INTERVAL 38 DAY), DATE_SUB(NOW(), INTERVAL 38 DAY)),
-( 7, 'T20260218007', 4, 1, 'VM000013',  7, 'Mia Ops',      4, 'Weekend stock',            2, 1, 'Riverside Apartments',   DATE_SUB(NOW(), INTERVAL 34 DAY), DATE_SUB(NOW(), INTERVAL 34 DAY)),
-( 8, 'T20260222008', 4, 1, 'VM000016',  8, 'Zoe Ops',      5, 'Grand mall restock',       2, 1, 'Grand Mall — L1',        DATE_SUB(NOW(), INTERVAL 30 DAY), DATE_SUB(NOW(), INTERVAL 30 DAY)),
-( 9, 'T20260225009', 4, 1, 'VM000019',  8, 'Zoe Ops',      5, 'Stadium event prep',       2, 1, 'Stadium Concourse',      DATE_SUB(NOW(), INTERVAL 27 DAY), DATE_SUB(NOW(), INTERVAL 27 DAY)),
-(10, 'T20260301010', 4, 2, 'VM000005', 15, 'Mason Maint',  1, 'Payment reader replaced',  3, 1, 'City Hall Atrium',       DATE_SUB(NOW(), INTERVAL 23 DAY), DATE_SUB(NOW(), INTERVAL 23 DAY)),
-(11, 'T20260305011', 4, 1, 'VM000008',  5, 'Emma Ops',     2, 'Low stock alert',          2, 1, 'Library Annex',          DATE_SUB(NOW(), INTERVAL 19 DAY), DATE_SUB(NOW(), INTERVAL 19 DAY)),
-(12, 'T20260308012', 4, 1, 'VM000011',  6, 'Ava Ops',      3, 'Transit hub refill',       2, 2, 'Airport Terminal B',     DATE_SUB(NOW(), INTERVAL 16 DAY), DATE_SUB(NOW(), INTERVAL 16 DAY)),
-(13, 'T20260312013', 4, 1, 'VM000014',  7, 'Mia Ops',      4, 'Mall Tuesday restock',     2, 1, 'Northgate Mall',         DATE_SUB(NOW(), INTERVAL 12 DAY), DATE_SUB(NOW(), INTERVAL 12 DAY)),
-(14, 'T20260315014', 4, 1, 'VM000017',  8, 'Zoe Ops',      5, 'Cooler restock',           2, 1, 'Grand Mall — L1',        DATE_SUB(NOW(), INTERVAL  9 DAY), DATE_SUB(NOW(), INTERVAL  9 DAY)),
-(15, 'T20260318015', 4, 2, 'VM000015', 12, 'Lucas Maint',  4, 'Door sensor fix',          3, 1, 'Community Center',       DATE_SUB(NOW(), INTERVAL  6 DAY), DATE_SUB(NOW(), INTERVAL  6 DAY)),
--- accepted / in-progress
-(16, 'T20260320016', 2, 1, 'VM000001',  3, 'Liam Ops',     1, 'Refill cola line',         2, 1, 'Central Plaza Lobby',    DATE_SUB(NOW(), INTERVAL  4 DAY), DATE_SUB(NOW(), INTERVAL  3 DAY)),
-(17, 'T20260321017', 2, 1, 'VM000009',  6, 'Ava Ops',      3, 'Metro station refill',     2, 2, 'Metro Station North',    DATE_SUB(NOW(), INTERVAL  3 DAY), DATE_SUB(NOW(), INTERVAL  2 DAY)),
-(18, 'T20260321018', 2, 2, 'VM000004',  9, 'James Maint',  1, 'Compressor noise',         3, 1, 'Financial Tower',        DATE_SUB(NOW(), INTERVAL  3 DAY), DATE_SUB(NOW(), INTERVAL  1 DAY)),
--- pending
-(19, 'T20260322019', 1, 1, 'VM000002',  4, 'Noah Ops',     1, 'Routine weekly restock',   2, 1, 'Central Plaza Lobby',    DATE_SUB(NOW(), INTERVAL  2 DAY), DATE_SUB(NOW(), INTERVAL  2 DAY)),
-(20, 'T20260322020', 1, 1, 'VM000007',  5, 'Emma Ops',     2, 'Snack isle low',           2, 1, 'Student Union',          DATE_SUB(NOW(), INTERVAL  2 DAY), DATE_SUB(NOW(), INTERVAL  2 DAY)),
-(21, 'T20260323021', 1, 2, 'VM000013', 12, 'Lucas Maint',  4, 'Light flicker report',     3, 1, 'Riverside Apartments',   DATE_SUB(NOW(), INTERVAL  1 DAY), DATE_SUB(NOW(), INTERVAL  1 DAY)),
-(22, 'T20260323022', 1, 1, 'VM000016',  8, 'Zoe Ops',      5, 'Pre-weekend replenish',    2, 1, 'Grand Mall — L1',        DATE_SUB(NOW(), INTERVAL  1 DAY), DATE_SUB(NOW(), INTERVAL  1 DAY)),
-(23, 'T20260324023', 1, 1, 'VM000019',  8, 'Zoe Ops',      5, 'Big game prep',            2, 1, 'Stadium Concourse',      NOW(),                            NOW()),
-(24, 'T20260324024', 1, 2, 'VM000018', 13, 'Henry Maint',  5, 'Card reader intermittent', 3, 2, 'Cinema Complex',         NOW(),                            NOW()),
-(25, 'T20260324025', 1, 1, 'VM000020',  3, 'Liam Ops',     1, 'Initial deployment',       1, 1, 'TBD',                    NOW(),                            NOW()),
--- cancelled
-(26, 'T20260215026', 3, 1, 'VM000015',  7, 'Mia Ops',      4, 'Duplicate request',        2, 1, 'Community Center',       DATE_SUB(NOW(), INTERVAL 37 DAY), DATE_SUB(NOW(), INTERVAL 36 DAY)),
-(27, 'T20260310027', 3, 2, 'VM000005', 15, 'Mason Maint',  1, 'False alarm',              3, 1, 'City Hall Atrium',       DATE_SUB(NOW(), INTERVAL 14 DAY), DATE_SUB(NOW(), INTERVAL 14 DAY));
+-- ---------- DONE (25 tasks, spread over last 60 days) ----------
+( 1, 'T20260215001', 4, 1, 'VM000001',  3, 'Liam Ops',     1, 'Replenish low beverages',        2, 1, 'Central Plaza Lobby',    DATE_SUB(NOW(), INTERVAL 58 DAY), DATE_SUB(NOW(), INTERVAL 58 DAY)),
+( 2, 'T20260216002', 4, 1, 'VM000002',  4, 'Noah Ops',     1, 'Routine restock',                 2, 1, 'Central Plaza Lobby',    DATE_SUB(NOW(), INTERVAL 56 DAY), DATE_SUB(NOW(), INTERVAL 56 DAY)),
+( 3, 'T20260218003', 4, 2, 'VM000003',  9, 'James Maint',  1, 'Coin slot stuck — cleared',       3, 1, 'Financial Tower',        DATE_SUB(NOW(), INTERVAL 54 DAY), DATE_SUB(NOW(), INTERVAL 54 DAY)),
+( 4, 'T20260221004', 4, 1, 'VM000006',  5, 'Emma Ops',     2, 'Snack refill weekly',             2, 1, 'Engineering Building',   DATE_SUB(NOW(), INTERVAL 51 DAY), DATE_SUB(NOW(), INTERVAL 51 DAY)),
+( 5, 'T20260223005', 4, 1, 'VM000007',  5, 'Emma Ops',     2, 'Student union top-up',            2, 1, 'Student Union',          DATE_SUB(NOW(), INTERVAL 48 DAY), DATE_SUB(NOW(), INTERVAL 48 DAY)),
+( 6, 'T20260225006', 4, 2, 'VM000010', 11, 'Ethan Maint',  3, 'Temperature alarm — fixed',       3, 2, 'Airport Terminal B',     DATE_SUB(NOW(), INTERVAL 46 DAY), DATE_SUB(NOW(), INTERVAL 46 DAY)),
+( 7, 'T20260228007', 4, 1, 'VM000013',  7, 'Mia Ops',      4, 'Weekend stock',                   2, 1, 'Riverside Apartments',   DATE_SUB(NOW(), INTERVAL 43 DAY), DATE_SUB(NOW(), INTERVAL 43 DAY)),
+( 8, 'T20260303008', 4, 1, 'VM000016',  8, 'Zoe Ops',      5, 'Grand mall restock',              2, 1, 'Grand Mall — L1',        DATE_SUB(NOW(), INTERVAL 40 DAY), DATE_SUB(NOW(), INTERVAL 40 DAY)),
+( 9, 'T20260306009', 4, 1, 'VM000019',  8, 'Zoe Ops',      5, 'Stadium event prep',              2, 1, 'Stadium Concourse',      DATE_SUB(NOW(), INTERVAL 37 DAY), DATE_SUB(NOW(), INTERVAL 37 DAY)),
+(10, 'T20260308010', 4, 2, 'VM000005', 15, 'Mason Maint',  1, 'Payment reader replaced',         3, 1, 'City Hall Atrium',       DATE_SUB(NOW(), INTERVAL 35 DAY), DATE_SUB(NOW(), INTERVAL 35 DAY)),
+(11, 'T20260311011', 4, 1, 'VM000008',  5, 'Emma Ops',     2, 'Low stock alert',                 2, 1, 'Library Annex',          DATE_SUB(NOW(), INTERVAL 32 DAY), DATE_SUB(NOW(), INTERVAL 32 DAY)),
+(12, 'T20260313012', 4, 1, 'VM000011',  6, 'Ava Ops',      3, 'Transit hub refill',              2, 2, 'Airport Terminal B',     DATE_SUB(NOW(), INTERVAL 30 DAY), DATE_SUB(NOW(), INTERVAL 30 DAY)),
+(13, 'T20260316013', 4, 1, 'VM000014',  7, 'Mia Ops',      4, 'Mall Tuesday restock',            2, 1, 'Northgate Mall',         DATE_SUB(NOW(), INTERVAL 27 DAY), DATE_SUB(NOW(), INTERVAL 27 DAY)),
+(14, 'T20260319014', 4, 1, 'VM000017',  8, 'Zoe Ops',      5, 'Cooler restock',                  2, 1, 'Grand Mall — L1',        DATE_SUB(NOW(), INTERVAL 24 DAY), DATE_SUB(NOW(), INTERVAL 24 DAY)),
+(15, 'T20260322015', 4, 2, 'VM000015', 12, 'Lucas Maint',  4, 'Door sensor fix',                 3, 1, 'Community Center',       DATE_SUB(NOW(), INTERVAL 21 DAY), DATE_SUB(NOW(), INTERVAL 21 DAY)),
+(16, 'T20260324016', 4, 1, 'VM000004',  4, 'Noah Ops',     1, 'Financial district top-up',       2, 1, 'Financial Tower',        DATE_SUB(NOW(), INTERVAL 19 DAY), DATE_SUB(NOW(), INTERVAL 19 DAY)),
+(17, 'T20260326017', 4, 1, 'VM000012',  6, 'Ava Ops',      3, 'Airport snack refill',            2, 2, 'Airport Terminal A',     DATE_SUB(NOW(), INTERVAL 17 DAY), DATE_SUB(NOW(), INTERVAL 17 DAY)),
+(18, 'T20260328018', 4, 2, 'VM000009', 13, 'Henry Maint',  3, 'Fan replacement',                 3, 2, 'Metro Station North',    DATE_SUB(NOW(), INTERVAL 15 DAY), DATE_SUB(NOW(), INTERVAL 15 DAY)),
+(19, 'T20260330019', 4, 1, 'VM000002',  3, 'Liam Ops',     1, 'Cold drink line refill',          2, 1, 'Central Plaza Lobby',    DATE_SUB(NOW(), INTERVAL 13 DAY), DATE_SUB(NOW(), INTERVAL 13 DAY)),
+(20, 'T20260401020', 4, 1, 'VM000006',  5, 'Emma Ops',     2, 'Campus restock',                  2, 1, 'Engineering Building',   DATE_SUB(NOW(), INTERVAL 11 DAY), DATE_SUB(NOW(), INTERVAL 11 DAY)),
+(21, 'T20260403021', 4, 1, 'VM000018',  8, 'Zoe Ops',      5, 'Cinema lobby refill',             2, 1, 'Cinema Complex',         DATE_SUB(NOW(), INTERVAL  9 DAY), DATE_SUB(NOW(), INTERVAL  9 DAY)),
+(22, 'T20260405022', 4, 2, 'VM000001',  9, 'James Maint',  1, 'Bill validator calibration',      3, 1, 'Central Plaza Lobby',    DATE_SUB(NOW(), INTERVAL  7 DAY), DATE_SUB(NOW(), INTERVAL  7 DAY)),
+(23, 'T20260407023', 4, 1, 'VM000020',  3, 'Liam Ops',     1, 'Initial deployment — go-live',    1, 1, 'Harbor Walkway',         DATE_SUB(NOW(), INTERVAL  5 DAY), DATE_SUB(NOW(), INTERVAL  5 DAY)),
+(24, 'T20260409024', 4, 1, 'VM000013',  7, 'Mia Ops',      4, 'Apartment block refill',          2, 1, 'Riverside Apartments',   DATE_SUB(NOW(), INTERVAL  3 DAY), DATE_SUB(NOW(), INTERVAL  3 DAY)),
+(25, 'T20260411025', 4, 1, 'VM000016',  8, 'Zoe Ops',      5, 'Mall pre-weekend',                2, 1, 'Grand Mall — L1',        DATE_SUB(NOW(), INTERVAL  2 DAY), DATE_SUB(NOW(), INTERVAL  2 DAY)),
+-- ---------- IN PROGRESS (15 tasks, last 7 days) ----------
+(26, 'T20260410026', 2, 1, 'VM000001',  3, 'Liam Ops',     1, 'Refill cola & water',             2, 1, 'Central Plaza Lobby',    DATE_SUB(NOW(), INTERVAL  5 DAY), DATE_SUB(NOW(), INTERVAL  4 DAY)),
+(27, 'T20260411027', 2, 1, 'VM000009',  6, 'Ava Ops',      3, 'Metro station refill',            2, 2, 'Metro Station North',    DATE_SUB(NOW(), INTERVAL  4 DAY), DATE_SUB(NOW(), INTERVAL  3 DAY)),
+(28, 'T20260411028', 2, 2, 'VM000004',  9, 'James Maint',  1, 'Compressor noise diagnosis',      3, 1, 'Financial Tower',        DATE_SUB(NOW(), INTERVAL  4 DAY), DATE_SUB(NOW(), INTERVAL  2 DAY)),
+(29, 'T20260412029', 2, 1, 'VM000011',  6, 'Ava Ops',      3, 'Airport hub restock',             2, 2, 'Airport Terminal B',     DATE_SUB(NOW(), INTERVAL  3 DAY), DATE_SUB(NOW(), INTERVAL  2 DAY)),
+(30, 'T20260412030', 2, 1, 'VM000007',  5, 'Emma Ops',     2, 'Student union quick top-up',      2, 1, 'Student Union',          DATE_SUB(NOW(), INTERVAL  3 DAY), DATE_SUB(NOW(), INTERVAL  2 DAY)),
+(31, 'T20260413031', 2, 1, 'VM000017',  8, 'Zoe Ops',      5, 'Mall L1 cooler refill',           2, 1, 'Grand Mall — L1',        DATE_SUB(NOW(), INTERVAL  2 DAY), DATE_SUB(NOW(), INTERVAL  1 DAY)),
+(32, 'T20260413032', 2, 2, 'VM000010', 11, 'Ethan Maint',  3, 'Display flicker troubleshooting', 3, 2, 'Airport Terminal B',     DATE_SUB(NOW(), INTERVAL  2 DAY), DATE_SUB(NOW(), INTERVAL  1 DAY)),
+(33, 'T20260414033', 2, 1, 'VM000014',  7, 'Mia Ops',      4, 'Northgate Mall refill',           2, 1, 'Northgate Mall',         DATE_SUB(NOW(), INTERVAL  2 DAY), DATE_SUB(NOW(), INTERVAL  1 DAY)),
+(34, 'T20260414034', 2, 1, 'VM000008',  5, 'Emma Ops',     2, 'Library quick restock',           2, 1, 'Library Annex',          DATE_SUB(NOW(), INTERVAL  2 DAY), DATE_SUB(NOW(), INTERVAL  1 DAY)),
+(35, 'T20260415035', 2, 2, 'VM000003', 12, 'Lucas Maint',  4, 'Card reader re-pair',             3, 1, 'Financial Tower',        DATE_SUB(NOW(), INTERVAL  1 DAY), DATE_SUB(NOW(), INTERVAL  1 DAY)),
+(36, 'T20260415036', 2, 1, 'VM000005',  4, 'Noah Ops',     1, 'City hall quick refill',          2, 1, 'City Hall Atrium',       DATE_SUB(NOW(), INTERVAL  1 DAY), NOW()),
+(37, 'T20260415037', 2, 1, 'VM000019',  8, 'Zoe Ops',      5, 'Stadium pre-game top-up',         2, 1, 'Stadium Concourse',      DATE_SUB(NOW(), INTERVAL  1 DAY), NOW()),
+(38, 'T20260416038', 2, 1, 'VM000012',  6, 'Ava Ops',      3, 'Terminal A snack refill',         2, 2, 'Airport Terminal A',     NOW(),                            NOW()),
+(39, 'T20260416039', 2, 2, 'VM000015', 15, 'Mason Maint',  1, 'Temperature sensor replacement',  3, 1, 'Community Center',       NOW(),                            NOW()),
+(40, 'T20260416040', 2, 1, 'VM000018',  7, 'Mia Ops',      4, 'Cinema lobby quick refill',       2, 1, 'Cinema Complex',         NOW(),                            NOW()),
+-- ---------- PENDING — UNASSIGNED (8 tasks, awaiting dispatch) ----------
+(41, 'T20260416041', 1, 0, 'VM000001', NULL, NULL,         1, 'Auto-generated: low stock',       2, 1, 'Central Plaza Lobby',    NOW(),                            NOW()),
+(42, 'T20260416042', 1, 0, 'VM000006', NULL, NULL,         2, 'Auto-generated: snack isle low',  2, 1, 'Engineering Building',   NOW(),                            NOW()),
+(43, 'T20260416043', 1, 0, 'VM000013', NULL, NULL,         4, 'Auto-generated: cooler empty',    2, 1, 'Riverside Apartments',   NOW(),                            NOW()),
+(44, 'T20260416044', 1, 1, 'VM000002', NULL, NULL,         1, 'Scheduled weekly restock',        2, 1, 'Central Plaza Lobby',    NOW(),                            NOW()),
+(45, 'T20260416045', 1, 1, 'VM000016', NULL, NULL,         5, 'Pre-weekend replenish',           2, 1, 'Grand Mall — L1',        NOW(),                            NOW()),
+(46, 'T20260416046', 1, 1, 'VM000011', NULL, NULL,         3, 'Transit hub morning refill',      2, 2, 'Airport Terminal B',     NOW(),                            NOW()),
+(47, 'T20260416047', 1, 1, 'VM000020', NULL, NULL,         1, 'New install commissioning',       1, 1, 'Harbor Walkway',         NOW(),                            NOW()),
+(48, 'T20260416048', 1, 1, 'VM000014', NULL, NULL,         4, 'Mall Tuesday restock',            2, 1, 'Northgate Mall',         NOW(),                            NOW()),
+-- ---------- PENDING — ASSIGNED (7 tasks, waiting for operator to accept) ----------
+(49, 'T20260415049', 1, 1, 'VM000007',  5, 'Emma Ops',     2, 'Student union evening refill',    2, 1, 'Student Union',          DATE_SUB(NOW(), INTERVAL  1 DAY), DATE_SUB(NOW(), INTERVAL  1 DAY)),
+(50, 'T20260415050', 1, 2, 'VM000013', 12, 'Lucas Maint',  4, 'Light flicker report',            3, 1, 'Riverside Apartments',   DATE_SUB(NOW(), INTERVAL  1 DAY), DATE_SUB(NOW(), INTERVAL  1 DAY)),
+(51, 'T20260415051', 1, 1, 'VM000019',  8, 'Zoe Ops',      5, 'Stadium event day prep',          2, 1, 'Stadium Concourse',      DATE_SUB(NOW(), INTERVAL  1 DAY), DATE_SUB(NOW(), INTERVAL  1 DAY)),
+(52, 'T20260415052', 1, 2, 'VM000018', 13, 'Henry Maint',  5, 'Card reader intermittent',        3, 2, 'Cinema Complex',         DATE_SUB(NOW(), INTERVAL  1 DAY), DATE_SUB(NOW(), INTERVAL  1 DAY)),
+(53, 'T20260416053', 1, 1, 'VM000003',  4, 'Noah Ops',     1, 'Financial tower evening refill',  2, 1, 'Financial Tower',        NOW(),                            NOW()),
+(54, 'T20260416054', 1, 1, 'VM000017',  8, 'Zoe Ops',      5, 'Mall late-day top-up',            2, 1, 'Grand Mall — L1',        NOW(),                            NOW()),
+(55, 'T20260416055', 1, 2, 'VM000005', 15, 'Mason Maint',  1, 'Coin box full — empty',           4, 1, 'City Hall Atrium',       NOW(),                            NOW()),
+-- ---------- CANCELLED (5 tasks, with reason in desc) ----------
+(56, 'T20260309056', 3, 1, 'VM000015',  7, 'Mia Ops',      4, 'Cancelled: duplicate request',    2, 1, 'Community Center',       DATE_SUB(NOW(), INTERVAL 38 DAY), DATE_SUB(NOW(), INTERVAL 37 DAY)),
+(57, 'T20260328057', 3, 2, 'VM000005', 15, 'Mason Maint',  1, 'Cancelled: false alarm',          3, 1, 'City Hall Atrium',       DATE_SUB(NOW(), INTERVAL 19 DAY), DATE_SUB(NOW(), INTERVAL 19 DAY)),
+(58, 'T20260402058', 3, 1, 'VM000010',  6, 'Ava Ops',      3, 'Cancelled: machine taken offline',2, 2, 'Airport Terminal B',     DATE_SUB(NOW(), INTERVAL 14 DAY), DATE_SUB(NOW(), INTERVAL 13 DAY)),
+(59, 'T20260410059', 3, 1, 'VM000009',  5, 'Emma Ops',     2, 'Cancelled: operator unavailable', 2, 1, 'Metro Station North',    DATE_SUB(NOW(), INTERVAL  6 DAY), DATE_SUB(NOW(), INTERVAL  5 DAY)),
+(60, 'T20260414060', 3, 2, 'VM000008', 11, 'Ethan Maint',  2, 'Cancelled: resolved remotely',    3, 2, 'Library Annex',          DATE_SUB(NOW(), INTERVAL  2 DAY), DATE_SUB(NOW(), INTERVAL  2 DAY));
 
--- Task details (replenish expect-capacities)
-INSERT INTO tb_task_details (task_id, channel_code, expect_capacity, sku_id, sku_name, sku_image) VALUES
-( 1, '1-2',  8,  2, 'Pepsi Max',         'https://cdn.dkd.example/sku/2.png'),
-( 1, '2-2',  9,  8, 'Orange Juice 100%', 'https://cdn.dkd.example/sku/8.png'),
-( 1, '4-2', 10, 20, 'Dark Chocolate',    'https://cdn.dkd.example/sku/20.png'),
-( 2, '1-5', 10,  5, 'Nestea Lemon',      'https://cdn.dkd.example/sku/5.png'),
-( 4, '1-1',  8,  1, 'Coca-Cola Classic', 'https://cdn.dkd.example/sku/1.png'),
-( 4, '1-2',  8,  2, 'Pepsi Max',         'https://cdn.dkd.example/sku/2.png'),
-( 5, '2-2',  9,  8, 'Orange Juice 100%', 'https://cdn.dkd.example/sku/8.png'),
-( 7, '3-2',  7, 14, 'Doritos Nacho',     'https://cdn.dkd.example/sku/14.png'),
-( 8, '4-3',  6, 21, 'Iced Coffee Latte', 'https://cdn.dkd.example/sku/21.png'),
-(11, '5-1',  5, 25, 'Fresh Salad Cup',   'https://cdn.dkd.example/sku/25.png'),
-(16, '1-2',  8,  2, 'Pepsi Max',         'https://cdn.dkd.example/sku/2.png'),
-(16, '1-5', 10,  5, 'Nestea Lemon',      'https://cdn.dkd.example/sku/5.png'),
-(17, '2-3',  9,  9, 'Apple Juice',       'https://cdn.dkd.example/sku/9.png'),
-(19, '1-1', 10,  1, 'Coca-Cola Classic', 'https://cdn.dkd.example/sku/1.png'),
-(19, '3-6', 10, 18, 'Protein Bar',       'https://cdn.dkd.example/sku/18.png'),
-(20, '2-2',  9,  8, 'Orange Juice 100%', 'https://cdn.dkd.example/sku/8.png'),
-(22, '4-2', 10, 20, 'Dark Chocolate',    'https://cdn.dkd.example/sku/20.png'),
-(23, '5-1', 10, 25, 'Fresh Salad Cup',   'https://cdn.dkd.example/sku/25.png');
+-- Task details (replenish / supply tasks only — productTypeId = 2).
+-- Built by joining to tb_sku so sku_name/sku_image always match sku_id.
+INSERT INTO tb_task_details (task_id, channel_code, expect_capacity, sku_id, sku_name, sku_image)
+SELECT td.task_id, td.channel_code, td.expect_capacity, s.sku_id, s.sku_name, s.sku_image
+FROM (
+    -- Done tasks
+    SELECT  1 AS task_id, '1-2' AS channel_code,  8 AS expect_capacity,  2 AS sku_id UNION ALL
+    SELECT  1, '2-2',  9,  8 UNION ALL
+    SELECT  1, '4-2', 10, 20 UNION ALL
+    SELECT  2, '1-5', 10,  5 UNION ALL
+    SELECT  4, '1-1',  8,  1 UNION ALL
+    SELECT  4, '1-2',  8,  2 UNION ALL
+    SELECT  5, '2-2',  9,  8 UNION ALL
+    SELECT  7, '3-2',  7, 14 UNION ALL
+    SELECT  8, '4-3',  6, 21 UNION ALL
+    SELECT 11, '5-1',  5, 25 UNION ALL
+    SELECT 12, '1-1',  9,  1 UNION ALL
+    SELECT 13, '3-1',  8, 13 UNION ALL
+    SELECT 14, '4-1', 10, 19 UNION ALL
+    SELECT 16, '1-3',  9,  3 UNION ALL
+    SELECT 17, '3-4',  8, 16 UNION ALL
+    SELECT 19, '1-1',  9,  1 UNION ALL
+    SELECT 20, '2-1',  9,  7 UNION ALL
+    SELECT 21, '4-2', 10, 20 UNION ALL
+    SELECT 24, '3-2',  8, 14 UNION ALL
+    SELECT 25, '1-2',  9,  2 UNION ALL
+    -- In-progress tasks
+    SELECT 26, '1-2',  8,  2 UNION ALL
+    SELECT 26, '1-5', 10,  5 UNION ALL
+    SELECT 27, '2-3',  9,  9 UNION ALL
+    SELECT 29, '1-1',  9,  1 UNION ALL
+    SELECT 29, '3-1',  8, 13 UNION ALL
+    SELECT 30, '2-2',  9,  8 UNION ALL
+    SELECT 31, '1-4',  9,  4 UNION ALL
+    SELECT 33, '3-4',  8, 16 UNION ALL
+    SELECT 34, '4-1', 10, 19 UNION ALL
+    SELECT 36, '1-1',  9,  1 UNION ALL
+    SELECT 37, '2-1', 10,  7 UNION ALL
+    SELECT 37, '3-2',  9, 14 UNION ALL
+    SELECT 38, '3-4',  8, 16 UNION ALL
+    SELECT 40, '4-3',  7, 21 UNION ALL
+    -- Pending (unassigned) — planned targets
+    SELECT 41, '1-1', 10,  1 UNION ALL
+    SELECT 41, '3-6', 10, 18 UNION ALL
+    SELECT 42, '2-2',  9,  8 UNION ALL
+    SELECT 43, '4-2', 10, 20 UNION ALL
+    SELECT 44, '1-3',  9,  3 UNION ALL
+    SELECT 44, '2-1', 10,  7 UNION ALL
+    SELECT 45, '4-1', 10, 19 UNION ALL
+    SELECT 46, '1-1',  9,  1 UNION ALL
+    SELECT 48, '3-1',  8, 13 UNION ALL
+    -- Pending (assigned)
+    SELECT 49, '2-2',  9,  8 UNION ALL
+    SELECT 51, '5-1', 10, 25 UNION ALL
+    SELECT 53, '1-2',  9,  2 UNION ALL
+    SELECT 54, '4-3',  8, 21
+) td
+JOIN tb_sku s ON s.sku_id = td.sku_id;
 
--- Task daily rollups (by employee)
+-- Task daily rollups (by employee, last 10 days of activity)
 INSERT INTO tb_task_collect (user_id, finish_count, progress_count, cancel_count, collect_date) VALUES
-( 3, 2, 1, 0, CURDATE() - INTERVAL 1 DAY),
-( 4, 2, 0, 0, CURDATE() - INTERVAL 2 DAY),
-( 5, 3, 0, 0, CURDATE() - INTERVAL 3 DAY),
-( 6, 1, 1, 0, CURDATE() - INTERVAL 2 DAY),
-( 7, 2, 0, 1, CURDATE() - INTERVAL 5 DAY),
-( 8, 3, 0, 0, CURDATE() - INTERVAL 7 DAY),
-( 9, 2, 1, 0, CURDATE() - INTERVAL 2 DAY),
-(11, 1, 0, 0, CURDATE() - INTERVAL 4 DAY),
+( 3, 3, 1, 0, CURDATE() - INTERVAL 1 DAY),
+( 3, 2, 0, 0, CURDATE() - INTERVAL 5 DAY),
+( 4, 3, 1, 0, CURDATE() - INTERVAL 2 DAY),
+( 4, 2, 0, 0, CURDATE() - INTERVAL 6 DAY),
+( 5, 4, 2, 1, CURDATE() - INTERVAL 3 DAY),
+( 5, 3, 0, 0, CURDATE() - INTERVAL 7 DAY),
+( 6, 2, 2, 0, CURDATE() - INTERVAL 2 DAY),
+( 6, 1, 0, 0, CURDATE() - INTERVAL 9 DAY),
+( 7, 3, 1, 1, CURDATE() - INTERVAL 4 DAY),
+( 8, 4, 2, 0, CURDATE() - INTERVAL 1 DAY),
+( 8, 3, 0, 0, CURDATE() - INTERVAL 8 DAY),
+( 9, 2, 1, 0, CURDATE() - INTERVAL 3 DAY),
+(11, 1, 1, 1, CURDATE() - INTERVAL 2 DAY),
 (12, 1, 1, 0, CURDATE() - INTERVAL 1 DAY),
-(15, 1, 0, 1, CURDATE() - INTERVAL 6 DAY);
+(13, 1, 0, 0, CURDATE() - INTERVAL 5 DAY),
+(15, 1, 1, 1, CURDATE() - INTERVAL 6 DAY);
 
 -- ============================================================
 -- 14. Orders  — 90-day distribution, id supplied via ROW_NUMBER.
@@ -356,7 +445,7 @@ INSERT INTO tb_order (
     create_time, update_time
 )
 WITH RECURSIVE seq AS (
-    SELECT 0 AS n UNION ALL SELECT n+1 FROM seq WHERE n < 499
+    SELECT 0 AS n UNION ALL SELECT n+1 FROM seq WHERE n < 2021
 ),
 vm AS (
     SELECT m.id AS vm_id, m.inner_code, m.addr, m.node_id, m.partner_id, m.region_id, m.business_type,
@@ -406,13 +495,13 @@ SELECT
     DATE_SUB(NOW(), INTERVAL n * 260 MINUTE)                                          AS update_time
 FROM orders;
 
--- Vendout telemetry (only for orders that successfully dispensed)
+-- Vendout telemetry (only for orders that successfully dispensed; recent sample)
 INSERT INTO tb_vendout_running (order_no, inner_code, channel_code, status, create_time, update_time)
 SELECT order_no, inner_code, channel_code, '1', create_time, update_time
 FROM tb_order
 WHERE status = 2
 ORDER BY create_time DESC
-LIMIT 200;
+LIMIT 500;
 
 -- ============================================================
 -- 15. Daily rollups by partner+node+date
@@ -435,28 +524,55 @@ JOIN tb_partner p ON p.id = o.partner_id
 WHERE o.status = 2 AND o.pay_status = 1
 GROUP BY DATE(o.create_time), o.partner_id, p.partner_name, p.profit_ratio, o.node_id;
 
+-- ============================================================
+-- 16. Monthly rollups by partner+region+month (for analytics dashboards)
+-- ============================================================
+INSERT INTO tb_order_month_collect (id, partner_id, partner_name, region_id, region_name, order_total_money, order_total_count, month, year)
+SELECT
+    (YEAR(o.create_time) * 100000000) + (MONTH(o.create_time) * 1000000) + (o.partner_id * 1000) + o.region_id AS id,
+    o.partner_id,
+    p.partner_name,
+    o.region_id,
+    MAX(o.region_name)  AS region_name,
+    SUM(o.amount)       AS order_total_money,
+    COUNT(*)            AS order_total_count,
+    MONTH(o.create_time) AS month,
+    YEAR(o.create_time)  AS year
+FROM tb_order o
+JOIN tb_partner p ON p.id = o.partner_id
+WHERE o.status = 2 AND o.pay_status = 1
+GROUP BY YEAR(o.create_time), MONTH(o.create_time), o.partner_id, p.partner_name, o.region_id;
+
+-- ============================================================
+-- 17. Auto-replenish alert config (single-row singleton)
+-- ============================================================
+INSERT INTO tb_job (id, alert_value) VALUES (1, 20);
+
 SET FOREIGN_KEY_CHECKS = @OLD_FK;
 
 -- ============================================================
 -- Sanity (run manually)
 -- ============================================================
 -- SELECT 'regions'  AS tbl, COUNT(*) FROM tb_region
--- UNION ALL SELECT 'partners',        COUNT(*) FROM tb_partner
--- UNION ALL SELECT 'nodes',           COUNT(*) FROM tb_node
--- UNION ALL SELECT 'vm_types',        COUNT(*) FROM tb_vm_type
--- UNION ALL SELECT 'machines',        COUNT(*) FROM tb_vending_machine
--- UNION ALL SELECT 'channels',        COUNT(*) FROM tb_channel
--- UNION ALL SELECT 'sku_classes',     COUNT(*) FROM tb_sku_class
--- UNION ALL SELECT 'skus',            COUNT(*) FROM tb_sku
--- UNION ALL SELECT 'roles',           COUNT(*) FROM tb_role
--- UNION ALL SELECT 'emps',            COUNT(*) FROM tb_emp
--- UNION ALL SELECT 'task_types',      COUNT(*) FROM tb_task_type
--- UNION ALL SELECT 'tasks',           COUNT(*) FROM tb_task
--- UNION ALL SELECT 'task_details',    COUNT(*) FROM tb_task_details
--- UNION ALL SELECT 'task_collect',    COUNT(*) FROM tb_task_collect
--- UNION ALL SELECT 'policies',        COUNT(*) FROM tb_policy
--- UNION ALL SELECT 'orders',          COUNT(*) FROM tb_order
--- UNION ALL SELECT 'order_collect',   COUNT(*) FROM tb_order_collect
--- UNION ALL SELECT 'vendout_running', COUNT(*) FROM tb_vendout_running;
+-- UNION ALL SELECT 'partners',          COUNT(*) FROM tb_partner
+-- UNION ALL SELECT 'nodes',             COUNT(*) FROM tb_node
+-- UNION ALL SELECT 'vm_types',          COUNT(*) FROM tb_vm_type
+-- UNION ALL SELECT 'machines',          COUNT(*) FROM tb_vending_machine
+-- UNION ALL SELECT 'channels',          COUNT(*) FROM tb_channel
+-- UNION ALL SELECT 'sku_classes',       COUNT(*) FROM tb_sku_class
+-- UNION ALL SELECT 'skus',              COUNT(*) FROM tb_sku
+-- UNION ALL SELECT 'roles',             COUNT(*) FROM tb_role
+-- UNION ALL SELECT 'emps',              COUNT(*) FROM tb_emp
+-- UNION ALL SELECT 'task_types',        COUNT(*) FROM tb_task_type
+-- UNION ALL SELECT 'tasks',             COUNT(*) FROM tb_task
+-- UNION ALL SELECT 'task_details',      COUNT(*) FROM tb_task_details
+-- UNION ALL SELECT 'task_collect',      COUNT(*) FROM tb_task_collect
+-- UNION ALL SELECT 'policies',          COUNT(*) FROM tb_policy
+-- UNION ALL SELECT 'orders',            COUNT(*) FROM tb_order
+-- UNION ALL SELECT 'order_collect',     COUNT(*) FROM tb_order_collect
+-- UNION ALL SELECT 'order_month_collect', COUNT(*) FROM tb_order_month_collect
+-- UNION ALL SELECT 'vendout_running',   COUNT(*) FROM tb_vendout_running
+-- UNION ALL SELECT 'job',               COUNT(*) FROM tb_job;
 
 SET time_zone = @OLD_TZ;
+SET SESSION sql_mode = @OLD_SQL_MODE;

@@ -6,7 +6,6 @@
       :unread-count="unreadCount"
       @search="handleSearch"
       @notification="handleNotification"
-      @profile="handleProfile"
     />
 
     <view class="page-header">
@@ -145,7 +144,9 @@ const queryParams = reactive({
   pageNum: 1,
   pageSize: 20,
   innerCode: '',
-  status: null
+  status: null,
+  orderByColumn: 'createTime',
+  isAsc: 'desc'
 })
 
 const statusTabs = [
@@ -250,8 +251,18 @@ const formatTime = (t) => {
 
 const handleSearch = () => {}
 const handleNotification = () => { uni.navigateTo({ url: '/pages/notifications/index' }) }
-const handleProfile = () => { uni.navigateTo({ url: '/pages/profile/index' }) }
-const handleTabChange = (tab) => { activeTab.value = tab }
+const handleTabChange = (tabId) => {
+  const routes = {
+    dashboard: '/pages/index/index',
+    machines: '/pages/manage/index',
+    tasks: '/pages/manage/task/index',
+    inventory: '/pages/inventory/index',
+    analytics: '/pages/analytics/index'
+  }
+  if (routes[tabId]) {
+    uni.redirectTo({ url: routes[tabId] })
+  }
+}
 
 onShow(() => { fetchList(true) })
 </script>
@@ -286,7 +297,7 @@ onShow(() => { fetchList(true) })
   flex: 1;
   background: $color-surface-raised;
   border: 1px solid $color-border-subtle;
-  border-radius: $radius-md;
+  border-radius: $radius-pill;
   padding: $spacing-2 $spacing-3;
   @include text-body;
   color: $color-text-primary;

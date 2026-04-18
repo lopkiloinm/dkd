@@ -1,14 +1,8 @@
 <script>
 export default {
-  onLaunch: function () {
-    console.log('App Launch')
-  },
-  onShow: function () {
-    console.log('App Show')
-  },
-  onHide: function () {
-    console.log('App Hide')
-  },
+  onLaunch: function () {},
+  onShow: function () {},
+  onHide: function () {},
 }
 </script>
 
@@ -103,12 +97,22 @@ uni-picker .uni-mask {
 
   /* Selected row indicator */
   .uni-picker-view-indicator {
-    border-top: 1px solid $color-border-subtle !important;
-    border-bottom: 1px solid $color-border-subtle !important;
+    border: none !important;
 
     &::before, &::after {
-      display: none !important;
+      content: '' !important;
+      display: block !important;
+      position: absolute !important;
+      left: 0 !important;
+      right: 0 !important;
+      height: 1px !important;
+      background: $color-border-subtle !important;
+      border: none !important;
+      transform: none !important;
     }
+
+    &::before { top: 0 !important; }
+    &::after { bottom: 0 !important; }
   }
 
   /* Gradient mask on scroll columns — overrides white background-image */

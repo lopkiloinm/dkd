@@ -1,5 +1,5 @@
 <template>
-  <TopBar title="Login Logs" :showBack="true" />
+  <AppTopBar title="Login Logs" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
       <input class="n-input search-input" v-model="queryParams.userName" placeholder="Search by User Name" @confirm="handleSearch" />
@@ -73,7 +73,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
 import { list, delLogininfor, unlockLogininfor, cleanLogininfor } from '@/api/monitor/logininfor'
 
 const logList = ref([])

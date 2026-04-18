@@ -51,14 +51,6 @@ export function completeTask(taskId) {
   })
 }
 
-// 取消工单
-export function cancelTask(taskId) {
-  return request({
-    url: `/manage/task/${taskId}/cancel`,
-    method: 'put'
-  })
-}
-
 // Accept a pending task (status 1 -> 2)
 export function acceptTask(taskId) {
   return request({

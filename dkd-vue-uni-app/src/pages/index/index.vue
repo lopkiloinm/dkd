@@ -3,50 +3,56 @@
     :unread-count="unreadCount"
     :profile-picture="profilePicture"
     :user-name="userName"
-    @add="handleAdd"
     @search="handleSearch"
     @notification="handleNotification"
-    @profile="handleProfile"
   />
   <view class="layout-container">
     <scroll-view class="scroll-area" scroll-y>
       <view class="content-wrapper">
-        <!-- Quick Stats -->
+        <!-- 1. Operations Overview -->
         <text class="section-title">Operations Overview</text>
         <view class="quick-stats">
           <Grid :columns="2" :gap="16">
-            <StatCard
-              label="Total Machines"
-              :value="totalMachines"
-              trend="95% Online"
-              trend-direction="neutral"
-              variant="primary"
-            />
-            <StatCard
-              label="Tasks Pending"
-              :value="pendingTasks"
-              trend="12 Urgent"
-              trend-direction="up"
-              variant="warning"
-            />
-            <StatCard
-              label="Low Stock Items"
-              :value="lowStockCount"
-              trend="5 Critical"
-              trend-direction="down"
-              variant="error"
-            />
-            <StatCard
-              label="Team Members"
-              :value="teamCount"
-              trend="8 Active"
-              trend-direction="neutral"
-              variant="success"
-            />
+            <view class="stat-card-link" @click="goTo('/pages/manage/vm/index')">
+              <StatCard
+                label="Total Machines"
+                :value="totalMachines"
+                trend="95% Online"
+                trend-direction="neutral"
+                variant="primary"
+              />
+            </view>
+            <view class="stat-card-link" @click="goTo('/pages/manage/task/index')">
+              <StatCard
+                label="Tasks Pending"
+                :value="pendingTasks"
+                trend="12 Urgent"
+                trend-direction="up"
+                variant="warning"
+              />
+            </view>
+            <view class="stat-card-link" @click="goTo('/pages/inventory/index')">
+              <StatCard
+                label="Low Stock Items"
+                :value="lowStockCount"
+                trend="5 Critical"
+                trend-direction="down"
+                variant="error"
+              />
+            </view>
+            <view class="stat-card-link" @click="goTo('/pages/manage/emp/index')">
+              <StatCard
+                label="Team Members"
+                :value="teamCount"
+                trend="8 Active"
+                trend-direction="neutral"
+                variant="success"
+              />
+            </view>
           </Grid>
         </view>
 
-        <!-- Real-Time Alerts -->
+        <!-- 2. Real-Time Alerts -->
         <template v-if="alerts.length > 0">
         <text class="section-title">Real-Time Alerts</text>
         <view class="alerts-section">
@@ -63,7 +69,33 @@
         </view>
         </template>
 
-        <!-- Quick Actions -->
+        <!-- 3. Abnormal Equipment (urgent, actionable) -->
+        <text class="section-title">Abnormal Equipment</text>
+        <view class="abnormal-section">
+          <Card padding="none">
+            <CardSection variant="body">
+              <view
+                v-for="(item, index) in abnormalEquipment"
+                :key="index"
+                class="equipment-item"
+                @click="goTo('/pages/manage/vm/index')"
+              >
+                <text class="equipment-time">{{ item.updateTime }}</text>
+                <text class="equipment-addr">{{ item.addr }}</text>
+                <text class="equipment-code">{{ item.innerCode }}</text>
+              </view>
+              <view v-if="abnormalEquipment.length === 0" class="empty-state">
+                <text class="empty-text">No abnormal equipment</text>
+              </view>
+              <view v-if="abnormalEquipment.length > 0" class="see-all-row" @click="goTo('/pages/manage/vm/index')">
+                <text class="see-all-label">See all machines</text>
+                <Icon name="chevron-right" size="16" />
+              </view>
+            </CardSection>
+          </Card>
+        </view>
+
+        <!-- 4. Quick Actions -->
         <text class="section-title">Quick Actions</text>
         <view class="quick-actions">
           <Grid :columns="4" :gap="16">
@@ -94,7 +126,29 @@
           </Grid>
         </view>
 
-        <!-- Machine Status Overview -->
+        <!-- 5. Task Queue -->
+        <text class="section-title">Task Queue</text>
+        <Card padding="none">
+          <CardSection variant="body">
+            <view class="task-queue">
+              <view class="task-item" v-for="task in recentTasks" :key="task.id">
+                <view class="task-info">
+                  <text class="task-title">{{ task.title }}</text>
+                  <text class="task-assignee">{{ task.assignee }}</text>
+                </view>
+                <Badge :variant="task.priority === 'high' ? 'error' : task.priority === 'medium' ? 'warning' : 'default'">
+                  {{ task.priority.charAt(0).toUpperCase() + task.priority.slice(1) }}
+                </Badge>
+              </view>
+              <view class="see-all-row" @click="goTo('/pages/manage/task/index')">
+                <text class="see-all-label">See all tasks</text>
+                <Icon name="chevron-right" size="16" />
+              </view>
+            </view>
+          </CardSection>
+        </Card>
+
+        <!-- 6. Machine Status -->
         <text class="section-title">Machine Status</text>
         <Card padding="none">
           <CardSection variant="body">
@@ -120,28 +174,14 @@
                 <text class="status-count">{{ errorMachines }}</text>
               </view>
             </view>
-          </CardSection>
-        </Card>
-
-        <!-- Task Queue -->
-        <text class="section-title">Task Queue</text>
-        <Card padding="none">
-          <CardSection variant="body">
-            <view class="task-queue">
-              <view class="task-item" v-for="task in recentTasks" :key="task.id">
-                <view class="task-info">
-                  <text class="task-title">{{ task.title }}</text>
-                  <text class="task-assignee">{{ task.assignee }}</text>
-                </view>
-                <Badge :variant="task.priority === 'high' ? 'error' : task.priority === 'medium' ? 'warning' : 'default'">
-                  {{ task.priority.charAt(0).toUpperCase() + task.priority.slice(1) }}
-                </Badge>
-              </view>
+            <view class="see-all-row" @click="goTo('/pages/manage/vm/index')">
+              <text class="see-all-label">See all machines</text>
+              <Icon name="chevron-right" size="16" />
             </view>
           </CardSection>
         </Card>
 
-        <!-- Inventory Levels -->
+        <!-- 7. Inventory Levels -->
         <text class="section-title">Inventory Levels</text>
         <Card padding="none">
           <CardSection variant="body">
@@ -160,11 +200,15 @@
                   <ProgressBar :value="item.stock" :max="item.maxStock" :color="item.stock < item.maxStock * 0.2 ? 'error' : 'primary'" />
                 </view>
               </view>
+              <view class="see-all-row" @click="goTo('/pages/inventory/index')">
+                <text class="see-all-label">See all inventory</text>
+                <Icon name="chevron-right" size="16" />
+              </view>
             </view>
           </CardSection>
         </Card>
 
-        <!-- Team Workload -->
+        <!-- 8. Team Workload -->
         <text class="section-title">Team Workload</text>
         <Card padding="none">
           <CardSection variant="body">
@@ -184,72 +228,35 @@
                   <ProgressBar :value="member.tasksCompleted" :max="member.totalTasks" />
                 </view>
               </view>
+              <view class="see-all-row" @click="goTo('/pages/manage/emp/index')">
+                <text class="see-all-label">See all team</text>
+                <Icon name="chevron-right" size="16" />
+              </view>
             </view>
           </CardSection>
         </Card>
 
-        <!-- Section Cards -->
-        <text class="section-title">Quick Access</text>
-        <view class="section-cards">
-          <Grid :columns="2" :gap="16">
-            <SectionCard
-              title="Machines"
-              :stats="`${deviceCount} Total • ${onlineMachines} Online`"
-              @click="goTo('/pages/manage/vm/index')"
-            />
-            <SectionCard
-              title="Tasks"
-              :stats="`${totalOrders} Total • ${inProgressOrders} In Progress`"
-              @click="goTo('/pages/manage/task/index')"
-            />
-            <SectionCard
-              title="Inventory"
-              :stats="`${totalProducts} Products • ${lowStockCount} Low Stock`"
-              @click="goTo('/pages/inventory/index')"
-            />
-            <SectionCard
-              title="Partners"
-              :stats="`${partnerCount} Active Partners`"
-              @click="goTo('/pages/manage/partner/index')"
-            />
-          </Grid>
-        </view>
-
-        <!-- Hot Products -->
+        <!-- 9. Hot Products (insight) -->
         <text class="section-title">Hot Products</text>
         <view class="hot-products-section">
-          <Card>
-            <view class="ranking-list">
-              <view
-                v-for="(item, index) in hotProducts"
-                :key="index"
-                class="ranking-item"
-              >
-                <view class="rank-badge" :class="'rank-' + (index + 1)">{{ index + 1 }}</view>
-                <text class="product-name">{{ item.skuName }}</text>
-                <text class="product-count">{{ item.count }} orders</text>
+          <Card padding="none">
+            <CardSection variant="body">
+              <view class="ranking-list">
+                <view
+                  v-for="(item, index) in hotProducts"
+                  :key="index"
+                  class="ranking-item"
+                >
+                  <view class="rank-badge" :class="'rank-' + (index + 1)">{{ index + 1 }}</view>
+                  <text class="product-name">{{ item.skuName }}</text>
+                  <text class="product-count">{{ item.count }} orders</text>
+                </view>
               </view>
-            </view>
-          </Card>
-        </view>
-
-        <!-- Abnormal Equipment -->
-        <text class="section-title">Abnormal Equipment</text>
-        <view class="abnormal-section">
-          <Card>
-            <view
-              v-for="(item, index) in abnormalEquipment"
-              :key="index"
-              class="equipment-item"
-              @click="goTo('/pages/manage/vm/index')"
-            >
-              <text class="equipment-time">{{ item.updateTime }}</text>
-              <text class="equipment-addr">{{ item.addr }}</text>
-              <text class="equipment-code">{{ item.innerCode }}</text>
-            </view>
-            <view v-if="abnormalEquipment.length === 0" class="empty-state">
-              <text class="empty-text">No abnormal equipment</text>
-            </view>
+              <view class="see-all-row" @click="goTo('/pages/analytics/index')">
+                <text class="see-all-label">See full analytics</text>
+                <Icon name="chevron-right" size="16" />
+              </view>
+            </CardSection>
           </Card>
         </view>
       </view>
@@ -272,7 +279,6 @@ import SearchOverlay from '@/components/app/SearchOverlay.vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import StatCard from '@/components/ui/StatCard.vue'
 import ChartCard from '@/components/app/ChartCard.vue'
-import SectionCard from '@/components/app/SectionCard.vue'
 import Card from '@/components/ui/Card.vue'
 import CardSection from '@/components/ui/CardSection.vue'
 import Grid from '@/components/ui/Grid.vue'
@@ -609,6 +615,16 @@ const handleTimeRangeChange = (value) => {
   margin-bottom: 0;
 }
 
+.stat-card-link {
+  cursor: pointer;
+  transition: transform $transition-fast;
+
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.85;
+  }
+}
+
 .alerts-section {
   margin-bottom: 0;
 }
@@ -677,6 +693,26 @@ const handleTimeRangeChange = (value) => {
 .task-queue {
   display: flex;
   flex-direction: column;
+}
+
+.see-all-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-4 0 0;
+  margin-top: 0;
+  cursor: pointer;
+  color: $color-primary;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.see-all-label {
+  @include text-body;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
 }
 
 .task-item {
@@ -905,13 +941,7 @@ const handleTimeRangeChange = (value) => {
   display: flex;
   align-items: center;
   padding: $spacing-3 0;
-  margin-bottom: $spacing-3;
   border-bottom: 1px solid $color-border-subtle;
-
-  &:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-  }
 }
 
 .rank-badge {
@@ -963,18 +993,12 @@ const handleTimeRangeChange = (value) => {
   display: flex;
   flex-direction: column;
   padding: $spacing-3 0;
-  margin-bottom: $spacing-3;
   border-bottom: 1px solid $color-border-subtle;
   cursor: pointer;
   transition: background-color $transition-normal;
 
   &:active {
     background: $color-bg-elevated;
-  }
-
-  &:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
   }
 }
 

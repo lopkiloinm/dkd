@@ -1,14 +1,14 @@
 <template>
-  <TopBar title="Post Management" :showBack="true" />
+  <AppTopBar title="Post Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.postCode" placeholder="Search by Post Code" @confirm="handleSearch" />
+      <input class="n-input search-input" :value="queryParams.postCode" @input="queryParams.postCode = $event.detail.value" placeholder="Search by Post Code" @confirm="handleSearch" />
       <view class="filter-toggle" @click="toggleFilters">
         <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
         <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
       </view>
       <view class="filters-container" :class="{ expanded: filtersExpanded }">
-        <input class="n-input search-input" v-model="queryParams.postName" placeholder="Search by Post Name" @confirm="handleSearch" />
+        <input class="n-input search-input" :value="queryParams.postName" @input="queryParams.postName = $event.detail.value" placeholder="Search by Post Name" @confirm="handleSearch" />
         <picker mode="selector" :range="statusOptions" :value="filterStatusIndex" @change="onFilterStatusChange">
           <view class="filter-picker">{{ statusOptions[filterStatusIndex] }}</view>
         </picker>
@@ -83,15 +83,15 @@
     <BottomSheet :visible="showModal" :title="isEdit ? 'Edit Post' : 'Add Post'" @update:visible="val => !val && closeModal()" @close="closeModal">
       <view class="form-item">
         <text class="form-label">Post Name *</text>
-        <input class="n-input" v-model="form.postName" placeholder="Enter post name" />
+        <input class="n-input" :value="form.postName" @input="form.postName = $event.detail.value" placeholder="Enter post name" />
       </view>
       <view class="form-item">
         <text class="form-label">Post Code *</text>
-        <input class="n-input" v-model="form.postCode" placeholder="Enter post code" />
+        <input class="n-input" :value="form.postCode" @input="form.postCode = $event.detail.value" placeholder="Enter post code" />
       </view>
       <view class="form-item">
         <text class="form-label">Sort Order *</text>
-        <input class="n-input" v-model="form.postSort" type="number" placeholder="Enter sort order" />
+        <input class="n-input" :value="form.postSort" @input="form.postSort = $event.detail.value" type="number" placeholder="Enter sort order" />
       </view>
       <view class="form-item">
         <text class="form-label">Status</text>
@@ -101,7 +101,7 @@
       </view>
       <view class="form-item">
         <text class="form-label">Remark</text>
-        <textarea class="n-textarea" v-model="form.remark" placeholder="Enter remark" />
+        <textarea class="n-textarea" :value="form.remark" @input="form.remark = $event.detail.value" placeholder="Enter remark" />
       </view>
       <template #header-actions>
         <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
@@ -114,7 +114,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listPost, getPost, addPost, updatePost, delPost } from '@/api/system/post'
 import { hasPermission } from '@/utils/permission'
@@ -584,7 +584,7 @@ const onRefresh = () => {
   @include text-body;
   width: 100%;
   box-sizing: border-box;
-  border-radius: $radius-sm;
+  border-radius: $radius-lg;
 }
 
 .detail-info-row {

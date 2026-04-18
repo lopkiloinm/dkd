@@ -6,7 +6,6 @@
       :unread-count="unreadCount"
       @search="handleSearch"
       @notification="handleNotification"
-      @profile="handleProfile"
     />
 
     <view class="page-header">
@@ -23,7 +22,7 @@
     <view class="filter-bar">
       <input
         class="search-input"
-        v-model="queryParams.innerCode"
+        :value="queryParams.innerCode" @input="queryParams.innerCode = $event.detail.value"
         placeholder="Filter by machine code"
         confirm-type="search"
         @confirm="fetchList(true)"
@@ -126,11 +125,11 @@
       <view v-else class="form-view">
         <view class="form-group">
           <text class="form-label">Slot Code *</text>
-          <input class="form-input" v-model="formData.channelCode" placeholder="e.g. 1-1" />
+          <input class="form-input" :value="formData.channelCode" @input="formData.channelCode = $event.detail.value" placeholder="e.g. 1-1" />
         </view>
         <view class="form-group">
           <text class="form-label">Machine Code *</text>
-          <input class="form-input" v-model="formData.innerCode" placeholder="Machine inner code" />
+          <input class="form-input" :value="formData.innerCode" @input="formData.innerCode = $event.detail.value" placeholder="Machine inner code" />
         </view>
         <view class="form-group">
           <text class="form-label">SKU</text>
@@ -140,11 +139,11 @@
         </view>
         <view class="form-group">
           <text class="form-label">Max Capacity</text>
-          <input class="form-input" type="number" v-model="formData.maxCapacity" placeholder="0" />
+          <input class="form-input" type="number" :value="formData.maxCapacity" @input="formData.maxCapacity = $event.detail.value" placeholder="0" />
         </view>
         <view class="form-group">
           <text class="form-label">Current Stock</text>
-          <input class="form-input" type="number" v-model="formData.currentCapacity" placeholder="0" />
+          <input class="form-input" type="number" :value="formData.currentCapacity" @input="formData.currentCapacity = $event.detail.value" placeholder="0" />
         </view>
       </view>
 
@@ -409,7 +408,7 @@ onShow(() => {
   padding: $spacing-2 $spacing-3;
   background: $color-bg-tertiary;
   border: 1px solid $color-border-subtle;
-  border-radius: $radius-sm;
+  border-radius: $radius-pill;
 }
 
 .scroll-area {
@@ -498,12 +497,12 @@ onShow(() => {
 .form-input {
   @include text-body; color: $color-text-primary; padding: $spacing-3;
   background: $color-bg-tertiary; border: 1px solid $color-border-subtle;
-  border-radius: $radius-sm; width: 100%; box-sizing: border-box;
+  border-radius: $radius-pill; width: 100%; box-sizing: border-box;
 }
 
 .form-picker {
   @include text-body; color: $color-text-primary; padding: $spacing-3;
   background: $color-bg-tertiary; border: 1px solid $color-border-subtle;
-  border-radius: $radius-sm;
+  border-radius: $radius-pill;
 }
 </style>

@@ -88,7 +88,7 @@
         </view>
         <view class="form-item">
           <text class="form-label">Address *</text>
-          <textarea class="n-textarea" v-model="form.address" placeholder="Enter address" />
+          <textarea class="n-textarea" :value="form.address" @input="form.address = $event.detail.value" placeholder="Enter address" />
         </view>
         <template #header-actions>
           <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
@@ -498,7 +498,7 @@ const closeDetailModal = () => {
   padding: 0 $spacing-4;
   background: $color-bg-secondary;
   border: 1px solid $color-border-subtle;
-  border-radius: $radius-md;
+  border-radius: $radius-pill;
   font-size: 16px;
   color: $color-text-primary;
   box-sizing: border-box;
@@ -519,7 +519,7 @@ const closeDetailModal = () => {
   box-sizing: border-box;
   color: $color-text-primary;
   background: $color-bg-secondary;
-  border-radius: $radius-md;
+  border-radius: $radius-lg;
 }
 
 .detail-info-row {

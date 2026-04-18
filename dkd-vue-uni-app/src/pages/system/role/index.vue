@@ -1,14 +1,14 @@
 <template>
-  <TopBar title="Role Management" :showBack="true" />
+  <AppTopBar title="Role Management" :showBack="true" />
   <view class="layout-container">
     <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.roleName" placeholder="Search by Role Name" @confirm="handleSearch" />
+      <input class="n-input search-input" :value="queryParams.roleName" @input="queryParams.roleName = $event.detail.value" placeholder="Search by Role Name" @confirm="handleSearch" />
       <view class="filter-toggle" @click="toggleFilters">
         <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
         <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
       </view>
       <view class="filters-container" :class="{ expanded: filtersExpanded }">
-        <input class="n-input search-input" v-model="queryParams.roleKey" placeholder="Search by Role Key" @confirm="handleSearch" />
+        <input class="n-input search-input" :value="queryParams.roleKey" @input="queryParams.roleKey = $event.detail.value" placeholder="Search by Role Key" @confirm="handleSearch" />
         <picker mode="selector" :range="statusOptions" :value="filterStatusIndex" @change="onFilterStatusChange">
           <view class="filter-picker">{{ statusOptions[filterStatusIndex] }}</view>
         </picker>
@@ -90,15 +90,15 @@
     <BottomSheet :visible="showModal" :title="isEdit ? 'Edit Role' : 'Add Role'" @update:visible="val => !val && closeModal()" @close="closeModal">
       <view class="form-item">
         <text class="form-label">Role Name *</text>
-        <input class="n-input" v-model="form.roleName" placeholder="Enter role name" />
+        <input class="n-input" :value="form.roleName" @input="form.roleName = $event.detail.value" placeholder="Enter role name" />
       </view>
       <view class="form-item">
         <text class="form-label">Role Key *</text>
-        <input class="n-input" v-model="form.roleKey" placeholder="Enter role key" />
+        <input class="n-input" :value="form.roleKey" @input="form.roleKey = $event.detail.value" placeholder="Enter role key" />
       </view>
       <view class="form-item">
         <text class="form-label">Sort Order *</text>
-        <input class="n-input" v-model="form.roleSort" type="number" placeholder="Enter sort order" />
+        <input class="n-input" :value="form.roleSort" @input="form.roleSort = $event.detail.value" type="number" placeholder="Enter sort order" />
       </view>
       <view class="form-item">
         <text class="form-label">Status</text>
@@ -108,7 +108,7 @@
       </view>
       <view class="form-item">
         <text class="form-label">Remark</text>
-        <textarea class="n-textarea" v-model="form.remark" placeholder="Enter remark" />
+        <textarea class="n-textarea" :value="form.remark" @input="form.remark = $event.detail.value" placeholder="Enter remark" />
       </view>
       <template #header-actions>
         <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
@@ -121,7 +121,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import TopBar from '@/components/TopBar/index.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listRole, getRole, addRole, updateRole, delRole, changeRoleStatus } from '@/api/system/role'
 import { hasPermission } from '@/utils/permission'
@@ -613,7 +613,7 @@ const onRefresh = () => {
   @include text-body;
   width: 100%;
   box-sizing: border-box;
-  border-radius: $radius-sm;
+  border-radius: $radius-lg;
 }
 
 .detail-info-row {

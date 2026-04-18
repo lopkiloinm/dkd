@@ -25,7 +25,7 @@
       </scroll-view>
     </view>
 
-    <scroll-view class="scroll-area" scroll-y refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
+    <scroll-view class="scroll-area" scroll-y refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing" @scrolltolower="loadMore">
       <view class="content-wrapper">
         <view v-if="notificationList.length === 0 && !loading" class="empty-state">
           <EmptyState title="No notifications" description="You're all caught up!" />
@@ -104,6 +104,9 @@ const loading = ref(false)
 const isRefreshing = ref(false)
 const showDetail = ref(false)
 const detailData = ref({})
+const pageNum = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
 
 const getTypeLabel = (type) => {
   if (type === '1') return 'Notice'
@@ -129,18 +132,20 @@ const formatDate = (str) => {
   return d.toLocaleDateString()
 }
 
-const fetchNotifications = async () => {
+const fetchNotifications = async (reset = true) => {
   loading.value = true
   try {
-    const params = { pageNum: 1, pageSize: 50, status: '0' }
+    if (reset) {
+      pageNum.value = 1
+    }
+    const params = { pageNum: pageNum.value, pageSize: pageSize.value, status: '0' }
     if (activeFilter.value !== 'all') {
       params.noticeType = activeFilter.value
     }
     const res = await listNotice(params)
-    notificationList.value = (res.rows || []).map((item) => ({
-      ...item,
-      read: false
-    }))
+    const rows = (res.rows || []).map((item) => ({ ...item, read: false }))
+    notificationList.value = reset ? rows : [...notificationList.value, ...rows]
+    total.value = res.total || 0
   } catch (error) {
     console.error(error)
   } finally {
@@ -148,15 +153,22 @@ const fetchNotifications = async () => {
   }
 }
 
+const loadMore = () => {
+  if (loading.value) return
+  if (notificationList.value.length >= total.value) return
+  pageNum.value++
+  fetchNotifications(false)
+}
+
 const onRefresh = async () => {
   isRefreshing.value = true
-  await fetchNotifications()
+  await fetchNotifications(true)
   isRefreshing.value = false
 }
 
 const handleFilterTab = (value) => {
   activeFilter.value = value
-  fetchNotifications()
+  fetchNotifications(true)
 }
 
 const handleViewDetail = (item) => {
