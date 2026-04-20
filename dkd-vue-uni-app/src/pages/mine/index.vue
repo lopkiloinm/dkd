@@ -3,14 +3,16 @@
   <view class="layout-container">
     <scroll-view class="scroll-area" scroll-y>
       <view class="content-wrapper">
-        <view class="profile-card">
-          <Avatar :src="profilePicture" :alt="userName" size="xl" />
-          <text class="user-name">{{ userName }}</text>
-          <text class="user-subtitle">{{ userRoleText }}</text>
-        </view>
+        <Motion preset="fade-up" :index="0">
+          <view class="profile-card">
+            <Avatar :src="profilePicture" :alt="userName" size="xl" />
+            <text class="user-name">{{ userName }}</text>
+            <text class="user-subtitle">{{ userRoleText }}</text>
+          </view>
+        </Motion>
 
-        <Card padding="none">
-          <CardSection variant="body">
+        <Motion preset="fade-up" :index="1">
+          <Card title="Account" accent="primary" icon="user" padding="none">
             <view class="menu-list">
               <view class="menu-item" @click="goTo('/pages/notifications/index')">
                 <view class="menu-item-left">
@@ -36,10 +38,12 @@
                 <text class="menu-value">1.0.0</text>
               </view>
             </view>
-          </CardSection>
-        </Card>
+          </Card>
+        </Motion>
 
-        <Button variant="error" size="lg" @click="handleLogout">Log Out</Button>
+        <Motion preset="fade-up" :index="2">
+          <Button variant="error" size="lg" @click="handleLogout">Log Out</Button>
+        </Motion>
       </view>
     </scroll-view>
   </view>
@@ -54,9 +58,9 @@ import Icon from '@/components/ui/Icon.vue'
 import Card from '@/components/ui/Card.vue'
 import CardSection from '@/components/ui/CardSection.vue'
 import Button from '@/components/ui/Button.vue'
+import Motion from '@/components/ui/Motion.vue'
 import useUserStore from '@/store/modules/user'
 import { getInfo } from '@/api/login'
-
 const userStore = useUserStore()
 
 const userName = computed(() => userStore.name || 'Admin')
@@ -106,14 +110,19 @@ onShow(() => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: $color-bg-primary;
-  padding-top: $top-bar-total-height;
 }
 
 .scroll-area {
   flex: 1;
 }
 
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-4;
+  padding-left: $spacing-4;
+  padding-right: $spacing-4;
+}
 
 .profile-card {
   display: flex;

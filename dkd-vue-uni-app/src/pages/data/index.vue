@@ -1,7 +1,7 @@
 <template>
   <AppTopBar title="Analytics" />
-  <view class="layout-container">
-    <view class="filter-tabs">
+  <view class="layout-container layout-container--chrome-filter layout-container--bottom-tabs">
+    <view class="filter-tabs chrome-filter-tabs">
       <scroll-view class="tabs-scroll" scroll-x :show-scrollbar="false">
         <view class="tabs-list">
           <view class="master-filter-tab" @click="handleMasterFilter">
@@ -38,7 +38,7 @@
 
         <!-- Chart Section -->
         <view class="chart-section">
-          <Card>
+          <Card padding="none">
             <CardSection variant="header">
               <text class="chart-title">{{ currentChartTitle }}</text>
             </CardSection>
@@ -102,7 +102,6 @@ import StatCard from '@/components/ui/StatCard.vue'
 import Grid from '@/components/ui/Grid.vue'
 import Icon from '@/components/ui/Icon.vue'
 import FilterModal from '@/components/app/FilterModal.vue'
-
 // Filters
 const filterTabs = ref([
   { label: 'All', value: 'all' },
@@ -220,8 +219,6 @@ const handleTabChange = (tabId) => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: $color-bg-primary;
-  padding-top: $top-bar-total-height;
 }
 
 .scroll-area {
@@ -229,11 +226,11 @@ const handleTabChange = (tabId) => {
   overflow: hidden;
 }
 
-
-.filter-tabs {
-  display: flex;
-  align-items: center;
-  padding: $spacing-3 $spacing-4;
+.content-wrapper {
+  padding-left: $spacing-4;
+  padding-right: $spacing-4;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
 .tabs-scroll {
@@ -360,4 +357,11 @@ const handleTabChange = (tabId) => {
   margin-bottom: $spacing-6;
 }
 
+.section-title {
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-3;
+  display: block;
+}
 </style>

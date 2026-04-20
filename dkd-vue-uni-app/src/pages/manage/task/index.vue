@@ -6,8 +6,8 @@
     @search="handleSearch"
     @notification="handleNotification"
   />
-  <view class="layout-container">
-    <view class="filter-tabs">
+  <view class="layout-container layout-container--chrome-filter layout-container--bottom-tabs">
+    <view class="filter-tabs chrome-filter-tabs">
       <scroll-view class="tabs-scroll" scroll-x :show-scrollbar="false">
         <view class="tabs-list">
           <view class="master-filter-tab" @click="handleMasterFilter">
@@ -69,12 +69,12 @@
           <Card v-for="item in taskList" :key="item.taskId" class="task-card" @click="handleViewDetail(item)">
             <view class="card-header">
               <text class="task-code">{{ item.taskCode }}</text>
-              <Badge :variant="getStatusVariant(item.taskStatus)">{{ getStatusText(item.taskStatus) }}</Badge>
+              <Badge :variant="getTaskStatusVariant(item.taskStatus)">{{ getTaskStatusText(item.taskStatus) }}</Badge>
             </view>
             <view class="task-info">
               <view class="info-row">
                 <text class="info-label">Type</text>
-                <text class="info-value">{{ getTypeText(item.productTypeId) }}</text>
+                <text class="info-value">{{ getTaskTypeText(item.productTypeId) }}</text>
               </view>
               <view class="info-row">
                 <text class="info-label">Machine</text>
@@ -119,11 +119,11 @@
       </view>
       <view class="detail-row">
         <text class="detail-label">Status</text>
-        <Badge :variant="getStatusVariant(detailData.taskStatus)">{{ getStatusText(detailData.taskStatus) }}</Badge>
+        <Badge :variant="getTaskStatusVariant(detailData.taskStatus)">{{ getTaskStatusText(detailData.taskStatus) }}</Badge>
       </view>
       <view class="detail-row">
         <text class="detail-label">Type</text>
-        <text class="detail-value">{{ getTypeText(detailData.productTypeId) }}</text>
+        <text class="detail-value">{{ getTaskTypeText(detailData.productTypeId) }}</text>
       </view>
       <view class="detail-row">
         <text class="detail-label">Machine</text>
@@ -151,24 +151,25 @@
       </view>
       <view class="form-group">
         <text class="form-label">Machine Code *</text>
-        <input class="form-input" :value="formData.innerCode" @input="formData.innerCode = $event.detail.value" placeholder="Enter machine inner code" />
+        <SheetTextField v-model="formData.innerCode" placeholder="Enter machine inner code" />
       </view>
       <view class="form-group">
         <text class="form-label">Assignee</text>
-        <input class="form-input" :value="formData.userName" @input="formData.userName = $event.detail.value" placeholder="Operator name" />
+        <SheetTextField v-model="formData.userName" placeholder="Operator name" />
       </view>
       <view class="form-group">
         <text class="form-label">Address</text>
-        <input class="form-input" :value="formData.addr" @input="formData.addr = $event.detail.value" placeholder="Machine location" />
+        <SheetTextField v-model="formData.addr" placeholder="Machine location" />
       </view>
       <view class="form-group">
         <text class="form-label">Description</text>
-        <textarea class="form-input form-textarea" :value="formData.desc" @input="formData.desc = $event.detail.value" placeholder="Task description" />
+        <SheetTextField v-model="formData.desc" placeholder="Task description" multiline />
       </view>
     </view>
 
     <template #header-actions>
       <template v-if="formMode === 'detail'">
+        <view class="action-pill" @click="startEdit"><text class="action-pill-text">Edit</text></view>
         <view v-if="detailData.taskStatus === 1" class="action-pill action-pill--primary" @click="confirmAccept"><text class="action-pill-text">Accept</text></view>
         <view v-if="detailData.taskStatus === 2" class="action-pill action-pill--success" @click="confirmComplete"><text class="action-pill-text">Complete</text></view>
         <view v-if="detailData.taskStatus === 1 || detailData.taskStatus === 2" class="action-pill action-pill--danger" @click="confirmReject"><text class="action-pill-text">Reject</text></view>
@@ -182,7 +183,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import AppTopBar from '@/components/app/AppTopBar.vue'
 import AppBottomBar from '@/components/app/AppBottomBar.vue'
@@ -196,10 +197,11 @@ import Grid from '@/components/ui/Grid.vue'
 import Icon from '@/components/ui/Icon.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
+import SheetTextField from '@/components/ui/SheetTextField.vue'
 import { listTask, completeTask, acceptTask, rejectTask, addTask, updateTask, delTask, getTask } from '@/api/manage/task'
 import { getInfo } from '@/api/login'
 import useUserStore from '@/store/modules/user'
-
+import { getTaskStatusText, getTaskStatusVariant, getTaskTypeText, TASK_STATUS } from '@/utils/task'
 const userStore = useUserStore()
 
 // Top bar state
@@ -233,7 +235,15 @@ const showFilterModal = ref(false)
 const showDetail = ref(false)
 const formMode = ref('detail') // 'detail' | 'create' | 'edit'
 const detailData = ref({})
-const formData = ref({})
+const emptyTaskForm = () => ({
+  taskId: null,
+  productTypeId: null,
+  innerCode: '',
+  userName: '',
+  addr: '',
+  desc: ''
+})
+const formData = reactive(emptyTaskForm())
 const typeIndex = ref(0)
 const typeOptions = ref([
   { label: 'Deploy', value: 1 },
@@ -245,11 +255,11 @@ const typeOptions = ref([
 // Filter tabs
 const activeFilter = ref('all')
 const filterTabs = ref([
-  { label: 'All', value: 'all', count: 12 },
-  { label: 'Pending', value: 'pending', count: 5 },
-  { label: 'In Progress', value: 'progress', count: 3 },
-  { label: 'Completed', value: 'completed' },
-  { label: 'Cancelled', value: 'cancelled' }
+  { label: 'All', value: 'all', count: 0 },
+  { label: 'Pending', value: 'pending', count: 0 },
+  { label: 'In Progress', value: 'progress', count: 0 },
+  { label: 'Completed', value: 'completed', count: 0 },
+  { label: 'Cancelled', value: 'cancelled', count: 0 }
 ])
 
 const taskList = ref([])
@@ -311,9 +321,46 @@ const fetchList = async (reset = false) => {
   }
 }
 
+const refreshFilterCounts = async () => {
+  try {
+    const buildCountQuery = (taskStatus = null) => ({
+      pageNum: 1,
+      pageSize: 1,
+      taskStatus,
+      productTypeId: queryParams.value.productTypeId,
+      orderByColumn: 'createTime',
+      isAsc: 'desc'
+    })
+
+    const [allRes, pendingRes, progressRes, completedRes, cancelledRes] = await Promise.all([
+      listTask(buildCountQuery()),
+      listTask(buildCountQuery(TASK_STATUS.pending)),
+      listTask(buildCountQuery(TASK_STATUS.inProgress)),
+      listTask(buildCountQuery(TASK_STATUS.completed)),
+      listTask(buildCountQuery(TASK_STATUS.cancelled))
+    ])
+
+    const countMap = {
+      all: allRes.total || 0,
+      pending: pendingRes.total || 0,
+      progress: progressRes.total || 0,
+      completed: completedRes.total || 0,
+      cancelled: cancelledRes.total || 0
+    }
+
+    filterTabs.value = filterTabs.value.map((tab) => ({
+      ...tab,
+      count: countMap[tab.value] ?? 0
+    }))
+  } catch (error) {
+    console.error('Failed to refresh task counts', error)
+  }
+}
+
 onShow(() => {
   fetchUserInfo()
   fetchList(true)
+  refreshFilterCounts()
 })
 
 const loadMore = () => {
@@ -326,19 +373,31 @@ const loadMore = () => {
 const onRefresh = () => {
   isRefreshing.value = true
   fetchList(true)
+  refreshFilterCounts()
 }
 
 const handleAdd = () => {
   formMode.value = 'create'
-  formData.value = {
-    productTypeId: typeOptions.value[0]?.value,
-    innerCode: '',
-    userName: '',
-    addr: '',
-    desc: ''
-  }
+  Object.assign(formData, emptyTaskForm(), {
+    productTypeId: typeOptions.value[0]?.value ?? null
+  })
   typeIndex.value = 0
   showDetail.value = true
+}
+
+const startEdit = () => {
+  const d = detailData.value
+  Object.assign(formData, emptyTaskForm(), {
+    taskId: d.taskId ?? null,
+    productTypeId: d.productTypeId ?? null,
+    innerCode: d.innerCode || '',
+    userName: d.userName || '',
+    addr: d.addr || '',
+    desc: d.desc || ''
+  })
+  const ti = typeOptions.value.findIndex((t) => t.value === formData.productTypeId)
+  typeIndex.value = ti >= 0 ? ti : 0
+  formMode.value = 'edit'
 }
 
 const handleAssignAll = () => {
@@ -408,6 +467,7 @@ const handleFilterTab = (value) => {
   }
   
   fetchList(true)
+  refreshFilterCounts()
 }
 
 const handleMasterFilter = () => {
@@ -445,28 +505,33 @@ const handleViewDetail = async (item) => {
 
 const closeDetail = () => {
   showDetail.value = false
+  formMode.value = 'detail'
+  Object.assign(formData, emptyTaskForm())
 }
 
 const onTypeChange = (e) => {
   typeIndex.value = e.detail.value
-  formData.value.productTypeId = typeOptions.value[e.detail.value]?.value
+  formData.productTypeId = typeOptions.value[e.detail.value]?.value ?? null
 }
 
 const saveTask = async () => {
-  if (!formData.value.innerCode) {
+  if (!formData.innerCode) {
     uni.showToast({ title: 'Machine code required', icon: 'none' })
     return
   }
+  const payload = { ...formData }
   try {
-    if (formData.value.taskId) {
-      await updateTask(formData.value)
+    if (formData.taskId) {
+      await updateTask(payload)
       uni.showToast({ title: 'Task updated', icon: 'success' })
     } else {
-      await addTask(formData.value)
+      const { taskId: _tid, ...createBody } = payload
+      await addTask(createBody)
       uni.showToast({ title: 'Task created', icon: 'success' })
     }
     closeDetail()
     fetchList(true)
+    refreshFilterCounts()
   } catch (e) {
     console.error(e)
   }
@@ -482,6 +547,7 @@ const confirmComplete = () => {
         uni.showToast({ title: 'Task completed', icon: 'success' })
         closeDetail()
         fetchList(true)
+        refreshFilterCounts()
       }
     }
   })
@@ -498,6 +564,7 @@ const confirmAccept = () => {
           uni.showToast({ title: 'Task accepted', icon: 'success' })
           closeDetail()
           fetchList(true)
+          refreshFilterCounts()
         } catch (e) {
           console.error(e)
         }
@@ -520,6 +587,7 @@ const confirmReject = () => {
           uni.showToast({ title: 'Task rejected', icon: 'success' })
           closeDetail()
           fetchList(true)
+          refreshFilterCounts()
         } catch (e) {
           console.error(e)
         }
@@ -539,39 +607,10 @@ const confirmDelete = () => {
         uni.showToast({ title: 'Task deleted', icon: 'success' })
         closeDetail()
         fetchList(true)
+        refreshFilterCounts()
       }
     }
   })
-}
-
-const getStatusText = (status) => {
-  switch (status) {
-    case 1: return 'Pending'
-    case 2: return 'In Progress'
-    case 3: return 'Cancelled'
-    case 4: return 'Completed'
-    default: return 'Unknown'
-  }
-}
-
-const getStatusVariant = (status) => {
-  switch (status) {
-    case 1: return 'warning'
-    case 2: return 'primary'
-    case 3: return 'error'
-    case 4: return 'success'
-    default: return 'default'
-  }
-}
-
-const getTypeText = (typeId) => {
-  switch (typeId) {
-    case 1: return 'Deploy'
-    case 2: return 'Restock'
-    case 3: return 'Maintenance'
-    case 4: return 'Revoke'
-    default: return 'Unknown'
-  }
 }
 
 const handleSearchQuery = () => {}
@@ -606,14 +645,6 @@ const handleSearchResult = () => {}
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: $color-bg-primary;
-  padding-top: $top-bar-total-height;
-}
-
-.filter-tabs {
-  display: flex;
-  align-items: center;
-  padding: $spacing-3 $spacing-4;
 }
 
 .tabs-scroll {
@@ -687,7 +718,20 @@ const handleSearchResult = () => {}
   overflow: hidden;
 }
 
+.content-wrapper {
+  padding-left: $spacing-4;
+  padding-right: $spacing-4;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
 
+.section-title {
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-3;
+  display: block;
+}
 
 .quick-actions {
   margin-bottom: $spacing-6;
@@ -779,25 +823,7 @@ const handleSearchResult = () => {}
 .form-group { display: flex; flex-direction: column; gap: $spacing-2; }
 .form-label { @include text-caption; color: $color-text-secondary; font-weight: $font-weight-medium; }
 
-.form-input {
-  @include text-body;
-  color: $color-text-primary;
-  padding: $spacing-3;
-  background: $color-bg-tertiary;
-  border: 1px solid $color-border-subtle;
-  border-radius: $radius-pill;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.form-textarea { min-height: 80px; border-radius: $radius-lg; }
-
 .form-picker {
-  @include text-body;
-  color: $color-text-primary;
-  padding: $spacing-3;
-  background: $color-bg-tertiary;
-  border: 1px solid $color-border-subtle;
-  border-radius: $radius-pill;
+  @include sheet-form-picker-trigger;
 }
 </style>

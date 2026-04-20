@@ -1,15 +1,8 @@
 <template>
+  <AppTopBar title="Profile" :show-back="true" :show-actions="false" />
   <view class="layout-container">
-    <view class="page-header">
-      <view class="header-back" @click="handleBack">
-        <Icon name="chevron-left" size="18" color="currentColor" />
-        <text class="header-back-text">Back</text>
-      </view>
-      <text class="page-title">Profile</text>
-      <view class="header-placeholder"></view>
-    </view>
-
-    <view class="content-wrapper">
+    <scroll-view class="scroll-area" scroll-y>
+      <view class="content-wrapper">
       <!-- Profile Header -->
       <view class="profile-header">
         <Avatar :src="profilePicture" :alt="userName" size="xl" />
@@ -17,7 +10,7 @@
       </view>
 
       <!-- Settings List -->
-      <Card>
+      <Card padding="none">
         <CardSection variant="body">
           <view class="settings-list">
             <view class="settings-item" @click="handleSettings('account')">
@@ -56,7 +49,8 @@
       <Button variant="error" size="lg" @click="handleLogout">
         Log Out
       </Button>
-    </view>
+      </view>
+    </scroll-view>
   </view>
 </template>
 
@@ -64,6 +58,7 @@
 import { computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { useUserStore } from '@/store/modules/user'
+import AppTopBar from '@/components/app/AppTopBar.vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import Icon from '@/components/ui/Icon.vue'
 import Card from '@/components/ui/Card.vue'
@@ -113,15 +108,6 @@ const handleLogout = () => {
   uni.reLaunch({ url: '/pages/login/index' })
 }
 
-const handleBack = () => {
-  const pages = getCurrentPages()
-  if (pages.length > 1) {
-    uni.navigateBack()
-    return
-  }
-  uni.reLaunch({ url: '/pages/index/index' })
-}
-
 onShow(() => {
   fetchUserInfo()
 })
@@ -132,47 +118,23 @@ onShow(() => {
 @import "@/styles/_mixins.scss";
 
 .layout-container {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  background: $color-bg-primary;
+  background: transparent;
 }
 
-.page-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: $top-bar-total-height;
-  @include glass($surface-overlay-strong, transparent);
-  border-bottom: 1px solid $color-border-subtle;
+.scroll-area {
+  flex: 1;
+}
+
+.content-wrapper {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: calc(env(safe-area-inset-top, 0px) + $spacing-2) $spacing-4 $spacing-2;
-  z-index: $z-index-sticky;
+  flex-direction: column;
+  gap: $spacing-4;
+  padding-left: $spacing-4;
+  padding-right: $spacing-4;
 }
-
-.header-back {
-  display: flex;
-  align-items: center;
-  gap: $spacing-1;
-  color: $color-text-secondary;
-}
-
-.header-back-text {
-  @include text-caption;
-  color: inherit;
-}
-
-.page-title {
-  @include text-title;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
-}
-
-.header-placeholder {
-  width: 44px;
-}
-
 
 .profile-header {
   display: flex;

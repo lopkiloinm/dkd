@@ -130,7 +130,7 @@
     <view v-else class="form-view">
       <view class="form-group">
         <text class="form-label">Inner Code *</text>
-        <input class="form-input" :value="formData.innerCode" @input="formData.innerCode = $event.detail.value" placeholder="Machine inner code" />
+        <input class="form-input" v-model="formData.innerCode" placeholder="Machine inner code" />
       </view>
       <view class="form-group">
         <text class="form-label">Node *</text>
@@ -650,7 +650,19 @@ const getStatusVariant = (status) => {
   overflow: hidden;
 }
 
+.content-wrapper {
+  padding: $spacing-4 $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
 
+.section-title {
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-3;
+  display: block;
+}
 
 .vm-list {
   display: flex;

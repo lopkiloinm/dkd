@@ -286,6 +286,12 @@ onShow(() => {
   height: calc(100vh - #{$top-bar-total-height} - 52px);
 }
 
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-3;
+  padding: 0 $spacing-4 $spacing-6;
+}
 
 .notification-card {
   cursor: pointer;

@@ -1,6 +1,6 @@
 <template>
   <AppTopBar title="VM Type Management" :showBack="true" />
-  <view class="layout-container">
+  <view class="layout-container layout-container--bottom-tabs">
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
       <view class="content-wrapper">
         <view class="vmtype-list">
@@ -109,7 +109,6 @@ import Button from '@/components/ui/Button.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import { listVmType, getVmType, addVmType, updateVmType, delVmType } from '@/api/manage/vmType'
 import { hasPermission } from '@/utils/permission'
-
 const vmTypeList = ref([])
 const loading = ref(false)
 const isRefreshing = ref(false)
@@ -390,8 +389,6 @@ const closeDetailModal = () => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: $color-bg-primary;
-  padding-top: $top-bar-total-height;
 }
 
 .scroll-area {
@@ -399,6 +396,11 @@ const closeDetailModal = () => {
   overflow: hidden;
 }
 
+.content-wrapper {
+  padding-left: $spacing-4;
+  padding-right: $spacing-4;
+  box-sizing: border-box;
+}
 
 .vmtype-list {
   padding: 0;
@@ -428,11 +430,12 @@ const closeDetailModal = () => {
 .vmtype-image {
   width: 64px;
   height: 64px;
-  border-radius: 12px;
-  margin-right: 16px;
+  border-radius: $radius-md;
+  margin-right: $spacing-4;
   flex-shrink: 0;
   overflow: hidden;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: $color-bg-elevated;
+  border: 1px solid $color-border-subtle;
 }
 
 .type-image {
@@ -622,7 +625,7 @@ const closeDetailModal = () => {
 .fab {
   position: fixed;
   right: $spacing-4;
-  bottom: calc($bottom-bar-height + $spacing-4 + env(safe-area-inset-bottom, 0px));
+  bottom: calc(#{$bottom-bar-total-height} + #{$spacing-4});
   width: 56px;
   height: 56px;
   border-radius: 50%;

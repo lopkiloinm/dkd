@@ -6,152 +6,166 @@
     @search="handleSearch"
     @notification="handleNotification"
   />
-  <view class="layout-container">
+  <view class="layout-container layout-container--bottom-tabs">
     <scroll-view class="scroll-area" scroll-y>
       <view class="content-wrapper">
-        <!-- 1. Operations Overview -->
-        <text class="section-title">Operations Overview</text>
-        <view class="quick-stats">
-          <Grid :columns="2" :gap="16">
-            <view class="stat-card-link" @click="goTo('/pages/manage/vm/index')">
-              <StatCard
-                label="Total Machines"
-                :value="totalMachines"
-                trend="95% Online"
-                trend-direction="neutral"
-                variant="primary"
-              />
-            </view>
-            <view class="stat-card-link" @click="goTo('/pages/manage/task/index')">
-              <StatCard
-                label="Tasks Pending"
-                :value="pendingTasks"
-                trend="12 Urgent"
-                trend-direction="up"
-                variant="warning"
-              />
-            </view>
-            <view class="stat-card-link" @click="goTo('/pages/inventory/index')">
-              <StatCard
-                label="Low Stock Items"
-                :value="lowStockCount"
-                trend="5 Critical"
-                trend-direction="down"
-                variant="error"
-              />
-            </view>
-            <view class="stat-card-link" @click="goTo('/pages/manage/emp/index')">
-              <StatCard
-                label="Team Members"
-                :value="teamCount"
-                trend="8 Active"
-                trend-direction="neutral"
-                variant="success"
-              />
-            </view>
-          </Grid>
-        </view>
-
-        <!-- 2. Real-Time Alerts -->
-        <template v-if="alerts.length > 0">
-        <text class="section-title">Real-Time Alerts</text>
-        <view class="alerts-section">
-          <view class="alerts-list">
-            <Alert
-              v-for="alert in alerts"
-              :key="alert.id"
-              :variant="alert.variant"
-              @dismiss="dismissAlert(alert.id)"
-            >
-              <text class="alert-message">{{ alert.message }}</text>
-            </Alert>
-          </view>
-        </view>
-        </template>
-
-        <!-- 3. Abnormal Equipment (urgent, actionable) -->
-        <text class="section-title">Abnormal Equipment</text>
-        <view class="abnormal-section">
-          <Card padding="none">
-            <CardSection variant="body">
-              <view
-                v-for="(item, index) in abnormalEquipment"
-                :key="index"
-                class="equipment-item"
-                @click="goTo('/pages/manage/vm/index')"
-              >
-                <text class="equipment-time">{{ item.updateTime }}</text>
-                <text class="equipment-addr">{{ item.addr }}</text>
-                <text class="equipment-code">{{ item.innerCode }}</text>
-              </view>
-              <view v-if="abnormalEquipment.length === 0" class="empty-state">
-                <text class="empty-text">No abnormal equipment</text>
-              </view>
-              <view v-if="abnormalEquipment.length > 0" class="see-all-row" @click="goTo('/pages/manage/vm/index')">
-                <text class="see-all-label">See all machines</text>
-                <Icon name="chevron-right" size="16" />
-              </view>
-            </CardSection>
-          </Card>
-        </view>
-
-        <!-- 4. Quick Actions -->
-        <text class="section-title">Quick Actions</text>
-        <view class="quick-actions">
-          <Grid :columns="4" :gap="16">
-            <view class="quick-action-tile" @click="handleBulkAssign">
-              <view class="icon-tile icon-tile--primary">
-                <Icon name="tasks" size="20" color="currentColor" />
-              </view>
-              <text class="quick-action-label">Assign</text>
-            </view>
-            <view class="quick-action-tile" @click="handleMachineStatus">
-              <view class="icon-tile icon-tile--success">
-                <Icon name="machines" size="20" color="currentColor" />
-              </view>
-              <text class="quick-action-label">Status</text>
-            </view>
-            <view class="quick-action-tile" @click="handleInventoryUpdate">
-              <view class="icon-tile icon-tile--warning">
-                <Icon name="inventory" size="20" color="currentColor" />
-              </view>
-              <text class="quick-action-label">Stock</text>
-            </view>
-            <view class="quick-action-tile" @click="handleEmergency">
-              <view class="icon-tile icon-tile--error">
-                <Icon name="alert" size="20" color="currentColor" />
-              </view>
-              <text class="quick-action-label">Alert</text>
-            </view>
-          </Grid>
-        </view>
-
-        <!-- 5. Task Queue -->
-        <text class="section-title">Task Queue</text>
-        <Card padding="none">
-          <CardSection variant="body">
-            <view class="task-queue">
-              <view class="task-item" v-for="task in recentTasks" :key="task.id">
-                <view class="task-info">
-                  <text class="task-title">{{ task.title }}</text>
-                  <text class="task-assignee">{{ task.assignee }}</text>
+        <!-- Weekly revenue bar chart -->
+        <Motion preset="fade-up" :index="0">
+          <Card
+            title="Weekly Revenue"
+            accent="primary"
+            icon="chart-bar"
+            padding="md"
+            interactive
+            class="week-revenue-card"
+            @click="goTo('/pages/analytics/index')"
+          >
+            <view class="week-bar-chart">
+              <view v-for="d in weeklyRevenueByDay" :key="d.weekday" class="week-bar-col">
+                <text class="week-bar-value">{{ formatWeekRevenue(d.revenue) }}</text>
+                <view class="week-bar-track">
+                  <view
+                    class="week-bar-fill"
+                    :class="{ 'week-bar-fill--has-value': d.revenue > 0 }"
+                    :style="{ height: weekBarHeightPct(d.revenue) + '%' }"
+                  />
                 </view>
-                <Badge :variant="task.priority === 'high' ? 'error' : task.priority === 'medium' ? 'warning' : 'default'">
-                  {{ task.priority.charAt(0).toUpperCase() + task.priority.slice(1) }}
+                <text class="week-bar-label">{{ d.label }}</text>
+              </view>
+            </view>
+          </Card>
+        </Motion>
+
+        <!-- 1. Operations Overview -->
+        <Motion preset="fade-up" :index="1">
+          <text class="section-title">Operations Overview</text>
+          <view class="quick-stats">
+            <Grid :columns="2" :gap="16">
+              <view class="stat-card-link" @click="goTo('/pages/manage/vm/index')">
+                <StatCard
+                  label="Total Machines"
+                  :value="totalMachines"
+                  trend="95% Online"
+                  trend-direction="neutral"
+                  variant="primary"
+                />
+              </view>
+              <view class="stat-card-link" @click="goTo('/pages/manage/task/index')">
+                <StatCard
+                  label="Tasks Pending"
+                  :value="pendingTasks"
+                  trend="12 Urgent"
+                  trend-direction="up"
+                  variant="warning"
+                />
+              </view>
+              <view class="stat-card-link" @click="goTo('/pages/inventory/index')">
+                <StatCard
+                  label="Low Stock Items"
+                  :value="lowStockCount"
+                  trend="5 Critical"
+                  trend-direction="down"
+                  variant="error"
+                />
+              </view>
+              <view class="stat-card-link" @click="goTo('/pages/manage/emp/index')">
+                <StatCard
+                  label="Team Members"
+                  :value="teamCount"
+                  trend="8 Active"
+                  trend-direction="neutral"
+                  variant="success"
+                />
+              </view>
+            </Grid>
+          </view>
+        </Motion>
+
+        <!-- 2. Abnormal Equipment (urgent, actionable) -->
+        <Motion preset="fade-up" :index="2">
+          <Card
+            title="Abnormal Equipment"
+            accent="error"
+            icon="alert-triangle"
+            padding="none"
+            class="abnormal-section"
+          >
+            <view
+              v-for="(item, index) in abnormalEquipment"
+              :key="index"
+              class="equipment-item"
+              @click="goTo('/pages/manage/vm/index')"
+            >
+              <text class="equipment-time">{{ item.updateTime }}</text>
+              <text class="equipment-addr">{{ item.addr }}</text>
+              <text class="equipment-code">{{ item.innerCode }}</text>
+            </view>
+            <view v-if="abnormalEquipment.length === 0" class="empty-state">
+              <text class="empty-text">No abnormal equipment</text>
+            </view>
+            <view v-if="abnormalEquipment.length > 0" class="see-all-row" @click="goTo('/pages/manage/vm/index')">
+              <text class="see-all-label">See all machines</text>
+              <Icon name="chevron-right" size="16" />
+            </view>
+          </Card>
+        </Motion>
+
+        <!-- 3. Quick Actions -->
+        <Motion preset="fade-up" :index="3">
+          <text class="section-title">Quick Actions</text>
+          <view class="quick-actions">
+            <Grid :columns="3" :gap="16">
+              <view class="quick-action-tile" @click="handleBulkAssign">
+                <view class="icon-tile icon-tile--primary">
+                  <Icon name="tasks" size="20" color="currentColor" />
+                </view>
+                <text class="quick-action-label">Assign</text>
+              </view>
+              <view class="quick-action-tile" @click="handleMachineStatus">
+                <view class="icon-tile icon-tile--success">
+                  <Icon name="machines" size="20" color="currentColor" />
+                </view>
+                <text class="quick-action-label">Status</text>
+              </view>
+              <view class="quick-action-tile" @click="handleInventoryUpdate">
+                <view class="icon-tile icon-tile--warning">
+                  <Icon name="inventory" size="20" color="currentColor" />
+                </view>
+                <text class="quick-action-label">Stock</text>
+              </view>
+            </Grid>
+          </view>
+        </Motion>
+
+        <!-- 4. Task Queue -->
+        <Motion preset="fade-up" :index="4">
+          <Card title="Task Queue" accent="primary" icon="tasks" padding="none">
+            <view class="task-queue">
+              <view class="task-item" v-for="task in recentTasks" :key="task.taskId">
+                <view class="task-info">
+                  <text class="task-title">{{ task.taskCode }}</text>
+                  <text class="task-assignee">
+                    {{ getTaskTypeText(task.productTypeId) }} · {{ task.userName || 'Unassigned' }}
+                  </text>
+                </view>
+                <Badge :variant="getTaskStatusVariant(task.taskStatus)">
+                  {{ getTaskStatusText(task.taskStatus) }}
                 </Badge>
+              </view>
+              <view v-if="recentTasks.length === 0" class="empty-state">
+                <text class="empty-text">No recent tasks</text>
               </view>
               <view class="see-all-row" @click="goTo('/pages/manage/task/index')">
                 <text class="see-all-label">See all tasks</text>
                 <Icon name="chevron-right" size="16" />
               </view>
             </view>
-          </CardSection>
-        </Card>
+          </Card>
+        </Motion>
 
-        <!-- 6. Machine Status -->
-        <text class="section-title">Machine Status</text>
-        <Card padding="none">
-          <CardSection variant="body">
+        <!-- 5. Machine Status -->
+        <Motion preset="fade-up" :index="5">
+          <Card title="Machine Status" accent="success" icon="machines" padding="none">
             <view class="machine-status-overview">
               <view class="status-item">
                 <view class="status-indicator online"></view>
@@ -178,13 +192,12 @@
               <text class="see-all-label">See all machines</text>
               <Icon name="chevron-right" size="16" />
             </view>
-          </CardSection>
-        </Card>
+          </Card>
+        </Motion>
 
-        <!-- 7. Inventory Levels -->
-        <text class="section-title">Inventory Levels</text>
-        <Card padding="none">
-          <CardSection variant="body">
+        <!-- 6. Inventory Levels -->
+        <Motion preset="fade-up" :index="6">
+          <Card title="Inventory Levels" accent="warning" icon="inventory" padding="none">
             <view class="inventory-levels">
               <view class="inventory-item" v-for="item in inventoryItems" :key="item.id">
                 <view class="inventory-header">
@@ -192,12 +205,16 @@
                     <text class="inventory-name">{{ item.name }}</text>
                   </view>
                   <view class="inventory-stats">
-                    <text class="stat-highlight" :class="{ 'text-danger': item.stock < item.maxStock * 0.2 }">{{ item.stock }}</text>
-                    <text class="stat-label">/ {{ item.maxStock }} Units</text>
+                    <text class="stat-highlight" :class="{ 'text-danger': isInventoryLow(item) }">{{ inventoryStock(item) }}</text>
+                    <text class="stat-label">{{ inventoryCapacityLabel(item) }}</text>
                   </view>
                 </view>
                 <view class="inventory-progress">
-                  <ProgressBar :value="item.stock" :max="item.maxStock" :color="item.stock < item.maxStock * 0.2 ? 'error' : 'primary'" />
+                  <ProgressBar
+                    :value="inventoryStock(item)"
+                    :max="inventoryMax(item)"
+                    :color="isInventoryLow(item) ? 'error' : 'primary'"
+                  />
                 </view>
               </view>
               <view class="see-all-row" @click="goTo('/pages/inventory/index')">
@@ -205,27 +222,26 @@
                 <Icon name="chevron-right" size="16" />
               </view>
             </view>
-          </CardSection>
-        </Card>
+          </Card>
+        </Motion>
 
-        <!-- 8. Team Workload -->
-        <text class="section-title">Team Workload</text>
-        <Card padding="none">
-          <CardSection variant="body">
+        <!-- 7. Team Workload -->
+        <Motion preset="fade-up" :index="7">
+          <Card title="Team Workload" accent="secondary" icon="users" padding="none">
             <view class="team-workload">
               <view class="team-member" v-for="member in teamMembers" :key="member.id">
                 <view class="member-header">
                   <view class="member-info">
-                    <Avatar :src="member.avatar" :text="member.name.charAt(0)" size="sm" />
+                    <Avatar :src="member.avatar" :text="memberInitial(member)" size="sm" />
                     <text class="member-name">{{ member.name }}</text>
                   </view>
                   <view class="member-stats">
-                    <text class="stat-highlight">{{ member.tasksCompleted }}</text>
-                    <text class="stat-label">/ {{ member.totalTasks }} Tasks</text>
+                    <text class="stat-highlight">{{ teamCompleted(member) }}</text>
+                    <text class="stat-label">{{ teamTasksLabel(member) }}</text>
                   </view>
                 </view>
                 <view class="member-progress">
-                  <ProgressBar :value="member.tasksCompleted" :max="member.totalTasks" />
+                  <ProgressBar :value="teamCompleted(member)" :max="teamTotalTasks(member)" />
                 </view>
               </view>
               <view class="see-all-row" @click="goTo('/pages/manage/emp/index')">
@@ -233,32 +249,31 @@
                 <Icon name="chevron-right" size="16" />
               </view>
             </view>
-          </CardSection>
-        </Card>
-
-        <!-- 9. Hot Products (insight) -->
-        <text class="section-title">Hot Products</text>
-        <view class="hot-products-section">
-          <Card padding="none">
-            <CardSection variant="body">
-              <view class="ranking-list">
-                <view
-                  v-for="(item, index) in hotProducts"
-                  :key="index"
-                  class="ranking-item"
-                >
-                  <view class="rank-badge" :class="'rank-' + (index + 1)">{{ index + 1 }}</view>
-                  <text class="product-name">{{ item.skuName }}</text>
-                  <text class="product-count">{{ item.count }} orders</text>
-                </view>
-              </view>
-              <view class="see-all-row" @click="goTo('/pages/analytics/index')">
-                <text class="see-all-label">See full analytics</text>
-                <Icon name="chevron-right" size="16" />
-              </view>
-            </CardSection>
           </Card>
-        </view>
+        </Motion>
+
+        <!-- 8. Hot Products (insight) -->
+        <Motion preset="fade-up" :index="8">
+          <Card title="Hot Products" accent="primary" icon="trending-up" padding="none" class="hot-products-section">
+            <view class="ranking-list">
+              <view
+                v-for="(item, index) in hotProducts"
+                :key="index"
+                class="ranking-item"
+              >
+                <view class="rank-badge" :class="'rank-' + (index + 1)">{{ index + 1 }}</view>
+                <view class="product-name-wrap">
+                  <text class="product-name">{{ hotProductLabel(item) }}</text>
+                </view>
+                <text class="product-count">{{ item.count }} orders</text>
+              </view>
+            </view>
+            <view class="see-all-row" @click="goTo('/pages/analytics/index')">
+              <text class="see-all-label">See full analytics</text>
+              <Icon name="chevron-right" size="16" />
+            </view>
+          </Card>
+        </Motion>
       </view>
     </scroll-view>
   </view>
@@ -278,26 +293,24 @@ import AppBottomBar from '@/components/app/AppBottomBar.vue'
 import SearchOverlay from '@/components/app/SearchOverlay.vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import StatCard from '@/components/ui/StatCard.vue'
-import ChartCard from '@/components/app/ChartCard.vue'
 import Card from '@/components/ui/Card.vue'
 import CardSection from '@/components/ui/CardSection.vue'
 import Grid from '@/components/ui/Grid.vue'
-import Chart from '@/components/ui/Chart.vue'
-import SegmentedControl from '@/components/ui/SegmentedControl.vue'
 import Icon from '@/components/ui/Icon.vue'
-import Alert from '@/components/ui/Alert.vue'
 import Badge from '@/components/ui/Badge.vue'
 import ProgressBar from '@/components/ui/ProgressBar.vue'
+import Motion from '@/components/ui/Motion.vue'
 import useUserStore from '@/store/modules/user'
-import { getDashboardStats, getHotProducts, getAbnormalEquipment, getTaskStats, getProductStats, getMachineStatusStats, getRealTimeAlerts, getRecentTasks, getInventoryLevels, getTeamWorkload } from '@/api/report'
+import { getDashboardStats, getHotProducts, getAbnormalEquipment, getProductStats, getMachineStatusStats, getInventoryLevels, getTeamWorkload, getRevenueByWeekday } from '@/api/report'
 import { listNode } from '@/api/manage/node'
 import { listVm } from '@/api/manage/vm'
 import { listEmp } from '@/api/manage/emp'
 import { listRegion } from '@/api/manage/region'
 import { listPartner } from '@/api/manage/partner'
 import { listVmType } from '@/api/manage/vmType'
+import { listTask } from '@/api/manage/task'
 import { getInfo } from '@/api/login'
-
+import { getTaskStatusText, getTaskStatusVariant, getTaskTypeText, TASK_STATUS } from '@/utils/task'
 const userStore = useUserStore()
 
 // Navigation
@@ -329,7 +342,6 @@ const pendingTasks = ref(0)
 // Admin dashboard data
 const totalMachines = ref(0)
 const teamCount = ref(0)
-const alerts = ref([])
 const offlineMachines = ref(0)
 const maintenanceMachines = ref(0)
 const errorMachines = ref(0)
@@ -337,24 +349,52 @@ const recentTasks = ref([])
 const inventoryItems = ref([])
 const teamMembers = ref([])
 
-// Chart
-const selectedTimeRange = ref('week')
-const timeRangeOptions = [
-  { label: 'Day', value: 'day' },
-  { label: 'Week', value: 'week' },
-  { label: 'Month', value: 'month' }
-]
+const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+const emptyWeekRevenue = () =>
+  WEEKDAY_LABELS.map((label, weekday) => ({ weekday, label, revenue: 0 }))
+
+const weeklyRevenueByDay = ref(emptyWeekRevenue())
 
 // Hot products
 const hotProducts = ref([])
 
+const hotProductLabel = (item) =>
+  item?.skuName || item?.sku_name || item?.SKU_NAME || '—'
+
+const toFiniteNumber = (v, fallback = 0) => {
+  const n = Number(v)
+  return Number.isFinite(n) ? n : fallback
+}
+
+const inventoryStock = (item) => toFiniteNumber(item?.stock)
+const inventoryMax = (item) => toFiniteNumber(item?.maxStock)
+
+const isInventoryLow = (item) => {
+  const max = inventoryMax(item)
+  if (max <= 0) return false
+  return inventoryStock(item) < max * 0.2
+}
+
+const inventoryCapacityLabel = (item) => {
+  const max = inventoryMax(item)
+  if (max <= 0) return ' (no capacity)'
+  return ` / ${max} Units`
+}
+
+const teamCompleted = (member) => toFiniteNumber(member?.tasksCompleted)
+const teamTotalTasks = (member) => toFiniteNumber(member?.totalTasks)
+
+const teamTasksLabel = (member) => {
+  const total = teamTotalTasks(member)
+  if (total <= 0) return ' (no tasks)'
+  return ` / ${total} Tasks`
+}
+
+const memberInitial = (member) => String(member?.name || '?').charAt(0)
+
 // Abnormal equipment
 const abnormalEquipment = ref([])
-
-// Work order stats
-const completedOrders = ref(0)
-const inProgressOrders = ref(0)
-const cancelledOrders = ref(0)
 
 const fetchUserInfo = async () => {
   try {
@@ -370,6 +410,48 @@ const fetchUserInfo = async () => {
   } catch (error) {
     console.error('Failed to fetch user info', error)
   }
+}
+
+const fetchWeeklyRevenue = async () => {
+  try {
+    const res = await getRevenueByWeekday()
+    if (Array.isArray(res.data) && res.data.length > 0) {
+      const base = emptyWeekRevenue()
+      res.data.forEach((row, i) => {
+        const idx = row.weekday != null ? Number(row.weekday) : i
+        if (idx >= 0 && idx < 7) {
+          base[idx] = {
+            weekday: idx,
+            label: String(row.label || WEEKDAY_LABELS[idx]),
+            revenue: Number(row.revenue) || 0
+          }
+        }
+      })
+      weeklyRevenueByDay.value = base
+      return
+    }
+  } catch (e) {
+    console.error('Failed to fetch weekly revenue', e)
+  }
+  weeklyRevenueByDay.value = emptyWeekRevenue()
+}
+
+const formatWeekRevenue = (n) => {
+  const v = Number(n) || 0
+  if (v >= 100000) return `¥${(v / 10000).toFixed(1)}w`
+  if (v >= 10000) return `¥${Math.round(v / 1000)}k`
+  if (v >= 1000) return `¥${(v / 1000).toFixed(1)}k`
+  return `¥${v}`
+}
+
+// Relative to this week: tallest day = 100%, others linear (fractional % so small days are not rounded to 0).
+const weekBarHeightPct = (amount) => {
+  const nums = weeklyRevenueByDay.value.map((d) => Number(d.revenue) || 0)
+  const max = Math.max(...nums, 0)
+  const v = Number(amount) || 0
+  if (v <= 0 || max <= 0) return 0
+  const pct = (v / max) * 100
+  return Math.min(100, Number(pct.toFixed(1)))
 }
 
 const fetchDashboardCounts = async () => {
@@ -398,7 +480,6 @@ const fetchDashboardCounts = async () => {
       totalRevenue.value = `¥${dashboardStats.data.totalRevenue || 0}`
       totalOrders.value = dashboardStats.data.totalOrders || 0
       activeMachines.value = dashboardStats.data.activeMachines || 0
-      pendingTasks.value = dashboardStats.data.pendingTasks || 0
     }
     
     // Update product stats from backend
@@ -433,25 +514,10 @@ const fetchAbnormalEquipment = async () => {
   }
 }
 
-const fetchTaskStats = async () => {
-  try {
-    const response = await getTaskStats()
-    if (response.data) {
-      completedOrders.value = response.data.completedOrders || 0
-      inProgressOrders.value = response.data.inProgressOrders || 0
-      cancelledOrders.value = response.data.cancelledOrders || 0
-    }
-  } catch (error) {
-    console.error('Failed to fetch task stats', error)
-  }
-}
-
 const fetchAdminDashboardData = async () => {
   try {
-    const [machineStatus, realTimeAlerts, recentTasksData, inventoryLevels, teamWorkload] = await Promise.all([
+    const [machineStatus, inventoryLevels, teamWorkload] = await Promise.all([
       getMachineStatusStats(),
-      getRealTimeAlerts(),
-      getRecentTasks(),
       getInventoryLevels(),
       getTeamWorkload()
     ])
@@ -462,14 +528,6 @@ const fetchAdminDashboardData = async () => {
       errorMachines.value = machineStatus.data.error || 0
       totalMachines.value = (machineStatus.data.online || 0) + offlineMachines.value + maintenanceMachines.value + errorMachines.value
       onlineMachines.value = machineStatus.data.online || 0
-    }
-
-    if (realTimeAlerts.data) {
-      alerts.value = realTimeAlerts.data
-    }
-
-    if (recentTasksData.data) {
-      recentTasks.value = recentTasksData.data
     }
 
     if (inventoryLevels.data) {
@@ -485,12 +543,38 @@ const fetchAdminDashboardData = async () => {
   }
 }
 
+const fetchTaskSnapshot = async () => {
+  try {
+    const [pendingResponse, recentResponse] = await Promise.all([
+      listTask({
+        pageNum: 1,
+        pageSize: 1,
+        taskStatus: TASK_STATUS.pending,
+        orderByColumn: 'createTime',
+        isAsc: 'desc'
+      }),
+      listTask({
+        pageNum: 1,
+        pageSize: 5,
+        orderByColumn: 'createTime',
+        isAsc: 'desc'
+      })
+    ])
+
+    pendingTasks.value = pendingResponse.total || 0
+    recentTasks.value = recentResponse.rows || []
+  } catch (error) {
+    console.error('Failed to fetch task snapshot', error)
+  }
+}
+
 onMounted(() => {
   fetchUserInfo()
   fetchDashboardCounts()
+  fetchWeeklyRevenue()
   fetchHotProducts()
   fetchAbnormalEquipment()
-  fetchTaskStats()
+  fetchTaskSnapshot()
   fetchAdminDashboardData()
 })
 
@@ -504,10 +588,6 @@ const goTo = (url) => {
   uni.navigateTo({ url })
 }
 
-const dismissAlert = (id) => {
-  alerts.value = alerts.value.filter(alert => alert.id !== id)
-}
-
 const handleBulkAssign = () => {
   uni.navigateTo({ url: '/pages/manage/task/index' })
 }
@@ -518,18 +598,6 @@ const handleMachineStatus = () => {
 
 const handleInventoryUpdate = () => {
   uni.navigateTo({ url: '/pages/inventory/index' })
-}
-
-const handleEmergency = () => {
-  uni.showModal({
-    title: 'Emergency Mode',
-    content: 'This will show all machines with fault status. Continue?',
-    success: (r) => {
-      if (r.confirm) {
-        uni.navigateTo({ url: '/pages/manage/vm/index?vmStatus=3' })
-      }
-    }
-  })
 }
 
 const handleAdd = () => {
@@ -571,9 +639,6 @@ const handleTabChange = (tabId) => {
   }
 }
 
-const handleTimeRangeChange = (value) => {
-  // Handle time range change for chart
-}
 </script>
 
 <style scoped lang="scss">
@@ -584,8 +649,6 @@ const handleTimeRangeChange = (value) => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: $color-bg-primary;
-  padding-top: $top-bar-total-height;
 }
 
 .scroll-area {
@@ -593,7 +656,90 @@ const handleTimeRangeChange = (value) => {
   overflow: hidden;
 }
 
+.content-wrapper {
+  padding-left: $spacing-4;
+  padding-right: $spacing-4;
+  box-sizing: border-box;
+}
 
+.week-revenue-card {
+  margin-bottom: $spacing-4;
+  cursor: pointer;
+  @include interactive-pressable(0.99);
+}
+
+.week-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: $spacing-1;
+  min-height: 128px;
+  padding-top: $spacing-1;
+}
+
+.week-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-2;
+  min-width: 0;
+}
+
+.week-bar-value {
+  @include text-caption;
+  font-size: 10px;
+  color: $color-text-tertiary;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+/* Fixed height so % heights on .week-bar-fill resolve (min-height alone breaks percentage layout). */
+.week-bar-track {
+  width: 100%;
+  height: 96px;
+  min-height: 96px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.week-bar-fill {
+  width: 100%;
+  max-width: 22px;
+  min-height: 0;
+  border-radius: $radius-sm $radius-sm 0 0;
+  background: $color-primary;
+
+  /* Only when revenue > 0: tiny % heights still need a visible sliver */
+  &--has-value {
+    min-height: 5px;
+  }
+}
+
+.week-bar-label {
+  @include text-caption;
+  font-size: 10px;
+  font-weight: $font-weight-semibold;
+  color: $color-text-secondary;
+}
+
+.section-title {
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+  margin-top: $spacing-5;
+  margin-bottom: $spacing-3;
+  display: block;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
 
 .quick-stats {
   margin-bottom: 0;
@@ -607,21 +753,6 @@ const handleTimeRangeChange = (value) => {
     transform: scale(0.98);
     opacity: 0.85;
   }
-}
-
-.alerts-section {
-  margin-bottom: 0;
-}
-
-.alerts-list {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-3;
-}
-
-.alert-message {
-  @include text-body;
-  color: $color-text-primary;
 }
 
 .quick-actions {
@@ -839,7 +970,7 @@ const handleTimeRangeChange = (value) => {
 
 .stat-highlight {
   @include text-body;
-  color: $color-primary;
+  color: $color-text-primary;
   font-weight: $font-weight-bold;
 }
 
@@ -942,23 +1073,28 @@ const handleTimeRangeChange = (value) => {
   background: $color-bg-elevated;
 
   &.rank-1 {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    color: white;
+    background: $color-warning;
+    color: $color-text-primary;
   }
 
   &.rank-2 {
-    background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%);
-    color: white;
+    background: $color-text-secondary;
+    color: $color-bg-primary;
   }
 
   &.rank-3 {
-    background: linear-gradient(135deg, #CD7F32 0%, #B87333 100%);
-    color: white;
+    background: $color-bg-elevated;
+    color: $color-text-secondary;
+    border: 1px solid $color-border-medium;
   }
 }
 
-.product-name {
+.product-name-wrap {
   flex: 1;
+  min-width: 0;
+}
+
+.product-name {
   @include text-body;
   color: $color-text-primary;
   font-weight: $font-weight-medium;

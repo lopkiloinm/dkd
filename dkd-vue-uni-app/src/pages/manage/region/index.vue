@@ -1,6 +1,6 @@
 <template>
   <AppTopBar title="Region Management" :showBack="true" />
-  <view class="layout-container">
+  <view class="layout-container layout-container--bottom-tabs">
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
       <view class="content-wrapper">
         <view class="region-list">
@@ -77,7 +77,6 @@ import EmptyState from '@/components/ui/EmptyState.vue'
 import { listRegion, getRegion, addRegion, updateRegion, delRegion } from '@/api/manage/region'
 import { listNode } from '@/api/manage/node'
 import { hasPermission } from '@/utils/permission'
-
 const regionList = ref([])
 const loading = ref(false)
 const isRefreshing = ref(false)
@@ -273,8 +272,6 @@ const handleTabChange = (tabId) => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: $color-bg-primary;
-  padding-top: $top-bar-total-height;
 }
 
 .scroll-area {
@@ -282,6 +279,11 @@ const handleTabChange = (tabId) => {
   overflow: hidden;
 }
 
+.content-wrapper {
+  padding-left: $spacing-4;
+  padding-right: $spacing-4;
+  box-sizing: border-box;
+}
 
 .region-list {
   padding: 0;
@@ -410,7 +412,6 @@ const handleTabChange = (tabId) => {
   color: $color-text-primary;
   font-weight: $font-weight-semibold;
 }
-
 
 .node-list-detail {
   display: flex;

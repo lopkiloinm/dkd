@@ -130,19 +130,19 @@
     <view v-else class="form-view">
       <view class="form-group">
         <text class="form-label">Product Name *</text>
-        <input class="form-input" :value="formData.skuName" @input="formData.skuName = $event.detail.value" placeholder="Enter product name" />
+        <input class="form-input" v-model="formData.skuName" placeholder="Enter product name" />
       </view>
       <view class="form-group">
         <text class="form-label">Brand</text>
-        <input class="form-input" :value="formData.brandName" @input="formData.brandName = $event.detail.value" placeholder="Enter brand name" />
+        <input class="form-input" v-model="formData.brandName" placeholder="Enter brand name" />
       </view>
       <view class="form-group">
         <text class="form-label">Unit</text>
-        <input class="form-input" :value="formData.unit" @input="formData.unit = $event.detail.value" placeholder="e.g. bottle, pack" />
+        <input class="form-input" v-model="formData.unit" placeholder="e.g. bottle, pack" />
       </view>
       <view class="form-group">
         <text class="form-label">Price (¥) *</text>
-        <input class="form-input" :value="formData.price" @input="formData.price = Number($event.detail.value || 0)" type="number" placeholder="0" />
+        <input class="form-input" v-model.number="formData.price" type="number" placeholder="0" />
       </view>
       <view class="form-group">
         <text class="form-label">Category</text>
@@ -489,6 +489,11 @@ onShow(() => {
   overflow: hidden;
 }
 
+.content-wrapper {
+  padding: $spacing-4 $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
 
 .filter-tabs {
   display: flex;
@@ -597,6 +602,13 @@ onShow(() => {
   margin-bottom: $spacing-6;
 }
 
+.section-title {
+  @include text-body;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-3;
+  display: block;
+}
 
 .product-item {
   display: flex;

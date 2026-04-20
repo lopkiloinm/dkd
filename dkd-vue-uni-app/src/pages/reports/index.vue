@@ -6,68 +6,60 @@
     @search="handleSearch"
     @notification="handleNotification"
   />
-  <view class="layout-container">
+  <view class="layout-container layout-container--bottom-tabs">
     <scroll-view class="scroll-area" scroll-y>
       <view class="content-wrapper">
         <!-- Report Types -->
-        <text class="section-title">Report Types</text>
-        <view class="report-types">
-          <Grid :columns="2" :gap="16">
-            <Card @click="generateReport('financial')" class="report-card">
-              <CardSection variant="body">
+        <Motion preset="fade-up" :index="0">
+          <text class="section-title">Report Types</text>
+          <view class="report-types">
+            <Grid :columns="2" :gap="16">
+              <Card @click="generateReport('financial')" class="report-card">
                 <view class="report-icon-wrapper financial">
                   <Icon name="dollar-sign" size="24" color="currentColor" />
                 </view>
                 <text class="report-title">Financial</text>
                 <text class="report-description">Revenue, costs, profit</text>
-              </CardSection>
-            </Card>
-            <Card @click="generateReport('operational')" class="report-card">
-              <CardSection variant="body">
+              </Card>
+              <Card @click="generateReport('operational')" class="report-card">
                 <view class="report-icon-wrapper operational">
                   <Icon name="activity" size="24" color="currentColor" />
                 </view>
                 <text class="report-title">Operational</text>
                 <text class="report-description">Machine performance</text>
-              </CardSection>
-            </Card>
-            <Card @click="generateReport('inventory')" class="report-card">
-              <CardSection variant="body">
+              </Card>
+              <Card @click="generateReport('inventory')" class="report-card">
                 <view class="report-icon-wrapper inventory">
                   <Icon name="box" size="24" color="currentColor" />
                 </view>
                 <text class="report-title">Inventory</text>
                 <text class="report-description">Stock levels, sales</text>
-              </CardSection>
-            </Card>
-            <Card @click="generateReport('team')" class="report-card">
-              <CardSection variant="body">
+              </Card>
+              <Card @click="generateReport('team')" class="report-card">
                 <view class="report-icon-wrapper team">
                   <Icon name="users" size="24" color="currentColor" />
                 </view>
                 <text class="report-title">Team</text>
                 <text class="report-description">Performance metrics</text>
-              </CardSection>
-            </Card>
-          </Grid>
-        </view>
+              </Card>
+            </Grid>
+          </view>
+        </Motion>
 
         <!-- Date Range Selector -->
-        <text class="section-title">Date Range</text>
-        <Card>
-          <CardSection variant="body">
+        <Motion preset="fade-up" :index="1">
+          <Card title="Date Range" accent="primary" icon="calendar" padding="md">
             <SegmentedControl
               :options="dateRangeOptions"
               v-model="selectedDateRange"
               @change="handleDateRangeChange"
             />
-          </CardSection>
-        </Card>
+          </Card>
+        </Motion>
 
         <!-- Export Options -->
-        <text class="section-title">Export Options</text>
-        <Card>
-          <CardSection variant="body">
+        <Motion preset="fade-up" :index="2">
+          <Card title="Export Options" accent="secondary" icon="download" padding="md">
             <view class="export-options">
               <view class="export-option" @click="exportReport('csv')">
                 <Icon name="file-text" size="20" color="currentColor" />
@@ -82,13 +74,12 @@
                 <text class="export-label">Export as Excel</text>
               </view>
             </view>
-          </CardSection>
-        </Card>
+          </Card>
+        </Motion>
 
         <!-- Recent Reports -->
-        <text class="section-title">Recent Reports</text>
-        <Card>
-          <CardSection variant="body">
+        <Motion preset="fade-up" :index="3">
+          <Card title="Recent Reports" accent="success" icon="file-text" padding="md">
             <view class="recent-reports">
               <view class="report-item" v-for="report in recentReports" :key="report.id">
                 <view class="report-info">
@@ -100,8 +91,8 @@
                 </view>
               </view>
             </view>
-          </CardSection>
-        </Card>
+          </Card>
+        </Motion>
       </view>
     </scroll-view>
   </view>
@@ -119,7 +110,7 @@ import CardSection from '@/components/ui/CardSection.vue'
 import Grid from '@/components/ui/Grid.vue'
 import SegmentedControl from '@/components/ui/SegmentedControl.vue'
 import Button from '@/components/ui/Button.vue'
-
+import Motion from '@/components/ui/Motion.vue'
 const userStore = useUserStore()
 
 const unreadCount = ref(0)
@@ -209,8 +200,6 @@ const handleTabChange = (tabId) => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: $color-bg-primary;
-  padding-top: $top-bar-total-height;
 }
 
 .scroll-area {
@@ -218,7 +207,19 @@ const handleTabChange = (tabId) => {
   overflow: hidden;
 }
 
+.content-wrapper {
+  padding-left: $spacing-4;
+  padding-right: $spacing-4;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
 
+.section-title {
+  @include text-title;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+  margin: $spacing-6 0 $spacing-4 0;
+}
 
 .report-types {
   margin-bottom: $spacing-6;
@@ -241,25 +242,10 @@ const handleTabChange = (tabId) => {
   justify-content: center;
   margin-bottom: $spacing-3;
   
-  &.financial {
-    background: rgba($color-primary, 0.1);
-    color: $color-primary;
-  }
-  
-  &.operational {
-    background: rgba($color-success, 0.1);
-    color: $color-success;
-  }
-  
-  &.inventory {
-    background: rgba($color-warning, 0.1);
-    color: $color-warning;
-  }
-  
-  &.team {
-    background: rgba($color-secondary, 0.1);
-    color: $color-secondary;
-  }
+  &.financial   { color: $color-primary; }
+  &.operational { color: $color-success; }
+  &.inventory   { color: $color-warning; }
+  &.team        { color: $color-secondary; }
 }
 
 .report-title {
