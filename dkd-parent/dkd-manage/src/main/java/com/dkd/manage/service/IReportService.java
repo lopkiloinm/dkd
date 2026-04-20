@@ -84,4 +84,9 @@ public interface IReportService
      * 获取性能KPI
      */
     Map<String, Object> getPerformanceKPIs();
+
+    /**
+     * 本周一至周日每日收入（已完成订单），无数据的天为 0
+     */
+    List<Map<String, Object>> getRevenueByWeekdayCurrentWeek();
 }

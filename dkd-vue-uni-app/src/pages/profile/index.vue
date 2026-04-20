@@ -173,9 +173,6 @@ onShow(() => {
   width: 44px;
 }
 
-.content-wrapper {
-  padding: calc(#{$top-bar-height} + env(safe-area-inset-top, 0px) + #{$spacing-4}) $spacing-4 calc(#{$bottom-bar-height} + env(safe-area-inset-bottom, 0px) + #{$spacing-4}) $spacing-4;
-}
 
 .profile-header {
   display: flex;

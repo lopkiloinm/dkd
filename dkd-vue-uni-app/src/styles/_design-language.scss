@@ -42,7 +42,7 @@
 }
 
 .quick-action-tile {
-  @include surface-muted($radius-panel);
+  @include surface-card-glass($radius-panel, $shadow-md);
   @include flex-column-center;
   @include interactive-pressable;
   gap: $spacing-2;
@@ -103,15 +103,13 @@
   gap: $spacing-2;
   min-height: 36px;
   padding: 0 $spacing-4;
-  border-radius: $radius-pill;
-  background: rgba($surface-card-elevated, 0.88);
-  border: 1px solid $color-border-subtle;
+  @include surface-card-glass($radius-pill, $shadow-sm);
   color: $color-text-secondary;
 }
 
 .pill-filter-active {
-  background: $accent-primary-soft;
-  border-color: rgba($color-primary, 0.18);
+  background: $glass-card-shine, rgba($color-primary, 0.24);
+  border-color: rgba($color-primary, 0.45);
   color: $color-primary;
 }
 
@@ -126,16 +124,15 @@
   @include flex-center;
   min-height: 32px;
   padding: 0 $spacing-3;
-  border-radius: $radius-pill;
-  background: rgba($surface-card, 0.88);
-  border: 1px solid $color-border-subtle;
+  @include surface-card-glass($radius-pill, $shadow-sm);
   color: $color-text-secondary;
   @include interactive-pressable;
   
   &.interactive-pill-active {
-    background: $accent-primary-medium;
-    border-color: $color-primary;
+    border-color: rgba($color-primary, 0.55);
+    background: $glass-card-shine, rgba($color-primary, 0.22);
     color: $color-primary;
+    box-shadow: inset 0 0 0 1px rgba($color-primary, 0.18), $shadow-sm;
   }
 }
 

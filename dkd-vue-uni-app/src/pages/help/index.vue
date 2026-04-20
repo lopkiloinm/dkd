@@ -3,8 +3,8 @@
   <view class="layout-container">
     <scroll-view class="scroll-area" scroll-y>
       <view class="content-wrapper">
-        <Card padding="none">
-          <CardSection variant="body">
+        <Motion preset="fade-up" :index="0">
+          <Card title="Help &amp; Support" accent="primary" icon="help" padding="none">
             <view class="menu-list">
               <view class="menu-item" @click="handleFAQ">
                 <view class="menu-item-left">
@@ -35,8 +35,8 @@
                 <text class="menu-value">{{ version }}</text>
               </view>
             </view>
-          </CardSection>
-        </Card>
+          </Card>
+        </Motion>
       </view>
     </scroll-view>
   </view>
@@ -47,7 +47,7 @@ import AppTopBar from '@/components/app/AppTopBar.vue'
 import Card from '@/components/ui/Card.vue'
 import CardSection from '@/components/ui/CardSection.vue'
 import Icon from '@/components/ui/Icon.vue'
-
+import Motion from '@/components/ui/Motion.vue'
 const version = '1.0.0'
 
 const notImplemented = () => {

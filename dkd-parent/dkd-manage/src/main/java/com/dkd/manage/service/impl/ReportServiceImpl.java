@@ -1,5 +1,6 @@
 package com.dkd.manage.service.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -164,5 +165,45 @@ public class ReportServiceImpl implements IReportService
     public Map<String, Object> getPerformanceKPIs()
     {
         return reportMapper.getPerformanceKPIs();
+    }
+
+    /**
+     * 本周按星期汇总收入，补齐 7 天（周一 … 周日）
+     */
+    @Override
+    public List<Map<String, Object>> getRevenueByWeekdayCurrentWeek()
+    {
+        List<Map<String, Object>> rows = reportMapper.getRevenueByWeekdayCurrentWeek();
+        long[] byWeekday = new long[7];
+        if (rows != null)
+        {
+            for (Map<String, Object> row : rows)
+            {
+                Object wdObj = row.get("weekday");
+                Object revObj = row.get("revenue");
+                if (!(wdObj instanceof Number) || revObj == null)
+                {
+                    continue;
+                }
+                int wd = ((Number) wdObj).intValue();
+                if (wd < 0 || wd > 6)
+                {
+                    continue;
+                }
+                long amt = ((Number) revObj).longValue();
+                byWeekday[wd] = amt;
+            }
+        }
+        String[] labels = new String[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+        List<Map<String, Object>> out = new ArrayList<>(7);
+        for (int i = 0; i < 7; i++)
+        {
+            Map<String, Object> m = new HashMap<>();
+            m.put("weekday", i);
+            m.put("label", labels[i]);
+            m.put("revenue", byWeekday[i]);
+            out.add(m);
+        }
+        return out;
     }
 }

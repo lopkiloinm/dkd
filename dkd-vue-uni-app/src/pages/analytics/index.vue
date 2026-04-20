@@ -520,11 +520,6 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.content-wrapper {
-  padding: $spacing-4 $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
-  min-height: 100vh;
-  box-sizing: border-box;
-}
 
 .filter-tabs {
   display: flex;
@@ -532,17 +527,6 @@ onMounted(() => {
   padding: $spacing-3 $spacing-4;
 }
 
-.section-title {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
-  margin: $spacing-6 0 $spacing-3 0;
-  display: block;
-
-  &:first-child {
-    margin-top: 0;
-  }
-}
 
 .revenue-overview {
   display: flex;

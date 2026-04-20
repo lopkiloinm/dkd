@@ -256,13 +256,13 @@ const onRefresh = () => {
 .action-text {
   font-size: 14px;
   font-weight: 600;
-  color: #007aff;
+  color: $color-primary;
 }
 
 .action-text-small {
   font-size: 12px;
   font-weight: 600;
-  color: #007aff;
+  color: $color-primary;
 }
 
 .info-row {

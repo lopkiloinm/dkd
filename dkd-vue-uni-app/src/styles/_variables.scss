@@ -62,13 +62,13 @@ $accent-success-soft: rgba($color-success, 0.16);
 $accent-warning-soft: rgba($color-warning, 0.16);
 $accent-error-soft: rgba($color-error, 0.16);
 
-$gradient-page: linear-gradient(180deg, #000000 0%, #050505 100%);
-$gradient-primary: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
-$gradient-secondary: linear-gradient(135deg, $color-secondary 0%, $color-secondary-light 100%);
+$gradient-page: $color-bg-primary;
+$gradient-primary: $color-primary;
+$gradient-secondary: $color-secondary;
 
 // Typography
-$font-family-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-$font-family-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+$font-family-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+$font-family-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 $font-family-mono: "SF Mono", "SF Pro Mono", "Menlo", "Monaco", "Courier New", monospace;
 
 $font-size-display-xs: 28px;
@@ -119,6 +119,16 @@ $spacing-10: 40px;
 $spacing-12: 48px;
 $spacing-16: 64px;
 
+// Canonical spacing aliases — use these everywhere instead of ad-hoc px values.
+$layout-page-padding-x: $spacing-4;     // L/R gutter on every page
+$layout-section-gap: $spacing-4;        // gap between top-level cards/sections
+$card-padding: $spacing-4;              // body padding inside every card
+$card-gap-internal: $spacing-3;         // gap between rows inside a card
+$control-gap: $spacing-2;               // gap between adjacent controls
+$stack-gap-tight: $spacing-2;
+$stack-gap-default: $spacing-3;
+$stack-gap-loose: $spacing-4;
+
 // Radius
 $radius-xs: 6px;
 $radius-sm: 10px;
@@ -152,21 +162,65 @@ $z-index-popover: 1060;
 $z-index-tooltip: 1070;
 
 // Component sizing
-$top-bar-height: 44px;
-$bottom-bar-height: 68px;
+// Legacy content height (AppBar / TopNav); AppTopBar uses compact pill + small paddings.
+$top-bar-height: 52px;
+$top-bar-pill-height: 44px;
+$top-bar-pill-max-width: 520px;
+$top-bar-inline-margin: $spacing-3;
+$top-bar-pad-after-safe: $spacing-2;
+$top-bar-pad-below-pill: $spacing-2;
+$top-bar-total-height: calc(
+  env(safe-area-inset-top, 0px) + #{$top-bar-pad-after-safe} + #{$top-bar-pill-height} + #{$top-bar-pad-below-pill}
+);
+$bottom-bar-height: 84px;
+$bottom-bar-pill-height: 64px;
+$bottom-bar-pill-max-width: 480px;
+$bottom-bar-inline-margin: $spacing-3;
+// Must match AppBottomBar `.app-bottom-bar` total height (pill + padding + safe area)
+$bottom-bar-total-height: calc(#{$bottom-bar-height} + env(safe-area-inset-bottom, 0px));
+// Scroll padding below last body content on tab-root pages (clears floating pill + shadow)
+$layout-scroll-bottom-gutter: $spacing-8;
+$layout-scroll-pad-bottom-with-tabs: calc(
+  #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px) + #{$layout-scroll-bottom-gutter}
+);
 $safe-area-top: env(safe-area-inset-top, 0px);
 $safe-area-bottom: env(safe-area-inset-bottom, 0px);
-$top-bar-total-height: calc(#{$top-bar-height} + #{$safe-area-top});
 $touch-target-min: 44px;
 
 $icon-tile-size-sm: 40px;
 $icon-tile-size-md: 44px;
 $icon-tile-size-lg: 48px;
+// AppTopBar: symmetric end caps (two trailing icons + gap) so the title centers and menu/back share the same leading position.
+$top-bar-side-slot-width: calc(2 * #{$icon-tile-size-md} + #{$spacing-2});
 
 // Glass
 $glass-bg: $surface-glass;
 $glass-border: $color-border-subtle;
 $glass-blur: 24px;
+
+// Floating chrome (top / bottom / filter bars): solid frosted layer, NO diagonal shine
+$glass-chrome-fill: rgba(12, 14, 20, 0.78);
+$glass-chrome-shine: none;
+$glass-chrome-border: rgba(255, 255, 255, 0.16);
+$glass-chrome-blur: 26px;
+$glass-chrome-saturate: 165%;
+
+// Card glass — solid surface; no shine bands
+$glass-card-fill: $color-bg-secondary;
+$glass-card-shine: none;
+$glass-card-border: $color-border-subtle;
+$glass-card-blur: 0px;
+$glass-card-saturate: 100%;
+
+// Fixed filter strip under AppTopBar (keep 0 to avoid black slit between frosted regions)
+$chrome-filter-gap-from-topbar: 0px;
+$chrome-filter-row-min: 40px;
+$chrome-filter-vertical-padding: $spacing-1;
+$chrome-filter-pill-max-width: $top-bar-pill-max-width;
+$filter-chrome-reserved-height: calc(
+  #{$chrome-filter-gap-from-topbar} + (#{$chrome-filter-vertical-padding} * 2) + #{$chrome-filter-row-min}
+);
+$layout-padding-top-with-chrome-filter: calc(#{$top-bar-total-height} + #{$filter-chrome-reserved-height});
 
 // Legacy Apple aliases kept for incremental migration
 $apple-bg-color: $surface-page;

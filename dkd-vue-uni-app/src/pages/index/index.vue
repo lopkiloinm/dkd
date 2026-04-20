@@ -593,23 +593,7 @@ const handleTimeRangeChange = (value) => {
   overflow: hidden;
 }
 
-.content-wrapper {
-  padding: $spacing-4 $spacing-4 calc($spacing-6 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
-  box-sizing: border-box;
-}
 
-.section-title {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
-  margin-top: $spacing-5;
-  margin-bottom: $spacing-3;
-  display: block;
-
-  &:first-child {
-    margin-top: 0;
-  }
-}
 
 .quick-stats {
   margin-bottom: 0;

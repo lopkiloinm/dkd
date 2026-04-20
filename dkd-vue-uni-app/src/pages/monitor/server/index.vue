@@ -261,7 +261,7 @@ const onRefresh = () => {
 }
 
 .text-danger {
-  color: #ff3b30;
+  color: $color-error;
 }
 
 .disk-item {

@@ -1,14 +1,21 @@
 <template>
-  <view v-if="visible" class="sheet-overlay" @click="handleOverlayClick">
-    <view :class="sheetClasses" @click.stop>
+  <!-- Backdrop and panel are siblings inside a neutral mount so the panel is not a
+       descendant of a `backdrop-filter` layer (which breaks fixed positioning + native inputs). -->
+  <view v-if="visible" class="sheet-mount">
+    <view
+      class="sheet-backdrop"
+      @click="handleBackdropClick"
+      @tap="handleBackdropClick"
+    />
+    <view :class="sheetClasses" @click.stop @tap.stop>
       <view v-if="$slots.header" class="sheet-header">
         <slot name="header"></slot>
       </view>
-      <scroll-view class="sheet-body" scroll-y>
+      <view class="sheet-body">
         <view class="sheet-body-inner">
           <slot></slot>
         </view>
-      </scroll-view>
+      </view>
       <view v-if="$slots.footer" class="sheet-footer">
         <slot name="footer"></slot>
       </view>
@@ -44,7 +51,7 @@ const sheetClasses = computed(() => {
   ]
 })
 
-const handleOverlayClick = () => {
+const handleBackdropClick = () => {
   if (props.closeOnOverlayClick) {
     emit('update:visible', false)
     emit('close')
@@ -52,6 +59,7 @@ const handleOverlayClick = () => {
 }
 
 watch(() => props.visible, (newVal) => {
+  if (typeof document === 'undefined') return
   if (newVal) {
     document.body.style.overflow = 'hidden'
   } else {
@@ -64,29 +72,41 @@ watch(() => props.visible, (newVal) => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.sheet-overlay {
+.sheet-mount {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: $z-index-modal-backdrop;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  pointer-events: auto;
+}
+
+.sheet-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  @include overlay-scrim-flat;
 }
 
 .sheet {
-  position: fixed;
-  z-index: $z-index-modal;
-  background: $color-bg-secondary;
-  box-shadow: $shadow-xl;
+  position: absolute;
+  z-index: 1;
+  max-width: 100vw;
+  @include surface-modal-glass($radius-lg, $shadow-xl);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  isolation: auto !important;
+  background: $glass-card-shine, rgba(18, 20, 28, 0.96);
   transition: transform $transition-normal ease-out;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 100vw;
+  pointer-events: auto;
 
   &.sheet-bottom {
     bottom: 0;
@@ -95,7 +115,7 @@ watch(() => props.visible, (newVal) => {
     border-radius: $radius-lg $radius-lg 0 0;
     max-height: 85vh;
   }
-  
+
   &.sheet-top {
     top: 0;
     left: 0;
@@ -103,7 +123,7 @@ watch(() => props.visible, (newVal) => {
     border-radius: 0 0 $radius-lg $radius-lg;
     max-height: 85vh;
   }
-  
+
   &.sheet-left {
     top: 0;
     bottom: 0;
@@ -112,7 +132,7 @@ watch(() => props.visible, (newVal) => {
     max-width: 400px;
     border-radius: 0 $radius-lg $radius-lg 0;
   }
-  
+
   &.sheet-right {
     top: 0;
     bottom: 0;
@@ -125,12 +145,16 @@ watch(() => props.visible, (newVal) => {
 
 .sheet-header {
   flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .sheet-body {
   flex: 1 1 auto;
   min-height: 0;
   box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   @include scrollbar-hidden;
 }
 

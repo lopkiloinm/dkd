@@ -84,18 +84,18 @@ const displayCount = computed(() => {
   }
   
   &.badge-sm {
-    padding: 2px 8px;
+    padding: 2px 6px;
     font-size: $font-size-caption-sm;
   }
   
   &.badge-md {
-    padding: 4px 12px;
-    font-size: $font-size-caption-md;
+    padding: 3px 8px;
+    font-size: $font-size-caption-sm;
   }
   
   &.badge-lg {
-    padding: 6px 16px;
-    font-size: $font-size-body-sm;
+    padding: 4px 12px;
+    font-size: $font-size-caption-md;
   }
 }
 </style>

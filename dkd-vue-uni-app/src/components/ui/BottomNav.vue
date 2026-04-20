@@ -49,7 +49,7 @@ const handleClick = (index) => {
   bottom: 0;
   left: 0;
   right: 0;
-  height: calc(#{$bottom-bar-height} + env(safe-area-inset-bottom, 0px));
+  height: $bottom-bar-total-height;
   background: $color-bg-secondary;
   border-top: 1px solid $color-border-subtle;
   display: flex;
@@ -77,8 +77,8 @@ const handleClick = (index) => {
   
   &.nav-item-active {
     .nav-icon {
-      background: rgba($color-primary, 0.12);
-      border-color: rgba($color-primary, 0.16);
+      background: transparent;
+      border-color: transparent;
     }
 
     .nav-icon .icon,
@@ -89,7 +89,7 @@ const handleClick = (index) => {
 }
 
 .nav-icon {
-  @include icon-tile-base(32px, $radius-md);
+  @include icon-tile-base(32px);
   margin-bottom: $spacing-1;
   background: transparent;
   

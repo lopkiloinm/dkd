@@ -1,5 +1,5 @@
 <template>
-  <view class="layout-container">
+  <view class="layout-container layout-container--bottom-tabs">
     <AppTopBar
       :user-name="userName"
       :profile-picture="profilePicture"
@@ -125,11 +125,11 @@
       <view v-else class="form-view">
         <view class="form-group">
           <text class="form-label">Slot Code *</text>
-          <input class="form-input" :value="formData.channelCode" @input="formData.channelCode = $event.detail.value" placeholder="e.g. 1-1" />
+          <SheetTextField v-model="formData.channelCode" placeholder="e.g. 1-1" />
         </view>
         <view class="form-group">
           <text class="form-label">Machine Code *</text>
-          <input class="form-input" :value="formData.innerCode" @input="formData.innerCode = $event.detail.value" placeholder="Machine inner code" />
+          <SheetTextField v-model="formData.innerCode" placeholder="Machine inner code" />
         </view>
         <view class="form-group">
           <text class="form-label">SKU</text>
@@ -139,11 +139,19 @@
         </view>
         <view class="form-group">
           <text class="form-label">Max Capacity</text>
-          <input class="form-input" type="number" :value="formData.maxCapacity" @input="formData.maxCapacity = $event.detail.value" placeholder="0" />
+          <SheetTextField
+            v-model="formData.maxCapacity"
+            numeric
+            placeholder="0"
+          />
         </view>
         <view class="form-group">
           <text class="form-label">Current Stock</text>
-          <input class="form-input" type="number" :value="formData.currentCapacity" @input="formData.currentCapacity = $event.detail.value" placeholder="0" />
+          <SheetTextField
+            v-model="formData.currentCapacity"
+            numeric
+            placeholder="0"
+          />
         </view>
       </view>
 
@@ -152,7 +160,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import AppTopBar from '@/components/app/AppTopBar.vue'
 import AppBottomBar from '@/components/app/AppBottomBar.vue'
@@ -161,6 +169,7 @@ import Button from '@/components/ui/Button.vue'
 import Icon from '@/components/ui/Icon.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
+import SheetTextField from '@/components/ui/SheetTextField.vue'
 import { listChannel, addChannel, updateChannel, delChannel, getChannel } from '@/api/manage/channel'
 import { listSku } from '@/api/manage/sku'
 import { getInfo } from '@/api/login'
@@ -181,7 +190,15 @@ const queryParams = ref({ pageNum: 1, pageSize: 20, innerCode: '' })
 const showDetail = ref(false)
 const formMode = ref('detail')
 const detailData = ref({})
-const formData = ref({})
+const emptyChannelForm = () => ({
+  id: null,
+  channelCode: '',
+  innerCode: '',
+  skuId: null,
+  maxCapacity: 0,
+  currentCapacity: 0
+})
+const formData = reactive(emptyChannelForm())
 const skuOptions = ref([{ label: 'None', value: null }])
 const skuIndex = ref(0)
 
@@ -276,21 +293,23 @@ const handleView = async (item) => {
 }
 
 const handleAdd = () => {
-  formData.value = {
-    channelCode: '',
-    innerCode: '',
-    skuId: null,
-    maxCapacity: 0,
-    currentCapacity: 0
-  }
+  Object.assign(formData, emptyChannelForm())
   skuIndex.value = 0
   formMode.value = 'create'
   showDetail.value = true
 }
 
 const startEdit = () => {
-  formData.value = { ...detailData.value }
-  const idx = skuOptions.value.findIndex(s => s.value === formData.value.skuId)
+  const d = detailData.value
+  Object.assign(formData, emptyChannelForm(), {
+    id: d.id ?? null,
+    channelCode: d.channelCode || '',
+    innerCode: d.innerCode || '',
+    skuId: d.skuId ?? null,
+    maxCapacity: d.maxCapacity ?? 0,
+    currentCapacity: d.currentCapacity ?? 0
+  })
+  const idx = skuOptions.value.findIndex(s => s.value === formData.skuId)
   skuIndex.value = idx >= 0 ? idx : 0
   formMode.value = 'edit'
 }
@@ -298,24 +317,31 @@ const startEdit = () => {
 const closeDetail = () => {
   showDetail.value = false
   deleteConfirmMode.value = false
+  formMode.value = 'detail'
+  Object.assign(formData, emptyChannelForm())
 }
 
 const onSkuChange = (e) => {
   skuIndex.value = e.detail.value
-  formData.value.skuId = skuOptions.value[e.detail.value]?.value
+  formData.skuId = skuOptions.value[e.detail.value]?.value ?? null
 }
 
 const saveChannel = async () => {
-  if (!formData.value.channelCode || !formData.value.innerCode) {
+  if (!formData.channelCode || !formData.innerCode) {
     uni.showToast({ title: 'Slot & machine code required', icon: 'none' })
     return
   }
+  const payload = {
+    ...formData,
+    maxCapacity: Number(formData.maxCapacity) || 0,
+    currentCapacity: Number(formData.currentCapacity) || 0
+  }
   try {
-    if (formData.value.id) {
-      await updateChannel(formData.value)
+    if (formData.id) {
+      await updateChannel(payload)
       uni.showToast({ title: 'Channel updated', icon: 'success' })
     } else {
-      await addChannel(formData.value)
+      await addChannel(payload)
       uni.showToast({ title: 'Channel created', icon: 'success' })
     }
     closeDetail()
@@ -371,7 +397,7 @@ onShow(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: $color-bg-primary;
+  background: transparent;
   padding-top: $top-bar-total-height;
 }
 
@@ -383,7 +409,7 @@ onShow(() => {
 }
 
 .page-title {
-  @include text-h2;
+  @include text-headline;
   color: $color-text-primary;
   display: block;
 }
@@ -403,17 +429,18 @@ onShow(() => {
 
 .search-input {
   flex: 1;
+  min-width: 0;
+  min-height: $touch-target-min;
+  padding: 0 $spacing-3;
+  @include input-native-glass;
   @include text-body;
-  color: $color-text-primary;
-  padding: $spacing-2 $spacing-3;
-  background: $color-bg-tertiary;
-  border: 1px solid $color-border-subtle;
-  border-radius: $radius-pill;
 }
 
 .scroll-area {
   flex: 1;
-  padding: 0 $spacing-4 $spacing-6;
+  padding: 0 $spacing-4;
+  padding-bottom: var(--layout-scroll-pad-bottom);
+  box-sizing: border-box;
 }
 
 .channel-list {
@@ -494,15 +521,7 @@ onShow(() => {
 .form-group { display: flex; flex-direction: column; gap: $spacing-2; }
 .form-label { @include text-caption; color: $color-text-secondary; font-weight: $font-weight-medium; }
 
-.form-input {
-  @include text-body; color: $color-text-primary; padding: $spacing-3;
-  background: $color-bg-tertiary; border: 1px solid $color-border-subtle;
-  border-radius: $radius-pill; width: 100%; box-sizing: border-box;
-}
-
 .form-picker {
-  @include text-body; color: $color-text-primary; padding: $spacing-3;
-  background: $color-bg-tertiary; border: 1px solid $color-border-subtle;
-  border-radius: $radius-pill;
+  @include sheet-form-picker-trigger;
 }
 </style>

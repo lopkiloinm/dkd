@@ -73,6 +73,7 @@ const handleClear = () => {
 .search-bar {
   @include input-base;
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: $spacing-2;
   padding: 0 $spacing-3;

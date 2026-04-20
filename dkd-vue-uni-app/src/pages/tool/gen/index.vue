@@ -266,7 +266,7 @@ const onRefresh = () => {
 .action-text {
   font-size: 14px;
   font-weight: 600;
-  color: #007aff;
+  color: $color-primary;
 }
 
 .table-info {
@@ -328,6 +328,6 @@ const onRefresh = () => {
 }
 
 .action-btn.delete .action-text {
-  color: #ff3b30;
+  color: $color-error;
 }
 </style>

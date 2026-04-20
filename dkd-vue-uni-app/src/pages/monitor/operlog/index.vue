@@ -211,12 +211,12 @@ const onRefresh = () => {
 .filter-toggle-text {
   font-size: 14px;
   font-weight: 600;
-  color: #007aff;
+  color: $color-primary;
 }
 
 .filter-toggle-icon {
   font-size: 12px;
-  color: #007aff;
+  color: $color-primary;
   transition: transform 0.2s;
 }
 
@@ -286,7 +286,7 @@ const onRefresh = () => {
 .action-text {
   font-size: 14px;
   font-weight: 600;
-  color: #ff3b30;
+  color: $color-error;
 }
 
 .log-info {
@@ -317,15 +317,15 @@ const onRefresh = () => {
 }
 
 .status-success {
-  color: #34c759;
+  color: $color-success;
 }
 
 .status-failed {
-  color: #ff3b30;
+  color: $color-error;
 }
 
 .error-text {
-  color: #ff3b30;
+  color: $color-error;
   max-width: 100%;
   white-space: normal;
 }

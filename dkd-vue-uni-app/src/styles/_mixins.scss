@@ -114,6 +114,17 @@
   border: 1px solid $border;
 }
 
+// Frosted “glass” for floating chrome (nav / tab strips). Solid color, no diagonal shine.
+@mixin surface-chrome($radius: $radius-pill, $shadow: $shadow-md) {
+  isolation: isolate;
+  border-radius: $radius;
+  border: 1px solid $glass-chrome-border;
+  background: $glass-chrome-fill;
+  backdrop-filter: saturate($glass-chrome-saturate) blur($glass-chrome-blur);
+  -webkit-backdrop-filter: saturate($glass-chrome-saturate) blur($glass-chrome-blur);
+  box-shadow: $shadow;
+}
+
 // Legacy compatibility mixins
 @mixin glass-panel {
   @include surface-panel;
@@ -129,7 +140,7 @@
 }
 
 @mixin surface-panel($radius: $radius-panel, $shadow: $shadow-md) {
-  background: linear-gradient(180deg, rgba($surface-card, 0.98) 0%, rgba($surface-card, 0.92) 100%);
+  background: $surface-card;
   border: 1px solid $color-border-subtle;
   border-radius: $radius;
   box-shadow: $shadow;
@@ -142,13 +153,37 @@
 }
 
 @mixin surface-floating($radius: $radius-panel, $shadow: $shadow-lg) {
-  @include glass($surface-overlay-strong, $color-border-subtle, $glass-blur);
+  @include surface-chrome($radius, $shadow);
+}
+
+// Standard card surface — solid, flat, single border, no diagonals.
+@mixin surface-card-glass($radius: $radius-md, $shadow: $shadow-sm) {
+  background: $surface-card;
+  border: 1px solid $color-border-subtle;
   border-radius: $radius;
   box-shadow: $shadow;
 }
 
+// Dimmed backdrop behind sheets, drawers, modals (keep in sync across overlay components)
+@mixin overlay-scrim {
+  background: rgba(6, 8, 14, 0.55);
+  backdrop-filter: saturate($glass-chrome-saturate) blur($glass-chrome-blur);
+  -webkit-backdrop-filter: saturate($glass-chrome-saturate) blur($glass-chrome-blur);
+}
+
+// Solid scrim only — use behind modal/sheet *panels* (sibling of panel, not wrapping it).
+// `backdrop-filter` on an ancestor breaks `position: fixed` + native `input`/`textarea` on many WebViews / uni-app targets.
+@mixin overlay-scrim-flat {
+  background: rgba(6, 8, 14, 0.72);
+}
+
+// Large floating panels (modal, bottom sheet shell, drawer)
+@mixin surface-modal-glass($radius: $radius-lg, $shadow: $shadow-xl) {
+  @include surface-card-glass($radius, $shadow);
+}
+
 @mixin card($radius: $radius-panel, $shadow: $shadow-md) {
-  @include surface-panel($radius, $shadow);
+  @include surface-card-glass($radius, $shadow);
   overflow: hidden;
 }
 
@@ -162,7 +197,7 @@
   }
 }
 
-@mixin icon-tile-base($size: $icon-tile-size-md, $radius: $radius-control) {
+@mixin icon-tile-base($size: $icon-tile-size-md, $radius: $radius-md) {
   @include flex-center;
   width: $size;
   height: $size;
@@ -177,8 +212,8 @@
     color: $color-text-primary;
     box-shadow: 0 12px 24px rgba($color, 0.28);
   } @else {
-    background: rgba($color, 0.14);
-    border-color: rgba($color, 0.2);
+    background: transparent;
+    border-color: transparent;
     color: $color;
   }
 }
@@ -190,12 +225,12 @@
   justify-content: center;
   min-height: $touch-target-min;
   padding: 0 $spacing-4;
-  border-radius: $radius-pill;
+  border-radius: $radius-md;
   font-family: $font-family-body;
   font-size: $font-size-body-md;
   font-weight: $font-weight-semibold;
   line-height: 1;
-  border: none;
+  border: 1px solid transparent;
   outline: none;
   cursor: pointer;
   user-select: none;
@@ -215,44 +250,42 @@
 
 @mixin button-secondary {
   @include button-base;
-  background: rgba($surface-card-elevated, 0.94);
-  border: 1px solid $color-border-medium;
+  background: $color-bg-elevated;
+  border-color: $color-border-medium;
   color: $color-text-primary;
 }
 
 @mixin button-ghost {
   @include button-base;
   background: transparent;
-  border: 1px solid $color-border-subtle;
+  border-color: $color-border-subtle;
   color: $color-text-secondary;
 }
 
 @mixin button-danger {
   @include button-base;
   background: $color-error;
-  color: $color-text-primary;
+  color: #fff;
 }
 
-@mixin input-base {
-  display: flex;
-  align-items: center;
-  min-height: $touch-target-min;
-  padding: 0 $spacing-4;
-  background: rgba($surface-card-muted, 0.82);
+// Native <input> / single-line fields — flat solid background, single border, focus ring only.
+@mixin input-native-glass {
+  border-radius: $radius-md;
   border: 1px solid $color-border-subtle;
-  border-radius: $radius-pill;
+  background: $color-bg-tertiary;
   font-family: $font-family-body;
   font-size: $font-size-body-md;
   color: $color-text-primary;
-  transition: border-color $transition-fast, background-color $transition-fast, box-shadow $transition-fast;
+  transition: border-color $transition-fast, box-shadow $transition-fast, background-color $transition-fast;
 
   &::placeholder {
     color: $color-text-tertiary;
   }
 
   &:focus {
-    border-color: rgba($color-primary, 0.48);
-    box-shadow: 0 0 0 4px rgba($color-primary, 0.14);
+    border-color: $color-primary;
+    background: $color-bg-elevated;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.18);
     outline: none;
   }
 
@@ -260,6 +293,30 @@
     opacity: 0.52;
     cursor: not-allowed;
   }
+}
+
+@mixin input-base {
+  display: flex;
+  align-items: center;
+  min-height: $touch-target-min;
+  padding: 0 $spacing-4;
+  @include input-native-glass;
+}
+
+// Bottom-sheet / form dropdown trigger — flat solid pill matching `input-native-glass`
+@mixin sheet-form-picker-trigger {
+  @include text-body;
+  color: $color-text-primary;
+  display: flex;
+  align-items: center;
+  min-height: $touch-target-min;
+  padding: $spacing-3;
+  border-radius: $radius-md;
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid $color-border-subtle;
+  background: $color-bg-tertiary;
+  line-height: $line-height-normal;
 }
 
 // Scrollbars and safe areas
@@ -306,13 +363,13 @@
 @mixin status-badge($color) {
   display: inline-flex;
   align-items: center;
-  padding: $spacing-1 $spacing-3;
-  border-radius: $radius-pill;
+  padding: $spacing-1 $spacing-2;
+  border-radius: $radius-sm;
   font-size: $font-size-caption-sm;
   font-weight: $font-weight-semibold;
   letter-spacing: $letter-spacing-wide;
   background: rgba($color, 0.14);
-  border: 1px solid rgba($color, 0.18);
+  border: 1px solid rgba($color, 0.22);
   color: $color;
 }
 

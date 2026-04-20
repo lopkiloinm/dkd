@@ -1,6 +1,12 @@
 <template>
-  <view v-if="visible" class="action-sheet-overlay" @click="handleOverlayClick">
-    <view class="action-sheet" @click.stop>
+  <view v-if="visible" class="action-sheet-mount">
+    <view
+      class="action-sheet-backdrop"
+      @click="handleOverlayClick"
+      @tap="handleOverlayClick"
+    />
+    <view class="action-sheet-stage">
+      <view class="action-sheet" @click.stop @tap.stop>
       <view class="action-sheet-header">
         <text class="sheet-title">{{ title }}</text>
         <view class="sheet-close" @click="handleClose">
@@ -22,6 +28,7 @@
       <view v-if="$slots.footer" class="action-sheet-footer">
         <slot name="footer"></slot>
       </view>
+    </view>
     </view>
   </view>
 </template>
@@ -82,28 +89,53 @@ watch(() => props.visible, (newVal) => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.action-sheet-overlay {
+.action-sheet-mount {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: $z-index-modal-backdrop;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  @include flex-center;
+  pointer-events: auto;
+}
+
+.action-sheet-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  @include overlay-scrim-flat;
+}
+
+.action-sheet-stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-4;
+  box-sizing: border-box;
+  pointer-events: none;
 }
 
 .action-sheet {
-  background: $color-bg-secondary;
-  border-radius: $radius-lg;
+  pointer-events: auto;
+  @include surface-modal-glass($radius-lg, $shadow-xl);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  isolation: auto !important;
+  background: $glass-card-shine, rgba(18, 20, 28, 0.96);
   width: 90%;
   max-width: 400px;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
-  box-shadow: $shadow-xl;
   @include scale-in;
 }
 
@@ -112,6 +144,7 @@ watch(() => props.visible, (newVal) => {
   align-items: center;
   justify-content: space-between;
   padding: $spacing-4;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .sheet-title {
@@ -131,7 +164,7 @@ watch(() => props.visible, (newVal) => {
   transition: background-color $transition-normal;
   
   &:active {
-    background: $color-bg-tertiary;
+    background: rgba(255, 255, 255, 0.08);
   }
   
   .close-icon {
@@ -154,10 +187,10 @@ watch(() => props.visible, (newVal) => {
   padding: $spacing-3 $spacing-4;
   border-radius: $radius-sm;
   cursor: pointer;
-  transition: background-color $transition-normal;
+  transition: background-color $transition-normal, opacity $transition-normal;
   
   &:active {
-    background: $color-bg-tertiary;
+    background: rgba(255, 255, 255, 0.06);
   }
   
   &.action-item-destructive {
@@ -179,6 +212,6 @@ watch(() => props.visible, (newVal) => {
 
 .action-sheet-footer {
   padding: $spacing-4;
-  border-top: 1px solid $color-border-subtle;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 </style>

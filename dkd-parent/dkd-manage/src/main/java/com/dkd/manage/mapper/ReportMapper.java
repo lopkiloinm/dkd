@@ -114,4 +114,9 @@ public interface ReportMapper
      * 获取性能KPI
      */
     Map<String, Object> getPerformanceKPIs();
+
+    /**
+     * 本周按星期几汇总已完成订单金额（MySQL WEEKDAY：周一=0 … 周日=6）
+     */
+    List<Map<String, Object>> getRevenueByWeekdayCurrentWeek();
 }

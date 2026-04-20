@@ -1,17 +1,17 @@
 <template>
-  <Card :padding="padding" :radius="radius">
+  <Card padding="none" :radius="radius">
     <template v-if="$slots.header" #header>
-      <CardSection variant="header">
+      <CardSection variant="header" :padding="padding">
         <slot name="header"></slot>
       </CardSection>
     </template>
-    <CardSection variant="body">
+    <CardSection variant="body" :padding="padding">
       <view class="chart-card-content">
         <slot></slot>
       </view>
     </CardSection>
     <template v-if="$slots.footer" #footer>
-      <CardSection variant="footer">
+      <CardSection variant="footer" :padding="padding">
         <slot name="footer"></slot>
       </CardSection>
     </template>

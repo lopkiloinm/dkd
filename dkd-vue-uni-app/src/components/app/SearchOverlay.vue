@@ -1,6 +1,11 @@
 <template>
-  <view v-if="visible" class="search-overlay" @click="handleOverlayClick">
-    <view class="search-content" @click.stop>
+  <view v-if="visible" class="search-mount">
+    <view
+      class="search-backdrop"
+      @click="handleOverlayClick"
+      @tap="handleOverlayClick"
+    />
+    <view class="search-content" @click.stop @tap.stop>
       <view class="search-header">
         <view class="search-input-wrapper">
           <Icon name="search" size="16" class="search-icon" />
@@ -188,29 +193,42 @@ const getResultIcon = (type) => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.search-overlay {
+.search-mount {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   z-index: $z-index-modal-backdrop;
-  display: flex;
-  flex-direction: column;
-  padding: $spacing-4;
+  pointer-events: auto;
+}
+
+.search-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  @include overlay-scrim-flat;
 }
 
 .search-content {
-  background: $color-bg-secondary;
-  border-radius: $radius-lg;
-  border: 1px solid $color-border-subtle;
+  position: absolute;
+  top: $spacing-4;
+  left: $spacing-4;
+  right: $spacing-4;
+  z-index: 1;
   max-height: 80vh;
+  @include surface-modal-glass($radius-lg, $shadow-xl);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  isolation: auto !important;
+  background: $glass-card-shine, rgba(18, 20, 28, 0.96);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .search-header {
@@ -218,16 +236,14 @@ const getResultIcon = (type) => {
   align-items: center;
   gap: $spacing-3;
   padding: $spacing-3 $spacing-4;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .search-input-wrapper {
   flex: 1;
-  display: flex;
-  align-items: center;
-  background: $color-bg-tertiary;
-  border-radius: $radius-full;
+  @include input-base;
+  min-height: 40px;
   padding: 0 $spacing-3;
-  height: 40px;
 }
 
 .search-icon {
@@ -316,7 +332,7 @@ const getResultIcon = (type) => {
   align-items: center;
   gap: $spacing-3;
   padding: $spacing-3 0;
-  border-bottom: 1px solid $color-border-subtle;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
 
   &:last-child {
@@ -342,7 +358,7 @@ const getResultIcon = (type) => {
   align-items: center;
   gap: $spacing-3;
   padding: $spacing-3 0;
-  border-bottom: 1px solid $color-border-subtle;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
 
   &:last-child {
@@ -356,8 +372,7 @@ const getResultIcon = (type) => {
   justify-content: center;
   width: 36px;
   height: 36px;
-  background: $color-bg-tertiary;
-  border-radius: $radius-sm;
+  @include surface-card-glass($radius-sm, $shadow-sm);
   color: $color-text-secondary;
 }
 

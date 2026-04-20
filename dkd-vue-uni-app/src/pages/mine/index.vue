@@ -114,13 +114,6 @@ onShow(() => {
   flex: 1;
 }
 
-.content-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-4;
-  padding: $spacing-4;
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + $spacing-4);
-}
 
 .profile-card {
   display: flex;

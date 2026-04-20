@@ -115,8 +115,7 @@ const handleVisibleChange = (value) => {
   align-items: center;
   justify-content: center;
   padding: $spacing-1 $spacing-3;
-  background: $color-bg-tertiary;
-  border-radius: $radius-full;
+  @include surface-floating($radius-full, $shadow-sm);
   cursor: pointer;
 
   &:active {
@@ -125,6 +124,7 @@ const handleVisibleChange = (value) => {
 
   &--primary {
     background: $color-primary;
+    border-color: $color-primary;
   }
 }
 
@@ -175,20 +175,20 @@ const handleVisibleChange = (value) => {
   justify-content: space-between;
   gap: $spacing-3;
   padding: $spacing-3;
-  background: $color-bg-tertiary;
-  border-radius: $radius-sm;
+  @include surface-card-glass($radius-md, $shadow-sm);
   cursor: pointer;
-  transition: all $transition-normal;
+  transition: border-color $transition-normal, box-shadow $transition-normal, opacity $transition-normal;
   box-sizing: border-box;
   max-width: 100%;
   width: 100%;
 
   &:active {
-    background: $color-bg-elevated;
+    opacity: 0.92;
   }
 
   &.filter-option-selected {
-    background: rgba($color-primary, 0.1);
+    border-color: rgba($color-primary, 0.45);
+    box-shadow: inset 0 0 0 1px rgba($color-primary, 0.2), $shadow-sm;
   }
 }
 
@@ -204,15 +204,17 @@ const handleVisibleChange = (value) => {
   justify-content: center;
   width: 18px;
   height: 18px;
-  background: $color-bg-secondary;
-  border: 2px solid $color-border-medium;
+  background: rgba(14, 16, 22, 0.35);
+  border: 1px solid $glass-card-border;
   border-radius: $radius-xs;
-  transition: all $transition-fast;
+  backdrop-filter: saturate(140%) blur(8px);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
+  transition: border-color $transition-fast, background-color $transition-fast;
   flex-shrink: 0;
 
   &.checked {
-    background: $color-primary;
-    border-color: $color-primary;
+    background: rgba($color-primary, 0.85);
+    border-color: rgba(255, 255, 255, 0.28);
   }
 }
 

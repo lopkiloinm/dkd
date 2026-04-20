@@ -1,5 +1,5 @@
 <template>
-  <view class="layout-container">
+  <view class="layout-container layout-container--bottom-tabs">
     <AppTopBar
       :user-name="userName"
       :profile-picture="profilePicture"
@@ -274,7 +274,6 @@ onShow(() => { fetchList(true) })
 .layout-container {
   min-height: 100vh;
   background: $color-surface-subtle;
-  padding-bottom: 96rpx;
 }
 .page-header { padding: $spacing-4 $spacing-4 $spacing-2; }
 .page-title { @include text-headline; color: $color-text-primary; }
@@ -295,15 +294,18 @@ onShow(() => { fetchList(true) })
 .filter-bar { display: flex; gap: $spacing-2; padding: $spacing-2 $spacing-4 $spacing-3; }
 .search-input {
   flex: 1;
-  background: $color-surface-raised;
-  border: 1px solid $color-border-subtle;
-  border-radius: $radius-pill;
-  padding: $spacing-2 $spacing-3;
+  min-width: 0;
+  min-height: $touch-target-min;
+  padding: 0 $spacing-3;
+  @include input-native-glass;
   @include text-body;
-  color: $color-text-primary;
 }
 
-.scroll-area { height: calc(100vh - 320rpx); }
+.scroll-area {
+  height: calc(100vh - 320rpx);
+  padding-bottom: var(--layout-scroll-pad-bottom);
+  box-sizing: border-box;
+}
 .order-list { padding: 0 $spacing-4; display: flex; flex-direction: column; gap: $spacing-3; }
 .order-card { padding: $spacing-3; }
 .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: $spacing-2; }

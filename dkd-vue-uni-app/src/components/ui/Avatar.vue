@@ -76,7 +76,8 @@ const handleImageError = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, $color-primary, $color-secondary);
+  background: $color-bg-elevated;
+  border: 1px solid $color-border-subtle;
   color: $color-text-primary;
   font-family: $font-family-body;
   font-weight: $font-weight-semibold;

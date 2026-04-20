@@ -52,9 +52,9 @@ spring:
             filter:
                 stat:
                     enabled: true
-                    # 慢SQL记录
+                    # 慢SQL记录（仅打日志，不代表 SQL 失败；阈值过小易把正常报表查询标成 ERROR）
                     log-slow-sql: true
-                    slow-sql-millis: 1000
+                    slow-sql-millis: 3000
                     merge-sql: true
                 wall:
                     config:

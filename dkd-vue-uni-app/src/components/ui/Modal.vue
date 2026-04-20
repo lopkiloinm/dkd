@@ -1,14 +1,21 @@
 <template>
-  <view v-if="visible" class="modal-overlay" @click="handleOverlayClick">
-    <view :class="modalClasses" @click.stop>
-      <view v-if="$slots.header" class="modal-header">
-        <slot name="header"></slot>
-      </view>
-      <view class="modal-body">
-        <slot></slot>
-      </view>
-      <view v-if="$slots.footer" class="modal-footer">
-        <slot name="footer"></slot>
+  <view v-if="visible" class="modal-mount">
+    <view
+      class="modal-backdrop"
+      @click="handleBackdropClick"
+      @tap="handleBackdropClick"
+    />
+    <view class="modal-stage">
+      <view :class="modalClasses" @click.stop @tap.stop>
+        <view v-if="$slots.header" class="modal-header">
+          <slot name="header"></slot>
+        </view>
+        <view class="modal-body">
+          <slot></slot>
+        </view>
+        <view v-if="$slots.footer" class="modal-footer">
+          <slot name="footer"></slot>
+        </view>
       </view>
     </view>
   </view>
@@ -42,7 +49,7 @@ const modalClasses = computed(() => {
   ]
 })
 
-const handleOverlayClick = () => {
+const handleBackdropClick = () => {
   if (props.closeOnOverlayClick) {
     emit('update:visible', false)
     emit('close')
@@ -50,6 +57,7 @@ const handleOverlayClick = () => {
 }
 
 watch(() => props.visible, (newVal) => {
+  if (typeof document === 'undefined') return
   if (newVal) {
     document.body.style.overflow = 'hidden'
   } else {
@@ -62,43 +70,68 @@ watch(() => props.visible, (newVal) => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.modal-overlay {
+.modal-mount {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: $z-index-modal-backdrop;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  @include flex-center;
+  pointer-events: auto;
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  @include overlay-scrim-flat;
+}
+
+.modal-stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-4;
+  box-sizing: border-box;
+  pointer-events: none;
 }
 
 .modal {
-  background: $color-bg-secondary;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-xl;
+  pointer-events: auto;
+  @include surface-modal-glass($radius-lg, $shadow-xl);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  isolation: auto !important;
+  background: $glass-card-shine, rgba(18, 20, 28, 0.96);
   max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  
+
   &.modal-sm {
     width: 90%;
     max-width: 400px;
   }
-  
+
   &.modal-md {
     width: 90%;
     max-width: 600px;
   }
-  
+
   &.modal-lg {
     width: 90%;
     max-width: 800px;
   }
-  
+
   &.modal-full {
     width: 100%;
     height: 100%;
@@ -110,6 +143,7 @@ watch(() => props.visible, (newVal) => {
 
 .modal-header {
   padding: $spacing-4;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .modal-body {
@@ -121,5 +155,6 @@ watch(() => props.visible, (newVal) => {
 
 .modal-footer {
   padding: $spacing-4;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 </style>

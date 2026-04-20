@@ -40,7 +40,13 @@ const props = defineProps({
 })
 
 const percentage = computed(() => {
-  return Math.min(Math.max((props.value / props.max) * 100, 0), 100)
+  const max = Number(props.max)
+  const value = Number(props.value)
+  if (!Number.isFinite(max) || max <= 0) {
+    return 0
+  }
+  if (!Number.isFinite(value)) return 0
+  return Math.min(Math.max((value / max) * 100, 0), 100)
 })
 
 const fillStyle = computed(() => {

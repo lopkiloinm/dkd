@@ -206,11 +206,6 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.content-wrapper {
-  padding: $spacing-4 $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
-  min-height: 100vh;
-  box-sizing: border-box;
-}
 
 .filter-tabs {
   display: flex;
@@ -288,11 +283,4 @@ onMounted(() => {
   margin-bottom: $spacing-6;
 }
 
-.section-title {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
-  margin-bottom: $spacing-3;
-  display: block;
-}
 </style>

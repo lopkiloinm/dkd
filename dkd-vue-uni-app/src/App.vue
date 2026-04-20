@@ -8,6 +8,7 @@ export default {
 
 <style lang="scss">
 /* 每个页面公共css */
+@import "@/styles/_fonts.scss";
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 @import "@/styles/_layout.scss";
@@ -28,6 +29,55 @@ button,
 input,
 textarea {
   box-sizing: border-box;
+}
+
+/* Bottom sheets / modals: allow text selection and typing (some parents use pressable user-select: none) */
+input,
+textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* ---- Global focus polish: native inputs, custom .form-input fields, textareas ---- */
+input,
+textarea,
+.form-input {
+  transition:
+    border-color $transition-fast,
+    box-shadow $transition-fast,
+    background-color $transition-fast;
+}
+
+input:focus,
+textarea:focus,
+.form-input:focus,
+.form-input:focus-within {
+  outline: none;
+  border-color: rgba($color-primary, 0.62) !important;
+  box-shadow: 0 0 0 3px rgba($color-primary, 0.18) !important;
+  background-color: rgba($color-primary, 0.05);
+}
+
+/* ---- Page-level entrance: subtle fade so navigations feel intentional ---- */
+.layout-container,
+.scroll-area > .content-wrapper {
+  animation: pageEnter 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Reduced motion: respect OS / browser preference ---- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Ensure native uni-app overlays appear above Sheet modals */

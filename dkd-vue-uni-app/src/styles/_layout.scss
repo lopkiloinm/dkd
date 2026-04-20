@@ -15,20 +15,46 @@ scroll-view {
   -webkit-overflow-scrolling: touch;
 }
 
+// Scroll body extends under fixed AppTopBar so frosted chrome blurs real content, not an empty strip.
+// --layout-scroll-pad-top reserves space inside the scroll via .content-wrapper (see rule below).
 .layout-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
   box-sizing: border-box;
-  padding: $top-bar-total-height 0 0;
+  padding-top: 0;
+  background: transparent;
+  --layout-scroll-pad-top: #{$top-bar-total-height};
+  // Pages without AppBottomBar: only clear home indicator + small inset
+  --layout-scroll-pad-bottom: calc(env(safe-area-inset-bottom, 0px) + #{$spacing-6});
+}
+
+.layout-container--chrome-filter {
+  --layout-scroll-pad-top: #{$layout-padding-top-with-chrome-filter};
+}
+
+// Tab shells that render AppBottomBar — same bottom footprint as `.app-bottom-bar` + gutter (see _variables.scss)
+.layout-container--bottom-tabs {
+  --layout-scroll-pad-bottom: #{$layout-scroll-pad-bottom-with-tabs};
+}
+
+// Primary scroll body: descendant .content-wrapper (uni scroll-view may inject an inner node).
+.layout-container:not(.layout-chrome-manual) .scroll-area .content-wrapper {
+  padding-top: calc(var(--layout-scroll-pad-top) + #{$spacing-4}) !important;
+  padding-bottom: var(--layout-scroll-pad-bottom) !important;
+  padding-left: $spacing-4 !important;
+  padding-right: $spacing-4 !important;
+  background-color: $color-bg-primary !important;
 }
 
 .search-bar {
+  @include surface-card-glass($radius-lg, $shadow-md);
   padding: $spacing-4;
   z-index: 10;
   display: flex;
   flex-direction: column;
   gap: $spacing-3;
+  box-sizing: border-box;
 }
 
 .n-input {
@@ -46,15 +72,13 @@ scroll-view {
 }
 
 .filter-toggle {
+  @include surface-floating($radius-pill, $shadow-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: $spacing-2;
   min-height: 40px;
   padding: 0 $spacing-4;
-  background: $accent-primary-soft;
-  border: 1px solid rgba($color-primary, 0.2);
-  border-radius: $radius-pill;
   @include interactive-pressable;
 }
 
@@ -84,6 +108,9 @@ scroll-view {
   &.expanded {
     max-height: 240px;
     opacity: 1;
+    margin-top: $spacing-2;
+    padding: $spacing-3;
+    @include surface-card-glass($radius-lg, $shadow-md);
   }
 }
 
@@ -92,9 +119,110 @@ scroll-view {
   width: 100%;
 }
 
+/* ============================================
+   Standardized page-level building blocks.
+   Pages should NOT redefine these locally.
+   ============================================ */
+
+/* Vertical stack of cards / sections inside a page body */
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: $layout-section-gap;
+}
+
+/* Section heading above a Card (when the title can't live inside the card itself) */
+.section-title {
+  display: block;
+  margin: $spacing-4 0 $spacing-2 0;
+  font-family: $font-family-body;
+  font-size: $font-size-title-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  letter-spacing: 0.1px;
+}
+
+.section-title:first-child {
+  margin-top: 0;
+}
+
+/* Subtle eyebrow above a section-title */
+.section-eyebrow {
+  display: block;
+  margin: $spacing-4 0 $spacing-1 0;
+  font-size: 11px;
+  font-weight: $font-weight-semibold;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: $color-text-tertiary;
+}
+
+/* Standard inner padding inside a Card body when consumer skips Card padding */
+.card-padded {
+  padding: $card-padding;
+}
+
+/* Standard divider line — replace ad-hoc <view class="divider"></view> definitions */
+.divider {
+  height: 1px;
+  background: $color-border-subtle;
+  border: 0;
+  margin: $spacing-3 0;
+}
+
 .scroll-area {
   flex: 1;
+  min-height: 0;
   overflow: hidden;
+}
+
+// Fixed pill under AppTopBar — same glass language as bars; reserve $filter-chrome-reserved-height in page layout padding-top
+.chrome-filter-tabs {
+  position: fixed;
+  left: $top-bar-inline-margin;
+  right: $top-bar-inline-margin;
+  top: calc(#{$top-bar-total-height} + #{$chrome-filter-gap-from-topbar});
+  z-index: 1018;
+  display: flex;
+  align-items: center;
+  width: calc(100% - #{$top-bar-inline-margin} * 2);
+  max-width: $chrome-filter-pill-max-width;
+  margin-left: auto;
+  margin-right: auto;
+  padding: $chrome-filter-vertical-padding $spacing-2;
+  box-sizing: border-box;
+  min-height: calc(#{$chrome-filter-row-min} + #{$chrome-filter-vertical-padding} * 2);
+  @include surface-chrome($radius-pill, $shadow-md);
+
+  .tabs-scroll {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .segmented-control {
+    flex: 1;
+    min-width: 0;
+  }
+
+  // Slightly denser chips so tabs stay readable on blur
+  .tab-item:not(.tab-active) {
+    background: rgba(6, 8, 12, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .tab-item.tab-active {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .master-filter-tab {
+    background: rgba(6, 8, 12, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .segmented-control .segment:not(.segment-active) {
+    background: rgba(6, 8, 12, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
 }
 
 .card-list {
@@ -105,7 +233,7 @@ scroll-view {
 }
 
 .glass-card {
-  @include surface-panel;
+  @include surface-card-glass($radius-panel, $shadow-md);
   padding: $spacing-5;
   @include interactive-pressable;
 }

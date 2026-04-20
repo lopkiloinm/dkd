@@ -218,18 +218,7 @@ const handleTabChange = (tabId) => {
   overflow: hidden;
 }
 
-.content-wrapper {
-  padding: $spacing-4 $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
-  min-height: 100vh;
-  box-sizing: border-box;
-}
 
-.section-title {
-  @include text-title;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
-  margin: $spacing-6 0 $spacing-4 0;
-}
 
 .report-types {
   margin-bottom: $spacing-6;

@@ -50,7 +50,7 @@
         <text class="detail-label">Remark</text>
         <text class="detail-value">{{ detailData.remark || 'N/A' }}</text>
       </view>
-      <view class="detail-section-title">Nodes in this region</view>
+      <view class="section-title">Nodes in this region</view>
       <view class="node-list-detail">
         <view class="node-item" v-for="node in detailData.nodeList" :key="node.id">
           <text class="node-name">{{ node.nodeName }}</text>
@@ -282,10 +282,6 @@ const handleTabChange = (tabId) => {
   overflow: hidden;
 }
 
-.content-wrapper {
-  padding: $spacing-4 $spacing-4 calc($spacing-6 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
-  box-sizing: border-box;
-}
 
 .region-list {
   padding: 0;
@@ -415,13 +411,6 @@ const handleTabChange = (tabId) => {
   font-weight: $font-weight-semibold;
 }
 
-.detail-section-title {
-  font-size: 16px;
-  font-weight: $font-weight-bold;
-  color: $color-text-primary;
-  margin: $spacing-4 0 $spacing-3;
-  display: block;
-}
 
 .node-list-detail {
   display: flex;

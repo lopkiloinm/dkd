@@ -26,12 +26,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         SELECT COUNT(*) FROM tb_task WHERE task_status = 1
     </select>
 
-    <!-- 获取热销商品统计 -->
+    <!-- 热销商品：从已完成订单驱动连接，避免以全表 SKU 为驱动 + LEFT JOIN 后再过滤导致慢查询 -->
     <select id="getHotProducts" resultType="java.util.HashMap">
-        SELECT s.sku_name, COUNT(o.id) as count
-        FROM tb_sku s
-        LEFT JOIN tb_channel c ON s.sku_id = c.sku_id
-        LEFT JOIN tb_order o ON c.inner_code = o.inner_code
+        SELECT
+            s.sku_name AS skuName,
+            COUNT(o.id) AS count
+        FROM tb_order o
+        INNER JOIN tb_channel c ON c.inner_code = o.inner_code
+        INNER JOIN tb_sku s ON s.sku_id = c.sku_id
         WHERE o.status = 2
         GROUP BY s.sku_id, s.sku_name
         ORDER BY count DESC
@@ -52,17 +54,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <!-- 获取已完成工单数 -->
     <select id="getCompletedOrders" resultType="Long">
-        SELECT COUNT(*) FROM tb_task WHERE task_status = 2
+        SELECT COUNT(*) FROM tb_task WHERE task_status = 4
     </select>
 
     <!-- 获取进行中工单数 -->
     <select id="getInProgressOrders" resultType="Long">
-        SELECT COUNT(*) FROM tb_task WHERE task_status = 1
+        SELECT COUNT(*) FROM tb_task WHERE task_status = 2
     </select>
 
     <!-- 获取已取消工单数 -->
     <select id="getCancelledOrders" resultType="Long">
-        SELECT COUNT(*) FROM tb_task WHERE task_status = 0
+        SELECT COUNT(*) FROM tb_task WHERE task_status = 3
     </select>
 
     <!-- 获取商品总数 -->
@@ -107,17 +109,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <!-- 获取最近任务列表 -->
     <select id="getRecentTasks" resultType="java.util.HashMap">
         SELECT
-            t.task_id as id,
-            t.`desc` as title,
-            t.user_name as assignee,
-            CASE
-                WHEN t.create_type = 3 THEN 'high'
-                WHEN t.create_type = 1 THEN 'medium'
-                ELSE 'low'
-            END as priority
+            t.task_id as taskId,
+            t.task_code as taskCode,
+            t.task_status as taskStatus,
+            t.product_type_id as productTypeId,
+            t.inner_code as innerCode,
+            t.user_id as userId,
+            t.user_name as userName,
+            t.addr as addr,
+            t.create_time as createTime,
+            t.update_time as updateTime,
+            t.`desc` as taskDesc
         FROM tb_task t
-        LEFT JOIN tb_emp e ON t.user_id = e.id
-        WHERE t.task_status = 1
+        WHERE t.task_status IN (1, 2)
         ORDER BY t.create_time DESC
         LIMIT 5
     </select>
@@ -132,7 +136,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         FROM tb_sku s
         LEFT JOIN tb_channel c ON s.sku_id = c.sku_id
         GROUP BY s.sku_id, s.sku_name
-        ORDER BY stock ASC
+        ORDER BY s.sku_name ASC
         LIMIT 5
     </select>
 
@@ -148,6 +152,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         LEFT JOIN tb_task t ON e.id = t.user_id
         WHERE e.status = 1
         GROUP BY e.id, e.user_name, e.image
+        ORDER BY e.user_name ASC
         LIMIT 5
     </select>
 
@@ -195,13 +200,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <!-- 获取按位置的收入 -->
     <select id="getRevenueByLocation" resultType="java.util.HashMap">
         SELECT
-            n.node_id as id,
+            n.id as id,
             n.node_name as name,
             COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END), 0) as revenue
         FROM tb_node n
-        LEFT JOIN tb_vending_machine vm ON n.node_id = vm.node_id
+        LEFT JOIN tb_vending_machine vm ON n.id = vm.node_id
         LEFT JOIN tb_order o ON vm.inner_code = o.inner_code
-        GROUP BY n.node_id, n.node_name
+        GROUP BY n.id, n.node_name
         ORDER BY revenue DESC
         LIMIT 5
     </select>
@@ -209,15 +214,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <!-- 获取合作伙伴业绩 -->
     <select id="getPartnerPerformance" resultType="java.util.HashMap">
         SELECT
-            p.partner_id as id,
-            p.partner_name as name,
-            COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END), 0) as revenue,
-            CONCAT(ROUND((COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END), 0) / 
-                NULLIF((SELECT SUM(amount) FROM tb_order WHERE status = 2), 0)) * 100, 1), '%') as roi
+            p.id AS id,
+            p.partner_name AS name,
+            COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END), 0) AS revenue,
+            CONCAT(ROUND((COALESCE(SUM(CASE WHEN o.status = 2 THEN o.amount ELSE 0 END), 0) /
+                NULLIF((SELECT SUM(amount) FROM tb_order WHERE status = 2), 0)) * 100, 1), '%') AS roi
         FROM tb_partner p
-        LEFT JOIN tb_vending_machine vm ON p.partner_id = vm.partner_id
+        LEFT JOIN tb_vending_machine vm ON p.id = vm.partner_id
         LEFT JOIN tb_order o ON vm.inner_code = o.inner_code
-        GROUP BY p.partner_id, p.partner_name
+        GROUP BY p.id, p.partner_name
         ORDER BY revenue DESC
         LIMIT 5
     </select>
@@ -239,6 +244,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         FROM tb_vending_machine vm
         LEFT JOIN tb_order o ON vm.inner_code = o.inner_code
         LEFT JOIN tb_task t ON 1=1
+    </select>
+
+    <!-- 本周（周一至周日）按 weekday 汇总已完成订单金额 -->
+    <select id="getRevenueByWeekdayCurrentWeek" resultType="java.util.HashMap">
+        SELECT
+            WEEKDAY(o.create_time) AS weekday,
+            COALESCE(SUM(o.amount), 0) AS revenue
+        FROM tb_order o
+        WHERE o.status = 2
+          AND o.create_time &gt;= DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY)
+          AND o.create_time &lt; DATE_ADD(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), INTERVAL 7 DAY)
+        GROUP BY WEEKDAY(o.create_time)
+        ORDER BY weekday
     </select>
 
 </mapper>

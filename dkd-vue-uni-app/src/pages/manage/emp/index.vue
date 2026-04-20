@@ -473,10 +473,6 @@ const handleTabChange = (tabId) => {
   overflow: hidden;
 }
 
-.content-wrapper {
-  padding: $spacing-4 $spacing-4 calc($spacing-6 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
-  box-sizing: border-box;
-}
 
 .emp-list {
   padding: 0;

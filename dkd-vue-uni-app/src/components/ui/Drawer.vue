@@ -1,9 +1,14 @@
 <template>
-  <view v-if="visible" class="drawer-overlay" @click="handleOverlayClick">
-    <view :class="drawerClasses" :style="drawerStyle" @click.stop>
-      <scroll-view class="drawer-body" scroll-y>
+  <view v-if="visible" class="drawer-mount">
+    <view
+      class="drawer-backdrop"
+      @click="handleBackdropClick"
+      @tap="handleBackdropClick"
+    />
+    <view :class="drawerClasses" :style="drawerStyle" @click.stop @tap.stop>
+      <view class="drawer-body">
         <slot></slot>
-      </scroll-view>
+      </view>
     </view>
   </view>
 </template>
@@ -44,7 +49,7 @@ const drawerStyle = computed(() => ({
   width: props.width
 }))
 
-const handleOverlayClick = () => {
+const handleBackdropClick = () => {
   if (props.closeOnOverlayClick) {
     emit('update:visible', false)
     emit('close')
@@ -52,6 +57,7 @@ const handleOverlayClick = () => {
 }
 
 watch(() => props.visible, (newVal) => {
+  if (typeof document === 'undefined') return
   if (newVal) {
     document.body.style.overflow = 'hidden'
   } else {
@@ -64,25 +70,36 @@ watch(() => props.visible, (newVal) => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.drawer-overlay {
+.drawer-mount {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: $z-index-modal-backdrop;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  pointer-events: auto;
+}
+
+.drawer-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  @include overlay-scrim-flat;
 }
 
 .drawer {
-  position: fixed;
+  position: absolute;
   top: 0;
   bottom: 0;
-  z-index: $z-index-modal;
-  background: $color-bg-secondary;
-  box-shadow: $shadow-xl;
+  z-index: 1;
+  @include surface-modal-glass($radius-lg, $shadow-xl);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  isolation: auto !important;
+  background: $glass-card-shine, rgba(18, 20, 28, 0.96);
   transition: transform $transition-normal ease-out;
   display: flex;
   flex-direction: column;
@@ -91,20 +108,26 @@ watch(() => props.visible, (newVal) => {
 
   &.drawer-left {
     left: 0;
-    border-right: 1px solid $color-border-subtle;
+    border-radius: 0 $radius-lg $radius-lg 0;
+    border-right: 1px solid $glass-card-border;
   }
 
   &.drawer-right {
     right: 0;
-    border-left: 1px solid $color-border-subtle;
+    border-radius: $radius-lg 0 0 $radius-lg;
+    border-left: 1px solid $glass-card-border;
   }
 }
 
 .drawer-body {
   flex: 1;
+  min-height: 0;
   width: 100%;
   padding: $spacing-4;
   box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   @include scrollbar-hidden;
 }
 </style>

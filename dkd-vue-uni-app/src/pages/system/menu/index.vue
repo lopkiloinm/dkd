@@ -451,12 +451,12 @@ const onRefresh = () => {
 .filter-toggle-text {
   font-size: 14px;
   font-weight: 600;
-  color: #007aff;
+  color: $color-primary;
 }
 
 .filter-toggle-icon {
   font-size: 12px;
-  color: #007aff;
+  color: $color-primary;
   transition: transform 0.2s;
 }
 
@@ -534,17 +534,17 @@ const onRefresh = () => {
 
 .type-directory {
   background-color: rgba(0, 122, 255, 0.15);
-  color: #007aff;
+  color: $color-primary;
 }
 
 .type-menu {
   background-color: rgba(52, 199, 89, 0.15);
-  color: #34c759;
+  color: $color-success;
 }
 
 .type-button {
   background-color: rgba(255, 159, 10, 0.15);
-  color: #ff9f0a;
+  color: $color-warning;
 }
 
 .menu-info {
@@ -575,11 +575,11 @@ const onRefresh = () => {
 }
 
 .status-active {
-  color: #34c759;
+  color: $color-success;
 }
 
 .status-inactive {
-  color: #ff3b30;
+  color: $color-error;
 }
 
 .empty-state {
@@ -624,11 +624,11 @@ const onRefresh = () => {
 .action-text {
   font-size: 14px;
   font-weight: 600;
-  color: #007aff;
+  color: $color-primary;
 }
 
 .action-btn.delete .action-text {
-  color: #ff3b30;
+  color: $color-error;
 }
 
 .form-item {
@@ -648,13 +648,7 @@ const onRefresh = () => {
 }
 
 .picker-input {
-  @include glass-input;
-  height: 44px;
-  line-height: 44px;
-  padding: 0 $spacing-4;
-  @include text-body;
-  width: 100%;
-  box-sizing: border-box;
+  @include sheet-form-picker-trigger;
 }
 
 .detail-info-row {

@@ -1,26 +1,39 @@
 <template>
-  <view class="app-top-bar" :class="{ 'app-top-bar--sub': showBack }">
-    <view class="top-bar-left">
-      <view v-if="showBack" class="back-button" @click="goBack">
-        <Icon name="arrow-left" size="22" class="back-icon" />
-      </view>
-      <view v-else class="top-bar-button icon-tile icon-tile--neutral" @click="openSidebar">
-        <Icon name="menu" size="20" class="button-icon" />
-      </view>
-    </view>
-    <text class="app-title">{{ title }}</text>
-    <view class="top-bar-right">
-      <template v-if="showActions">
-        <view class="top-bar-button icon-tile icon-tile--neutral" @click="handleSearch">
-          <Icon name="search" size="20" class="button-icon" />
+  <view class="app-top-bar">
+    <view class="top-bar-pill">
+      <view class="top-bar-side top-bar-side--leading">
+        <view
+          v-if="showBack"
+          class="top-bar-button icon-tile icon-tile--neutral"
+          @click="goBack"
+        >
+          <Icon name="arrow-left" size="20" class="button-icon" />
         </view>
-        <view class="top-bar-button icon-tile icon-tile--neutral notification-button" @click="handleNotification">
-          <Icon name="notification" size="20" class="button-icon" />
-          <view v-if="unreadCount > 0" class="notification-badge">
-            <text class="badge-text">{{ unreadCount > 99 ? '99+' : unreadCount }}</text>
+        <view
+          v-else
+          class="top-bar-button icon-tile icon-tile--neutral"
+          @click="openSidebar"
+        >
+          <Icon name="menu" size="20" class="button-icon" />
+        </view>
+      </view>
+      <text class="app-title">{{ title }}</text>
+      <view class="top-bar-side top-bar-side--trailing">
+        <view v-if="slots.trailing" class="top-bar-trailing-slot">
+          <slot name="trailing" />
+        </view>
+        <template v-else-if="showActions">
+          <view class="top-bar-button icon-tile icon-tile--neutral" @click="handleSearch">
+            <Icon name="search" size="20" class="button-icon" />
           </view>
-        </view>
-      </template>
+          <view class="top-bar-button icon-tile icon-tile--neutral notification-button" @click="handleNotification">
+            <Icon name="notification" size="20" class="button-icon" />
+            <view v-if="unreadCount > 0" class="notification-badge">
+              <text class="badge-text">{{ unreadCount > 99 ? '99+' : unreadCount }}</text>
+            </view>
+          </view>
+        </template>
+      </view>
     </view>
   </view>
 
@@ -54,7 +67,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, useSlots } from 'vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import Icon from '@/components/ui/Icon.vue'
 import Drawer from '@/components/ui/Drawer.vue'
@@ -92,6 +105,7 @@ const props = defineProps({
 
 const emit = defineEmits(['search', 'notification'])
 
+const slots = useSlots()
 const sidebarOpen = ref(false)
 
 const goBack = () => {
@@ -161,26 +175,66 @@ const handleMenuClick = async (item) => {
   top: 0;
   left: 0;
   right: 0;
-  height: $top-bar-total-height;
-  @include glass($surface-overlay-strong, transparent);
-  border-bottom: 1px solid $color-border-subtle;
+  min-height: $top-bar-total-height;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(env(safe-area-inset-top, 0px) + #{$top-bar-pad-after-safe}) $top-bar-inline-margin $top-bar-pad-below-pill;
+  z-index: $z-index-sticky;
+  background: transparent;
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
+}
+
+.top-bar-pill {
+  @include surface-floating($radius-pill, $shadow-md);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(env(safe-area-inset-top, 0px) + $spacing-2) $spacing-4 $spacing-2;
-  z-index: $z-index-sticky;
+  gap: $spacing-2;
+  width: 100%;
+  max-width: $top-bar-pill-max-width;
+  min-height: $top-bar-pill-height;
+  padding: 0 $spacing-2;
+  box-sizing: border-box;
 }
 
-.top-bar-left,
-.top-bar-right {
+.top-bar-side {
+  flex: 0 0 $top-bar-side-slot-width;
   display: flex;
   align-items: center;
   gap: $spacing-2;
-  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
-.top-bar-right {
+.top-bar-side--leading {
+  justify-content: flex-start;
+}
+
+.top-bar-side--trailing {
   justify-content: flex-end;
+}
+
+.top-bar-trailing-slot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+  min-width: 0;
+
+  /* Slot content (e.g. “Mark all”) — class must be set on slotted nodes */
+  :deep(.top-bar-trailing-action) {
+    @include text-caption;
+    color: $color-primary;
+    font-weight: $font-weight-semibold;
+    padding: $spacing-1 $spacing-2;
+    flex-shrink: 0;
+  }
 }
 
 .app-title {
@@ -188,48 +242,29 @@ const handleMenuClick = async (item) => {
   color: $color-text-primary;
   font-weight: $font-weight-bold;
   text-align: center;
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .top-bar-button {
   margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
   cursor: pointer;
   box-sizing: border-box;
   position: relative;
+  flex-shrink: 0;
+  @include interactive-pressable(0.96);
 
   &:active {
-    background: $color-bg-tertiary;
+    opacity: 0.88;
   }
 }
 
 .button-icon {
   font-size: 20px;
   line-height: 1;
-}
-
-.back-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  margin-left: -4px;
-  cursor: pointer;
-  color: $color-text-primary;
-  border-radius: $radius-sm;
-
-  &:active {
-    opacity: 0.6;
-  }
-}
-
-.back-icon {
-  color: $color-text-primary;
 }
 
 .notification-badge {

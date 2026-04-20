@@ -187,4 +187,15 @@ public class ReportController extends BaseController
         Map<String, Object> kpis = reportService.getPerformanceKPIs();
         return AjaxResult.success(kpis);
     }
+
+    /**
+     * 本周按星期几的收入（已完成订单），供首页柱状图
+     */
+    @PreAuthorize("@ss.hasPermi('report:dashboard:stats')")
+    @GetMapping("/revenueByWeekday")
+    public AjaxResult getRevenueByWeekday()
+    {
+        List<Map<String, Object>> series = reportService.getRevenueByWeekdayCurrentWeek();
+        return AjaxResult.success(series);
+    }
 }

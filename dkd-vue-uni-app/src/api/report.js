@@ -8,6 +8,14 @@ export function getDashboardStats() {
   })
 }
 
+/** 本周一至周日每日收入（已完成订单） */
+export function getRevenueByWeekday() {
+  return request({
+    url: '/report/revenueByWeekday',
+    method: 'get'
+  })
+}
+
 // 获取热销商品统计
 export function getHotProducts() {
   return request({

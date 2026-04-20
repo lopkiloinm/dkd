@@ -3,8 +3,8 @@
   <view class="layout-container">
     <scroll-view class="scroll-area" scroll-y>
       <view class="content-wrapper">
-        <Card padding="none">
-          <CardSection variant="body">
+        <Motion preset="fade-up" :index="0">
+          <Card title="History" accent="secondary" icon="history" padding="none">
             <view class="menu-list">
               <view class="menu-item" @click="goToOrders">
                 <view class="menu-item-left">
@@ -35,8 +35,8 @@
                 <Icon name="chevron-right" size="18" color="currentColor" />
               </view>
             </view>
-          </CardSection>
-        </Card>
+          </Card>
+        </Motion>
 
         <EmptyState
           v-if="false"
@@ -54,7 +54,7 @@ import Card from '@/components/ui/Card.vue'
 import CardSection from '@/components/ui/CardSection.vue'
 import Icon from '@/components/ui/Icon.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
-
+import Motion from '@/components/ui/Motion.vue'
 const goToOrders = () => uni.navigateTo({ url: '/pages/manage/orders/index' })
 const goToTasks = () => uni.navigateTo({ url: '/pages/manage/task/index' })
 const goToLogins = () => uni.navigateTo({ url: '/pages/monitor/logininfor/index' })

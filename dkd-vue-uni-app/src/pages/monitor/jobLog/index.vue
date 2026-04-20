@@ -212,12 +212,12 @@ const onRefresh = () => {
 
 .status-success {
   background-color: rgba(52, 199, 89, 0.15);
-  color: #34c759;
+  color: $color-success;
 }
 
 .status-failed {
   background-color: rgba(255, 59, 48, 0.15);
-  color: #ff3b30;
+  color: $color-error;
 }
 
 .log-info {
@@ -289,10 +289,10 @@ const onRefresh = () => {
 .action-text {
   font-size: 14px;
   font-weight: 600;
-  color: #007aff;
+  color: $color-primary;
 }
 
 .action-btn.delete .action-text {
-  color: #ff3b30;
+  color: $color-error;
 }
 </style>

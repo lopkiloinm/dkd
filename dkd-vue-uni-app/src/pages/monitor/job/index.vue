@@ -367,12 +367,12 @@ const onRefresh = () => {
 .filter-toggle-text {
   font-size: 14px;
   font-weight: 600;
-  color: #007aff;
+  color: $color-primary;
 }
 
 .filter-toggle-icon {
   font-size: 12px;
-  color: #007aff;
+  color: $color-primary;
   transition: transform 0.2s;
 }
 
@@ -444,12 +444,12 @@ const onRefresh = () => {
 
 .status-active {
   background-color: rgba(52, 199, 89, 0.15);
-  color: #34c759;
+  color: $color-success;
 }
 
 .status-inactive {
   background-color: rgba(255, 59, 48, 0.15);
-  color: #ff3b30;
+  color: $color-error;
 }
 
 .job-info {
@@ -521,11 +521,11 @@ const onRefresh = () => {
 .action-text {
   font-size: 13px;
   font-weight: 600;
-  color: #007aff;
+  color: $color-primary;
 }
 
 .action-btn.delete .action-text {
-  color: #ff3b30;
+  color: $color-error;
 }
 
 .fab {

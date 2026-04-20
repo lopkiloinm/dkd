@@ -1,16 +1,18 @@
 <template>
   <view class="app-bottom-bar">
-    <view
-      v-for="(tab, index) in tabs"
-      :key="index"
-      class="bottom-tab"
-      :class="{ 'bottom-tab-active': activeTab === tab.id }"
-      @click="handleTabClick(tab.id)"
-    >
-      <view class="tab-icon">
-        <Icon :name="tab.icon" size="24" color="currentColor" />
+    <view class="bottom-bar-pill">
+      <view
+        v-for="(tab, index) in tabs"
+        :key="index"
+        class="bottom-tab"
+        :class="{ 'bottom-tab-active': activeTab === tab.id }"
+        @click="handleTabClick(tab.id)"
+      >
+        <view class="tab-icon">
+          <Icon :name="tab.icon" size="22" color="currentColor" />
+        </view>
+        <text class="tab-label">{{ tab.label }}</text>
       </view>
-      <text class="tab-label">{{ tab.label }}</text>
     </view>
   </view>
 </template>
@@ -49,30 +51,41 @@ const handleTabClick = (tabId) => {
   bottom: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  height: calc(#{$bottom-bar-height} + env(safe-area-inset-bottom, 0px));
+  height: $bottom-bar-total-height;
   width: 100vw;
-  max-width: 100vw;
-  @include glass($surface-overlay-strong, transparent);
-  border-top: 1px solid $color-border-subtle;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: $spacing-2 $bottom-bar-inline-margin calc(env(safe-area-inset-bottom, 0px) + $spacing-2);
+  z-index: $z-index-fixed;
+  box-sizing: border-box;
+  background: transparent;
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
+}
+
+.bottom-bar-pill {
+  @include surface-floating($radius-pill, $shadow-lg);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: $spacing-4;
-  padding: $spacing-2 $spacing-2 calc(env(safe-area-inset-bottom, 0px) + $spacing-2);
-  z-index: $z-index-fixed;
-  transform: translateZ(0);
-  opacity: 1;
-  visibility: visible;
-  overflow: visible;
+  gap: $spacing-1;
+  width: 100%;
+  max-width: $bottom-bar-pill-max-width;
+  min-height: $bottom-bar-pill-height;
+  padding: $spacing-1 $spacing-2;
 
   @media (max-width: 480px) {
     gap: $spacing-2;
-    padding: $spacing-1 $spacing-1 calc(env(safe-area-inset-bottom, 0px) + $spacing-1);
+    padding: $spacing-2;
   }
 
   @media (max-width: 360px) {
     gap: $spacing-1;
-    padding: $spacing-1 $spacing-1 calc(env(safe-area-inset-bottom, 0px) + $spacing-1);
+    padding: $spacing-1;
   }
 }
 
@@ -83,7 +96,9 @@ const handleTabClick = (tabId) => {
   align-items: center;
   justify-content: center;
   flex: 1;
-  padding: $spacing-2 $spacing-3;
+  min-height: calc(#{$bottom-bar-pill-height} - #{$spacing-4});
+  padding: $spacing-2 $spacing-2;
+  border-radius: $radius-pill;
   cursor: pointer;
   transition: all $transition-normal;
   color: $color-text-tertiary;
@@ -104,8 +119,9 @@ const handleTabClick = (tabId) => {
     color: $color-primary;
 
     .tab-icon {
-      background: rgba($color-primary, 0.16);
-      border-color: rgba($color-primary, 0.24);
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
     }
 
     .tab-label {
@@ -115,11 +131,12 @@ const handleTabClick = (tabId) => {
 }
 
 .tab-icon {
-  @include icon-tile-base(34px, $radius-md);
+  @include icon-tile-base(40px);
   margin-bottom: $spacing-1;
   color: inherit;
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: transparent;
+  border-color: transparent;
+  transition: opacity $transition-normal, transform $transition-normal;
 
   @media (max-width: 360px) {
     margin-bottom: $spacing-0;

@@ -206,7 +206,7 @@ const onRefresh = () => {
 .action-text {
   font-size: 14px;
   font-weight: 600;
-  color: #ff3b30;
+  color: $color-error;
 }
 
 .online-info {
