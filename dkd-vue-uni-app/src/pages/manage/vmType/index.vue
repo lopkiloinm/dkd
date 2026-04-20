@@ -483,22 +483,8 @@ const closeDetailModal = () => {
   gap: 10px;
 }
 
-.info-row {
-  display: flex;
-  justify-content: space-between;
-}
 
-.info-label {
-  font-size: 14px;
-  color: $apple-text-secondary;
-}
 
-.info-value {
-  font-size: 14px;
-  color: $apple-text-primary;
-  font-weight: 500;
-  text-align: right;
-}
 
 .empty-state {
   padding: 40px 0;
@@ -601,16 +587,6 @@ const closeDetailModal = () => {
 
 .detail-placeholder-text { @include text-caption; color: $color-text-tertiary; }
 
-.detail-info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: $spacing-3 0;
-  border-bottom: 1px solid $color-border-subtle;
-
-  &:first-child { padding-top: 0; }
-  &:last-child { border-bottom: none; }
-}
 
 .fab {
   position: fixed;

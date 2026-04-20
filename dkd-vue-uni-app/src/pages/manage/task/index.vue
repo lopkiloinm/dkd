@@ -734,21 +734,17 @@ const handleSearchResult = () => {}
 }
 
 .quick-actions {
-  margin-bottom: $spacing-6;
+  margin-bottom: $spacing-4;
 }
 
 .task-list {
   display: flex;
   flex-direction: column;
+  gap: $spacing-3;
 }
 
 .task-card {
   cursor: pointer;
-  margin-bottom: $spacing-3;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
 }
 
 .card-header {
@@ -770,22 +766,8 @@ const handleSearchResult = () => {}
   gap: $spacing-2;
 }
 
-.info-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
 
-.info-label {
-  @include text-caption;
-  color: $color-text-tertiary;
-}
 
-.info-value {
-  @include text-caption;
-  color: $color-text-primary;
-  font-weight: $font-weight-medium;
-}
 
 .empty-state {
   padding: $spacing-4 0;

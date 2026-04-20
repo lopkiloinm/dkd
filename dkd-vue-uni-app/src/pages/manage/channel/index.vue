@@ -452,7 +452,6 @@ onShow(() => {
 .channel-card {
   background: $color-bg-secondary;
   border-radius: $radius-md;
-  padding: $spacing-4;
   border: 1px solid $color-border-subtle;
 }
 

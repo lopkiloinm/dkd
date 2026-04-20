@@ -96,7 +96,7 @@
 
         <!-- Revenue by Location -->
         <Motion preset="fade-up" :index="3">
-          <Card title="Revenue by Location" accent="secondary" icon="map-pin" padding="md">
+          <Card title="Revenue by Location" accent="secondary" icon="map-pin" padding="none">
             <view class="location-revenue">
               <view class="location-item" v-for="location in locationRevenue" :key="location.id">
                 <view class="location-header">
@@ -111,7 +111,7 @@
 
         <!-- Partner Performance -->
         <Motion preset="fade-up" :index="4">
-          <Card title="Partner Performance" accent="success" icon="users" padding="md">
+          <Card title="Partner Performance" accent="success" icon="users" padding="none">
             <view class="partner-performance">
               <view class="partner-item" v-for="partner in partnerPerformance" :key="partner.id">
                 <text class="partner-name">{{ partner.name }}</text>
@@ -626,15 +626,10 @@ onShow(() => {
   display: flex;
   flex-direction: column;
   gap: $spacing-2;
-  padding: $spacing-4 0;
+  padding: $spacing-4 $card-padding;
   border-bottom: 1px solid $color-border-subtle;
 
-  &:first-child {
-    padding-top: 0;
-  }
-
   &:last-child {
-    padding-bottom: 0;
     border-bottom: none;
   }
 }
@@ -667,15 +662,10 @@ onShow(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: $spacing-4 0;
+  padding: $spacing-4 $card-padding;
   border-bottom: 1px solid $color-border-subtle;
 
-  &:first-child {
-    padding-top: 0;
-  }
-
   &:last-child {
-    padding-bottom: 0;
     border-bottom: none;
   }
 }

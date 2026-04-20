@@ -311,9 +311,6 @@ onShow(() => { fetchList(true) })
 .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: $spacing-2; }
 .order-no { @include text-caption; color: $color-text-secondary; }
 .order-body { display: flex; flex-direction: column; gap: $spacing-1; }
-.info-row { display: flex; justify-content: space-between; }
-.info-label { @include text-caption; color: $color-text-secondary; }
-.info-value { @include text-body; color: $color-text-primary; }
 .info-value--strong { font-weight: $font-weight-semibold; }
 
 </style>

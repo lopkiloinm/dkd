@@ -263,6 +263,53 @@ scroll-view {
   margin-top: $spacing-1;
 }
 
+/* ============================================
+   Legacy patterns kept for unmigrated pages.
+   `.detail-info-row` is the older variant of `.detail-row`. It must
+   own its horizontal padding because BottomSheet body has zero
+   horizontal padding (so child rows produce edge-to-edge dividers).
+   `.info-row` / `.info-label` / `.info-value` live INSIDE Card
+   bodies (which already have $card-padding), so they must NOT add
+   extra horizontal padding.
+   ============================================ */
+
+.detail-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-3;
+  padding: $spacing-3 $spacing-4;
+  border-bottom: 1px solid $color-border-subtle;
+
+  &:last-child { border-bottom: none; }
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-3;
+  padding: $spacing-2 0;
+}
+
+.info-label {
+  font-family: $font-family-body;
+  font-size: $font-size-caption-md;
+  color: $color-text-secondary;
+  font-weight: $font-weight-regular;
+}
+
+.info-value {
+  font-family: $font-family-body;
+  font-size: $font-size-body-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  text-align: right;
+  flex: 1 1 auto;
+  min-width: 0;
+  word-break: break-word;
+}
+
 .scroll-area {
   flex: 1;
   min-height: 0;

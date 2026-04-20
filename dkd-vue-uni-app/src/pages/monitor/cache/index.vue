@@ -265,28 +265,9 @@ const onRefresh = () => {
   color: $color-primary;
 }
 
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
 
-.info-row:last-child {
-  border-bottom: none;
-}
 
-.info-label {
-  font-size: 14px;
-  color: $apple-text-secondary;
-  font-weight: 500;
-}
 
-.info-value {
-  font-size: 15px;
-  color: $apple-text-primary;
-  font-weight: 600;
-}
 
 .cache-name-list,
 .cache-key-list {

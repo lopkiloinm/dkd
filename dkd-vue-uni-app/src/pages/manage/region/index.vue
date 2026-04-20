@@ -294,7 +294,6 @@ const handleTabChange = (tabId) => {
 }
 
 .region-card {
-  padding: $spacing-4;
   transition: transform $transition-normal;
 }
 
@@ -307,8 +306,7 @@ const handleTabChange = (tabId) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: $spacing-4;
-  padding-bottom: $spacing-3;
+  margin-bottom: $spacing-3;
 }
 
 .region-name {
@@ -337,27 +335,8 @@ const handleTabChange = (tabId) => {
   gap: $spacing-3;
 }
 
-.info-row {
-  display: flex;
-  justify-content: space-between;
-}
 
-.info-label {
-  font-size: 14px;
-  color: $color-text-secondary;
-  font-weight: $font-weight-medium;
-}
 
-.info-value {
-  font-size: 14px;
-  color: $color-text-primary;
-  font-weight: $font-weight-medium;
-  text-align: right;
-  max-width: 60%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 .empty-state {
   padding: 40px 0;
@@ -384,16 +363,6 @@ const handleTabChange = (tabId) => {
   margin-bottom: 0;
 }
 
-.detail-info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: $spacing-3 0;
-  border-bottom: 1px solid $color-border-subtle;
-
-  &:first-child { padding-top: 0; }
-  &:last-child { border-bottom: none; }
-}
 
 .node-list-detail {
   display: flex;

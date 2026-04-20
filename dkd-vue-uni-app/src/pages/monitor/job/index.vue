@@ -459,26 +459,8 @@ const onRefresh = () => {
   gap: 10px;
 }
 
-.info-row {
-  display: flex;
-  justify-content: space-between;
-}
 
-.info-label {
-  font-size: 14px;
-  color: $apple-text-secondary;
-}
 
-.info-value {
-  font-size: 14px;
-  color: $apple-text-primary;
-  font-weight: 500;
-  text-align: right;
-  max-width: 60%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 .empty-state {
   padding: 40px 0;

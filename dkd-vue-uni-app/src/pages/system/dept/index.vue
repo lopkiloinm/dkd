@@ -486,9 +486,8 @@ const onRefresh = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: $spacing-4;
-  padding-bottom: $spacing-3;
-  border-bottom: 1px solid $apple-glass-border;
+  margin-bottom: $spacing-3;
+border-bottom: 1px solid $apple-glass-border;
 }
 
 .dept-name {
@@ -521,26 +520,8 @@ const onRefresh = () => {
   gap: $spacing-2;
 }
 
-.info-row {
-  display: flex;
-  justify-content: space-between;
-}
 
-.info-label {
-  font-size: 14px;
-  color: $apple-text-secondary;
-}
 
-.info-value {
-  font-size: 14px;
-  color: $apple-text-primary;
-  font-weight: 500;
-  text-align: right;
-  max-width: 60%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 .empty-state {
   padding: $spacing-10 0;
@@ -603,15 +584,5 @@ const onRefresh = () => {
   @include sheet-form-picker-trigger;
 }
 
-.detail-info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: $spacing-3 0;
-  border-bottom: 1px solid $color-border-subtle;
-
-  &:first-child { padding-top: 0; }
-  &:last-child { border-bottom: none; }
-}
 
 </style>

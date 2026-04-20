@@ -414,7 +414,6 @@ const closeDetailModal = () => {
 }
 
 .node-card {
-  padding: $spacing-4;
   transition: transform $transition-normal;
 }
 
@@ -427,8 +426,7 @@ const closeDetailModal = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: $spacing-4;
-  padding-bottom: $spacing-3;
+  margin-bottom: $spacing-3;
 }
 
 .node-name {
@@ -457,26 +455,8 @@ const closeDetailModal = () => {
   gap: $spacing-3;
 }
 
-.info-row {
-  display: flex;
-  justify-content: space-between;
-}
 
-.info-label {
-  font-size: 14px;
-  color: $color-text-secondary;
-}
 
-.info-value {
-  font-size: 14px;
-  color: $color-text-primary;
-  font-weight: $font-weight-medium;
-  text-align: right;
-  max-width: 60%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 .form-item {
   margin-bottom: $spacing-4;
@@ -515,15 +495,5 @@ const closeDetailModal = () => {
   border-radius: $radius-lg;
 }
 
-.detail-info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: $spacing-3 0;
-  border-bottom: 1px solid $color-border-subtle;
-
-  &:first-child { padding-top: 0; }
-  &:last-child { border-bottom: none; }
-}
 
 </style>

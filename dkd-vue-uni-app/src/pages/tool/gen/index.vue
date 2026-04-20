@@ -239,9 +239,8 @@ const onRefresh = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: $spacing-4;
-  padding-bottom: $spacing-3;
-  border-bottom: 1px solid $apple-glass-border;
+  margin-bottom: $spacing-3;
+border-bottom: 1px solid $apple-glass-border;
 }
 
 .table-name {
@@ -275,26 +274,8 @@ const onRefresh = () => {
   gap: $spacing-2;
 }
 
-.info-row {
-  display: flex;
-  justify-content: space-between;
-}
 
-.info-label {
-  font-size: 14px;
-  color: $apple-text-secondary;
-}
 
-.info-value {
-  font-size: 14px;
-  color: $apple-text-primary;
-  font-weight: 500;
-  text-align: right;
-  max-width: 60%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 .empty-state {
   padding: $spacing-10 0;

@@ -696,22 +696,8 @@ const getStatusVariant = (status) => {
   gap: $spacing-2;
 }
 
-.info-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
 
-.info-label {
-  @include text-caption;
-  color: $color-text-tertiary;
-}
 
-.info-value {
-  @include text-caption;
-  color: $color-text-primary;
-  font-weight: $font-weight-medium;
-}
 
 .empty-state { padding: $spacing-4 0; }
 
