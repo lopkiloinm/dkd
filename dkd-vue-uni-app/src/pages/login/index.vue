@@ -64,6 +64,7 @@ const getCode = async () => {
     }
   } catch (error) {
     console.error('Failed to get captcha', error)
+    uni.showToast({ title: 'Failed to load captcha. Tap to retry.', icon: 'none' })
   }
 }
 

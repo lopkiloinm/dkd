@@ -93,14 +93,17 @@ const handleSettings = (type) => {
     return
   }
   if (type === 'account') {
-    uni.showToast({ title: 'Account settings coming soon', icon: 'none' })
+    uni.navigateTo({ url: '/pages/security/index' })
     return
   }
   if (type === 'language') {
-    uni.showToast({ title: 'Language settings coming soon', icon: 'none' })
+    uni.navigateTo({ url: '/pages/preferences/index' })
     return
   }
-  uni.showToast({ title: 'About page coming soon', icon: 'none' })
+  if (type === 'about') {
+    uni.navigateTo({ url: '/pages/help/index' })
+    return
+  }
 }
 
 const handleLogout = () => {

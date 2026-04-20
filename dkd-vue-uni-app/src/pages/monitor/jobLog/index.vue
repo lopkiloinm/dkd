@@ -59,9 +59,9 @@
 
 <script setup>
 import { ref } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+import { onShow, onLoad } from '@dcloudio/uni-app'
 import AppTopBar from '@/components/app/AppTopBar.vue'
-import { listJobLog } from '@/api/monitor/jobLog'
+import { listJobLog, delJobLog } from '@/api/monitor/jobLog'
 
 const logList = ref([])
 const loading = ref(false)

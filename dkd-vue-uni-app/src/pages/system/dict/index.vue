@@ -9,8 +9,8 @@
       </view>
       <view class="filters-container" :class="{ expanded: filtersExpanded }">
         <input class="n-input search-input" :value="queryParams.dictType" @input="queryParams.dictType = $event.detail.value" placeholder="Search by Dict Type" @confirm="handleSearch" />
-        <picker mode="selector" :range="statusOptions" :value="filterStatusIndex" @change="onFilterStatusChange">
-          <view class="filter-picker">{{ statusOptions[filterStatusIndex] }}</view>
+        <picker mode="selector" :range="filterStatusOptions" :value="filterStatusIndex" @change="onFilterStatusChange">
+          <view class="filter-picker">{{ filterStatusOptions[filterStatusIndex] }}</view>
         </picker>
       </view>
     </view>
@@ -156,7 +156,19 @@ const form = ref({
 })
 
 const statusOptions = ['Active', 'Inactive']
+const filterStatusOptions = ['All Status', 'Active', 'Inactive']
 const statusIndex = ref(0)
+const filterStatusIndex = ref(0)
+
+const onFilterStatusChange = (e) => {
+  filterStatusIndex.value = Number(e.detail.value)
+  if (filterStatusIndex.value === 0) {
+    queryParams.value.status = null
+  } else {
+    queryParams.value.status = filterStatusIndex.value === 1 ? '0' : '1'
+  }
+  fetchList(true)
+}
 
 const fetchList = async (reset = false) => {
   if (reset) {

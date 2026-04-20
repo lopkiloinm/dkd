@@ -13,12 +13,12 @@
                 </view>
                 <Icon name="chevron-right" size="18" color="currentColor" />
               </view>
-              <view class="menu-item" @click="toggleBiometric">
+              <view class="menu-item">
                 <view class="menu-item-left">
                   <Icon name="account" size="20" color="currentColor" />
                   <text class="menu-label">Biometric Login</text>
                 </view>
-                <text class="menu-value">{{ biometricEnabled ? 'On' : 'Off' }}</text>
+                <Switch v-model="biometricEnabled" @change="persistBiometric" />
               </view>
               <view class="menu-item" @click="handleSessions">
                 <view class="menu-item-left">
@@ -46,23 +46,29 @@
 import { ref } from 'vue'
 import AppTopBar from '@/components/app/AppTopBar.vue'
 import Card from '@/components/ui/Card.vue'
-import CardSection from '@/components/ui/CardSection.vue'
 import Icon from '@/components/ui/Icon.vue'
 import Motion from '@/components/ui/Motion.vue'
-const biometricEnabled = ref(false)
+import Switch from '@/components/ui/Switch.vue'
 
-const notImplemented = () => {
+const BIO_KEY = 'dkd_biometric_enabled'
+const biometricEnabled = ref(uni.getStorageSync(BIO_KEY) === true)
+
+const persistBiometric = () => {
+  uni.setStorageSync(BIO_KEY, biometricEnabled.value)
+  uni.showToast({
+    title: biometricEnabled.value ? 'Biometric will activate on next login' : 'Biometric disabled',
+    icon: 'none'
+  })
+}
+
+const handleChangePassword = () => {
   uni.showToast({ title: 'Coming soon', icon: 'none' })
 }
-
-const handleChangePassword = notImplemented
-const handleSessions = notImplemented
+const handleSessions = () => {
+  uni.navigateTo({ url: '/pages/monitor/online/index' })
+}
 const handleAuditLog = () => {
   uni.navigateTo({ url: '/pages/monitor/logininfor/index' })
-}
-
-const toggleBiometric = () => {
-  biometricEnabled.value = !biometricEnabled.value
 }
 </script>
 

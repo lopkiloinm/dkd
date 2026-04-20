@@ -45,7 +45,6 @@
 <script setup>
 import AppTopBar from '@/components/app/AppTopBar.vue'
 import Card from '@/components/ui/Card.vue'
-import CardSection from '@/components/ui/CardSection.vue'
 import Icon from '@/components/ui/Icon.vue'
 import Motion from '@/components/ui/Motion.vue'
 const version = '1.0.0'

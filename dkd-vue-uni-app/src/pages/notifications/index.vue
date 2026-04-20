@@ -143,7 +143,7 @@ const fetchNotifications = async (reset = true) => {
       params.noticeType = activeFilter.value
     }
     const res = await listNotice(params)
-    const rows = (res.rows || []).map((item) => ({ ...item, read: false }))
+    const rows = (res.rows || []).map((item) => ({ ...item, read: item.read === true }))
     notificationList.value = reset ? rows : [...notificationList.value, ...rows]
     total.value = res.total || 0
   } catch (error) {

@@ -16,22 +16,22 @@
                   <Icon name="chevron-right" size="18" color="currentColor" />
                 </view>
               </view>
-              <view class="menu-item" @click="toggleNotifications">
+              <view class="menu-item">
                 <view class="menu-item-left">
                   <Icon name="notification" size="20" color="currentColor" />
                   <text class="menu-label">Notifications</text>
                 </view>
                 <view class="menu-item-right">
-                  <text class="menu-value">{{ notificationsEnabled ? 'On' : 'Off' }}</text>
+                  <Switch v-model="notificationsEnabled" @change="onNotificationsChange" />
                 </view>
               </view>
-              <view class="menu-item" @click="toggleTheme">
+              <view class="menu-item">
                 <view class="menu-item-left">
                   <Icon name="settings" size="20" color="currentColor" />
-                  <text class="menu-label">Theme</text>
+                  <text class="menu-label">Dark Mode</text>
                 </view>
                 <view class="menu-item-right">
-                  <text class="menu-value">{{ theme }}</text>
+                  <Switch v-model="darkMode" @change="onThemeChange" />
                 </view>
               </view>
             </view>
@@ -46,30 +46,49 @@
 import { ref } from 'vue'
 import AppTopBar from '@/components/app/AppTopBar.vue'
 import Card from '@/components/ui/Card.vue'
-import CardSection from '@/components/ui/CardSection.vue'
 import Icon from '@/components/ui/Icon.vue'
 import Motion from '@/components/ui/Motion.vue'
-const currentLanguage = ref('English')
-const notificationsEnabled = ref(true)
-const theme = ref('Light')
+import Switch from '@/components/ui/Switch.vue'
+import { useI18n } from 'vue-i18n'
+
+const { locale } = useI18n()
+const PREFS_KEY = 'dkd_user_prefs'
+
+const loadPrefs = () => {
+  try { return JSON.parse(uni.getStorageSync(PREFS_KEY) || '{}') } catch (e) { return {} }
+}
+const savedPrefs = loadPrefs()
+
+const currentLanguage = ref(savedPrefs.language || (locale.value === 'zh-CN' ? '中文' : 'English'))
+const notificationsEnabled = ref(savedPrefs.notifications !== false)
+const darkMode = ref(savedPrefs.darkMode === true)
+
+const persist = () => {
+  uni.setStorageSync(PREFS_KEY, JSON.stringify({
+    language: currentLanguage.value,
+    notifications: notificationsEnabled.value,
+    darkMode: darkMode.value
+  }))
+}
 
 const handleLanguage = () => {
   uni.showActionSheet({
     itemList: ['English', '中文'],
     success: (res) => {
       currentLanguage.value = res.tapIndex === 0 ? 'English' : '中文'
+      locale.value = res.tapIndex === 0 ? 'en' : 'zh-CN'
+      persist()
     }
   })
 }
 
-const toggleNotifications = () => {
-  notificationsEnabled.value = !notificationsEnabled.value
+const onNotificationsChange = () => {
+  persist()
 }
 
-const toggleTheme = () => {
-  theme.value = theme.value === 'Light' ? 'Dark' : 'Light'
+const onThemeChange = () => {
+  persist()
   uni.showToast({ title: 'Dark mode coming soon', icon: 'none' })
-  theme.value = 'Light'
 }
 </script>
 
