@@ -1,30 +1,35 @@
 <template>
   <!-- Backdrop and panel are siblings inside a neutral mount so the panel is not a
        descendant of a `backdrop-filter` layer (which breaks fixed positioning + native inputs). -->
-  <view v-if="visible" class="sheet-mount">
-    <view
-      class="sheet-backdrop"
-      @click="handleBackdropClick"
-      @tap="handleBackdropClick"
-    />
-    <view :class="sheetClasses" @click.stop @tap.stop>
-      <view v-if="$slots.header" class="sheet-header">
-        <slot name="header"></slot>
-      </view>
-      <view class="sheet-body">
-        <view class="sheet-body-inner">
-          <slot></slot>
+  <view v-if="mounted" class="sheet-mount">
+    <transition name="sheet-fade" appear>
+      <view
+        v-if="visible"
+        class="sheet-backdrop"
+        @click="handleBackdropClick"
+        @tap="handleBackdropClick"
+      />
+    </transition>
+    <transition :name="`sheet-slide-${position}`" appear @after-leave="mounted = false">
+      <view v-if="visible" :class="sheetClasses" @click.stop @tap.stop>
+        <view v-if="$slots.header" class="sheet-header">
+          <slot name="header"></slot>
+        </view>
+        <view class="sheet-body">
+          <view class="sheet-body-inner">
+            <slot></slot>
+          </view>
+        </view>
+        <view v-if="$slots.footer" class="sheet-footer">
+          <slot name="footer"></slot>
         </view>
       </view>
-      <view v-if="$slots.footer" class="sheet-footer">
-        <slot name="footer"></slot>
-      </view>
-    </view>
+    </transition>
   </view>
 </template>
 
 <script setup>
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   visible: {
@@ -43,6 +48,14 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'close'])
+
+/* `mounted` keeps the mount node in the DOM during the leave transition
+   so the slide-out animation can play before unmount. It flips false in
+   `@after-leave`. */
+const mounted = ref(props.visible)
+watch(() => props.visible, (val) => {
+  if (val) mounted.value = true
+})
 
 const sheetClasses = computed(() => {
   return [
@@ -101,12 +114,14 @@ watch(() => props.visible, (newVal) => {
   -webkit-backdrop-filter: none !important;
   isolation: auto !important;
   background: $glass-card-shine, rgba(18, 20, 28, 0.96);
-  transition: transform $transition-normal ease-out;
+  /* No idle transition on the panel itself; motion is owned by the
+     wrapping <transition> below so enter/leave can use spring curves. */
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   width: 100%;
   pointer-events: auto;
+  will-change: transform, opacity;
 
   &.sheet-bottom {
     bottom: 0;
@@ -164,5 +179,74 @@ watch(() => props.visible, (newVal) => {
 
 .sheet-footer {
   flex-shrink: 0;
+}
+
+/* ---- Motion ----------------------------------------------------------
+   Backdrop fades. Panel slides in from the docked edge with a soft
+   spring-feel curve and a subtle scale on enter so it feels lifted.
+--------------------------------------------------------------------- */
+$sheet-spring: cubic-bezier(0.22, 1, 0.36, 1);
+$sheet-out:    cubic-bezier(0.4, 0, 0.6, 1);
+
+.sheet-fade-enter-active,
+.sheet-fade-leave-active {
+  transition: opacity 240ms $sheet-out;
+}
+.sheet-fade-enter-from,
+.sheet-fade-leave-to { opacity: 0; }
+
+/* Bottom sheet — slide up + slight lift */
+.sheet-slide-bottom-enter-active {
+  transition: transform 360ms $sheet-spring, opacity 240ms ease-out;
+}
+.sheet-slide-bottom-leave-active {
+  transition: transform 260ms $sheet-out, opacity 200ms ease-in;
+}
+.sheet-slide-bottom-enter-from {
+  transform: translateY(110%);
+  opacity: 0.6;
+}
+.sheet-slide-bottom-leave-to {
+  transform: translateY(110%);
+  opacity: 0;
+}
+
+/* Top sheet */
+.sheet-slide-top-enter-active {
+  transition: transform 360ms $sheet-spring, opacity 240ms ease-out;
+}
+.sheet-slide-top-leave-active {
+  transition: transform 260ms $sheet-out, opacity 200ms ease-in;
+}
+.sheet-slide-top-enter-from,
+.sheet-slide-top-leave-to {
+  transform: translateY(-110%);
+  opacity: 0;
+}
+
+/* Left drawer */
+.sheet-slide-left-enter-active {
+  transition: transform 340ms $sheet-spring, opacity 220ms ease-out;
+}
+.sheet-slide-left-leave-active {
+  transition: transform 240ms $sheet-out, opacity 180ms ease-in;
+}
+.sheet-slide-left-enter-from,
+.sheet-slide-left-leave-to {
+  transform: translateX(-100%);
+  opacity: 0.7;
+}
+
+/* Right drawer */
+.sheet-slide-right-enter-active {
+  transition: transform 340ms $sheet-spring, opacity 220ms ease-out;
+}
+.sheet-slide-right-leave-active {
+  transition: transform 240ms $sheet-out, opacity 180ms ease-in;
+}
+.sheet-slide-right-enter-from,
+.sheet-slide-right-leave-to {
+  transform: translateX(100%);
+  opacity: 0.7;
 }
 </style>

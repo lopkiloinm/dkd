@@ -763,6 +763,7 @@ const handleTabChange = (tabId) => {
   display: flex;
   flex-direction: column;
   gap: $spacing-3;
+  padding: $spacing-4 $card-padding;
 }
 
 .status-item {
@@ -810,41 +811,18 @@ const handleTabChange = (tabId) => {
   flex-direction: column;
 }
 
-.see-all-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: $spacing-4 0 0;
-  margin-top: 0;
-  cursor: pointer;
-  color: $color-primary;
-
-  &:active {
-    opacity: 0.7;
-  }
-}
-
-.see-all-label {
-  @include text-body;
-  color: $color-primary;
-  font-weight: $font-weight-medium;
-}
+.see-all-row,
+.see-all-label { display: none; }
 
 .task-item {
   display: flex;
   align-items: center;
   gap: $spacing-3;
-  padding: $spacing-4 0;
+  padding: $spacing-4 $card-padding;
   border-bottom: 1px solid $color-border-subtle;
 
-  &:first-child {
-    padding-top: 0;
-  }
-
-  &:last-child {
-    padding-bottom: 0;
-    border-bottom: none;
-  }
+  &:first-child { padding-top: $spacing-4; }
+  &:last-child  { padding-bottom: $spacing-4; border-bottom: none; }
 }
 
 .task-info {
@@ -874,17 +852,11 @@ const handleTabChange = (tabId) => {
   display: flex;
   flex-direction: column;
   gap: $spacing-2;
-  padding: $spacing-4 0;
+  padding: $spacing-4 $card-padding;
   border-bottom: 1px solid $color-border-subtle;
 
-  &:first-child {
-    padding-top: 0;
-  }
-
-  &:last-child {
-    padding-bottom: 0;
-    border-bottom: none;
-  }
+  &:first-child { padding-top: $spacing-4; }
+  &:last-child  { padding-bottom: $spacing-4; border-bottom: none; }
 }
 
 .inventory-header {
@@ -927,17 +899,11 @@ const handleTabChange = (tabId) => {
   display: flex;
   flex-direction: column;
   gap: $spacing-2;
-  padding: $spacing-4 0;
+  padding: $spacing-4 $card-padding;
   border-bottom: 1px solid $color-border-subtle;
 
-  &:first-child {
-    padding-top: 0;
-  }
-
-  &:last-child {
-    padding-bottom: 0;
-    border-bottom: none;
-  }
+  &:first-child { padding-top: $spacing-4; }
+  &:last-child  { padding-bottom: $spacing-4; border-bottom: none; }
 }
 
 .member-header {
@@ -1055,8 +1021,11 @@ const handleTabChange = (tabId) => {
 .ranking-item {
   display: flex;
   align-items: center;
-  padding: $spacing-3 0;
+  padding: $spacing-3 $card-padding;
   border-bottom: 1px solid $color-border-subtle;
+
+  &:first-child { padding-top: $spacing-4; }
+  &:last-child  { padding-bottom: $spacing-4; border-bottom: none; }
 }
 
 .rank-badge {
@@ -1112,10 +1081,13 @@ const handleTabChange = (tabId) => {
 .equipment-item {
   display: flex;
   flex-direction: column;
-  padding: $spacing-3 0;
+  padding: $spacing-3 $card-padding;
   border-bottom: 1px solid $color-border-subtle;
   cursor: pointer;
   transition: background-color $transition-normal;
+
+  &:first-child { padding-top: $spacing-4; }
+  &:last-child  { padding-bottom: $spacing-4; border-bottom: none; }
 
   &:active {
     background: $color-bg-elevated;
@@ -1142,7 +1114,7 @@ const handleTabChange = (tabId) => {
 }
 
 .empty-state {
-  padding: $spacing-8 0;
+  padding: $spacing-6 $card-padding;
   text-align: center;
 }
 
