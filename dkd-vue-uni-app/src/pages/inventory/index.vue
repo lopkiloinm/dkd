@@ -130,19 +130,19 @@
     <view v-else class="form-view">
       <view class="form-group">
         <text class="form-label">Product Name *</text>
-        <input class="form-input" v-model="formData.skuName" placeholder="Enter product name" />
+        <SheetTextField v-model="formData.skuName" placeholder="Enter product name" />
       </view>
       <view class="form-group">
         <text class="form-label">Brand</text>
-        <input class="form-input" v-model="formData.brandName" placeholder="Enter brand name" />
+        <SheetTextField v-model="formData.brandName" placeholder="Enter brand name" />
       </view>
       <view class="form-group">
         <text class="form-label">Unit</text>
-        <input class="form-input" v-model="formData.unit" placeholder="e.g. bottle, pack" />
+        <SheetTextField v-model="formData.unit" placeholder="e.g. bottle, pack" />
       </view>
       <view class="form-group">
         <text class="form-label">Price (¥) *</text>
-        <input class="form-input" v-model.number="formData.price" type="number" placeholder="0" />
+        <SheetTextField v-model="formData.price" placeholder="0" numeric allow-decimal />
       </view>
       <view class="form-group">
         <text class="form-label">Category</text>
@@ -187,6 +187,7 @@ import EmptyState from '@/components/ui/EmptyState.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listSku, addSku, updateSku, delSku, listSkuClass } from '@/api/manage/sku'
 import { getInfo } from '@/api/login'
+import SheetTextField from '@/components/ui/SheetTextField.vue'
 
 const userStore = useUserStore()
 
@@ -704,11 +705,6 @@ onShow(() => {
   color: $color-text-tertiary;
 }
 
-.detail-view {
-  display: flex;
-  flex-direction: column;
-}
-
 .action-pill {
   display: inline-flex;
   align-items: center;
@@ -742,55 +738,10 @@ onShow(() => {
   line-height: 1.5;
 }
 
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: $spacing-3 0;
-  border-bottom: 1px solid $color-border-subtle;
-
-  &:first-child {
-    padding-top: 0;
-  }
-
-  &:last-child {
-    border-bottom: none;
-  }
-}
-
-.detail-label {
-  @include text-caption;
-  color: $color-text-secondary;
-}
-
-.detail-value {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-medium;
-}
-
-.form-view {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-4;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-2;
-}
-
 .form-toggle {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-}
-
-.form-label {
-  @include text-caption;
-  color: $color-text-secondary;
-  font-weight: $font-weight-medium;
 }
 
 .form-input {
@@ -804,12 +755,4 @@ onShow(() => {
   box-sizing: border-box;
 }
 
-.form-picker {
-  @include text-body;
-  color: $color-text-primary;
-  padding: $spacing-3;
-  background: $color-bg-tertiary;
-  border: 1px solid $color-border-subtle;
-  border-radius: $radius-pill;
-}
 </style>

@@ -109,23 +109,23 @@
       </view>
       <view class="form-item">
         <text class="form-label">Menu Name *</text>
-        <input class="n-input" :value="form.menuName" @input="form.menuName = $event.detail.value" placeholder="Enter menu name" />
+        <SheetTextField v-model="form.menuName" placeholder="Enter menu name" />
       </view>
       <view class="form-item">
         <text class="form-label">Order Num *</text>
-        <input class="n-input" :value="form.orderNum" @input="form.orderNum = $event.detail.value" type="number" placeholder="Enter order num" />
+        <SheetTextField v-model="form.orderNum" placeholder="Enter order num" numeric allow-decimal />
       </view>
       <view class="form-item" v-if="form.menuType !== 'F'">
         <text class="form-label">Path</text>
-        <input class="n-input" :value="form.path" @input="form.path = $event.detail.value" placeholder="Enter path" />
+        <SheetTextField v-model="form.path" placeholder="Enter path" />
       </view>
       <view class="form-item" v-if="form.menuType === 'C'">
         <text class="form-label">Component</text>
-        <input class="n-input" :value="form.component" @input="form.component = $event.detail.value" placeholder="Enter component" />
+        <SheetTextField v-model="form.component" placeholder="Enter component" />
       </view>
       <view class="form-item" v-if="form.menuType !== 'M'">
         <text class="form-label">Perms</text>
-        <input class="n-input" :value="form.perms" @input="form.perms = $event.detail.value" placeholder="Enter perms" />
+        <SheetTextField v-model="form.perms" placeholder="Enter perms" />
       </view>
       <view class="form-item">
         <text class="form-label">Visible</text>
@@ -148,6 +148,7 @@ import AppTopBar from '@/components/app/AppTopBar.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listMenu, getMenu, addMenu, updateMenu, delMenu } from '@/api/system/menu'
 import { hasPermission } from '@/utils/permission'
+import SheetTextField from '@/components/ui/SheetTextField.vue'
 
 const menuList = ref([])
 const loading = ref(false)
@@ -639,14 +640,6 @@ const onRefresh = () => {
   margin-bottom: 0;
 }
 
-.form-label {
-  display: block;
-  @include text-caption;
-  color: $color-text-secondary;
-  font-weight: $font-weight-medium;
-  margin-bottom: $spacing-2;
-}
-
 .picker-input {
   @include sheet-form-picker-trigger;
 }
@@ -662,6 +655,4 @@ const onRefresh = () => {
   &:last-child { border-bottom: none; }
 }
 
-.detail-label { @include text-caption; color: $color-text-secondary; }
-.detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
 </style>

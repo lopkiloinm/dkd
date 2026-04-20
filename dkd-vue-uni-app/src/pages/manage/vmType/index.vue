@@ -574,13 +574,6 @@ const closeDetailModal = () => {
 .upload-text { @include text-caption; color: $color-text-secondary; }
 
 .form-item { margin-bottom: $spacing-4; &:last-child { margin-bottom: 0; } }
-.form-label {
-  display: block;
-  @include text-caption;
-  color: $color-text-secondary;
-  font-weight: $font-weight-medium;
-  margin-bottom: $spacing-2;
-}
 
 .detail-image-section {
   display: flex;
@@ -618,9 +611,6 @@ const closeDetailModal = () => {
   &:first-child { padding-top: 0; }
   &:last-child { border-bottom: none; }
 }
-
-.detail-label { @include text-caption; color: $color-text-secondary; }
-.detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
 
 .fab {
   position: fixed;

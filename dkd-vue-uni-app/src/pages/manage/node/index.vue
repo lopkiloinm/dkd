@@ -88,7 +88,7 @@
         </view>
         <view class="form-item">
           <text class="form-label">Address *</text>
-          <textarea class="n-textarea" :value="form.address" @input="form.address = $event.detail.value" placeholder="Enter address" />
+          <SheetTextField v-model="form.address" placeholder="Enter address" multiline />
         </view>
         <template #header-actions>
           <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
@@ -112,6 +112,7 @@ import { listNode, getNode, addNode, updateNode, delNode } from '@/api/manage/no
 import { listRegion } from '@/api/manage/region'
 import { listPartner } from '@/api/manage/partner'
 import { hasPermission } from '@/utils/permission'
+import SheetTextField from '@/components/ui/SheetTextField.vue'
 
 const { t } = useI18n()
 
@@ -485,14 +486,6 @@ const closeDetailModal = () => {
   margin-bottom: 0;
 }
 
-.form-label {
-  display: block;
-  @include text-caption;
-  font-weight: $font-weight-semibold;
-  color: $color-text-secondary;
-  margin-bottom: $spacing-2;
-}
-
 .picker-input {
   height: 44px;
   padding: 0 $spacing-4;
@@ -533,16 +526,4 @@ const closeDetailModal = () => {
   &:last-child { border-bottom: none; }
 }
 
-.detail-label {
-  @include text-caption;
-  color: $color-text-secondary;
-  font-weight: $font-weight-medium;
-  flex: 1;
-}
-
-.detail-value {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
-}
 </style>

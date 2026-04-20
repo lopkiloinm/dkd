@@ -97,14 +97,13 @@ const cardClasses = computed(() => [
   }
 }
 
-/* ---- Header (horizontal row, full-width, flat color) ---- */
+/* ---- Header (horizontal row, full-width, flat color)
+   Comfortable touch target: ~40px tall via $spacing-2 + 24px icon. ---- */
 .card-header {
   display: flex;
   align-items: center;
   gap: $spacing-3;
-  padding: $spacing-3 $card-padding;
-  min-height: 48px;
-  border-bottom: 1px solid $color-border-subtle;
+  padding: $spacing-2 $card-padding;
   color: #fff;
   box-sizing: border-box;
 
@@ -120,9 +119,9 @@ const cardClasses = computed(() => [
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
 }
 
 .card-header-text {
@@ -160,7 +159,12 @@ const cardClasses = computed(() => [
   margin-left: $spacing-2;
 }
 
-/* ---- Body ---- */
+/* ---- Body ----
+   `padding` prop controls ALL FOUR SIDES uniformly so that:
+     • padding="md"  → fully padded (text/form cards).
+     • padding="none"→ zero padding so list rows (each with their own
+                       horizontal padding) can render bottom borders
+                       that span EDGE TO EDGE across the card. */
 .card-body {
   flex: 1 1 auto;
   min-width: 0;
@@ -169,9 +173,31 @@ const cardClasses = computed(() => [
   background: $color-bg-secondary;
 
   &.card-body-padding-none { padding: 0; }
-  &.card-body-padding-sm { padding: $spacing-3; }
-  &.card-body-padding-md { padding: $card-padding; }
-  &.card-body-padding-lg { padding: $spacing-5; }
+  &.card-body-padding-sm   { padding: $spacing-3; }
+  &.card-body-padding-md   { padding: $card-padding; }
+  &.card-body-padding-lg   { padding: $spacing-5; }
+}
+
+/* When the card has a colored header, kill the body's top padding
+   completely AND collapse the slot's first descendant top padding/margin.
+   This guarantees the colored band sits flush against the first content
+   pixel — no uncolored gap — without per-page edits. */
+.card-has-header .card-body {
+  &.card-body-padding-sm,
+  &.card-body-padding-md,
+  &.card-body-padding-lg { padding-top: 0; }
+}
+
+/* Slot content lives under the parent's scope, so we use :deep().
+   Match the body's first child AND that child's own first child so
+   wrapper-then-row patterns (e.g. .task-queue > .task-item) collapse. */
+.card-has-header .card-body :deep(> *:first-child) {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+.card-has-header .card-body :deep(> *:first-child > *:first-child) {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
 }
 
 .card-body-subtitle {

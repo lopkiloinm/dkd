@@ -451,15 +451,4 @@ const handleTabChange = (tabId) => {
   &:last-child { border-bottom: none; }
 }
 
-.detail-label {
-  @include text-caption;
-  color: $color-text-secondary;
-  font-weight: $font-weight-medium;
-}
-
-.detail-value {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
-}
 </style>

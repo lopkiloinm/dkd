@@ -89,11 +89,11 @@
     >
       <view class="form-item">
         <text class="form-label">Dict Name *</text>
-        <input class="n-input" :value="form.dictName" @input="form.dictName = $event.detail.value" placeholder="Enter dict name" />
+        <SheetTextField v-model="form.dictName" placeholder="Enter dict name" />
       </view>
       <view class="form-item">
         <text class="form-label">Dict Type *</text>
-        <input class="n-input" :value="form.dictType" @input="form.dictType = $event.detail.value" placeholder="Enter dict type" :disabled="isEdit" />
+        <SheetTextField v-model="form.dictType" placeholder="Enter dict type" :disabled="isEdit" />
       </view>
       <view class="form-item">
         <text class="form-label">Status</text>
@@ -103,7 +103,7 @@
       </view>
       <view class="form-item">
         <text class="form-label">Remark</text>
-        <textarea class="n-textarea" :value="form.remark" @input="form.remark = $event.detail.value" placeholder="Enter remark" />
+        <SheetTextField v-model="form.remark" placeholder="Enter remark" multiline />
       </view>
 
       <template #header-actions>
@@ -121,6 +121,7 @@ import AppTopBar from '@/components/app/AppTopBar.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listType, getType, addType, updateType, delType, refreshCache } from '@/api/system/dict/type'
 import { hasPermission } from '@/utils/permission'
+import SheetTextField from '@/components/ui/SheetTextField.vue'
 
 const dictList = ref([])
 const loading = ref(false)
@@ -560,14 +561,6 @@ const onRefresh = () => {
   margin-bottom: 0;
 }
 
-.form-label {
-  display: block;
-  @include text-caption;
-  color: $color-text-secondary;
-  font-weight: $font-weight-medium;
-  margin-bottom: $spacing-2;
-}
-
 .picker-input {
   @include sheet-form-picker-trigger;
 }
@@ -592,17 +585,5 @@ const onRefresh = () => {
   &:first-child { padding-top: 0; }
   &:last-child { border-bottom: none; }
 }
-
-.detail-label {
-  @include text-caption;
-  color: $color-text-secondary;
-}
-
-.detail-value {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-medium;
-}
-
 
 </style>

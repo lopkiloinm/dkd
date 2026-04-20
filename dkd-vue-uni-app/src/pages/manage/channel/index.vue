@@ -472,8 +472,6 @@ onShow(() => {
 .row-label { @include text-caption; color: $color-text-secondary; }
 .row-value { @include text-caption; color: $color-text-primary; }
 
-.detail-view { display: flex; flex-direction: column; }
-
 .action-pill {
   display: inline-flex;
   align-items: center;
@@ -507,21 +505,4 @@ onShow(() => {
   line-height: 1.5;
 }
 
-.detail-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: $spacing-3 0; border-bottom: 1px solid $color-border-subtle;
-
-  &:first-child { padding-top: 0; }
-  &:last-child { border-bottom: none; }
-}
-.detail-label { @include text-caption; color: $color-text-secondary; }
-.detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
-
-.form-view { display: flex; flex-direction: column; gap: $spacing-4; }
-.form-group { display: flex; flex-direction: column; gap: $spacing-2; }
-.form-label { @include text-caption; color: $color-text-secondary; font-weight: $font-weight-medium; }
-
-.form-picker {
-  @include sheet-form-picker-trigger;
-}
 </style>

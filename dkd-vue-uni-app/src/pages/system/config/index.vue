@@ -83,15 +83,15 @@
     <BottomSheet :visible="showModal" :title="isEdit ? 'Edit Config' : 'Add Config'" @update:visible="val => !val && closeModal()" @close="closeModal">
       <view class="form-item">
         <text class="form-label">Config Name *</text>
-        <input class="n-input" :value="form.configName" @input="form.configName = $event.detail.value" placeholder="Enter config name" />
+        <SheetTextField v-model="form.configName" placeholder="Enter config name" />
       </view>
       <view class="form-item">
         <text class="form-label">Config Key *</text>
-        <input class="n-input" :value="form.configKey" @input="form.configKey = $event.detail.value" placeholder="Enter config key" />
+        <SheetTextField v-model="form.configKey" placeholder="Enter config key" />
       </view>
       <view class="form-item">
         <text class="form-label">Config Value *</text>
-        <input class="n-input" :value="form.configValue" @input="form.configValue = $event.detail.value" placeholder="Enter config value" />
+        <SheetTextField v-model="form.configValue" placeholder="Enter config value" />
       </view>
       <view class="form-item">
         <text class="form-label">Config Type *</text>
@@ -101,7 +101,7 @@
       </view>
       <view class="form-item">
         <text class="form-label">Remark</text>
-        <textarea class="n-textarea" :value="form.remark" @input="form.remark = $event.detail.value" placeholder="Enter remark" />
+        <SheetTextField v-model="form.remark" placeholder="Enter remark" multiline />
       </view>
       <template #header-actions>
         <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
@@ -118,6 +118,7 @@ import AppTopBar from '@/components/app/AppTopBar.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listConfig, getConfig, addConfig, updateConfig, delConfig } from '@/api/system/config'
 import { hasPermission } from '@/utils/permission'
+import SheetTextField from '@/components/ui/SheetTextField.vue'
 
 const configList = ref([])
 const loading = ref(false)
@@ -558,14 +559,6 @@ const onRefresh = () => {
   margin-bottom: 0;
 }
 
-.form-label {
-  display: block;
-  @include text-caption;
-  color: $color-text-secondary;
-  font-weight: $font-weight-medium;
-  margin-bottom: $spacing-2;
-}
-
 .picker-input {
   @include sheet-form-picker-trigger;
 }
@@ -591,6 +584,4 @@ const onRefresh = () => {
   &:last-child { border-bottom: none; }
 }
 
-.detail-label { @include text-caption; color: $color-text-secondary; }
-.detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
 </style>

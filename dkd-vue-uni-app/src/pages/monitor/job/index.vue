@@ -74,19 +74,19 @@
       <view class="form-view">
         <view class="form-group">
           <text class="form-label">Job Name *</text>
-          <input class="form-input" :value="form.jobName" @input="form.jobName = $event.detail.value" placeholder="Job name" />
+          <SheetTextField v-model="form.jobName" placeholder="Job name" />
         </view>
         <view class="form-group">
           <text class="form-label">Job Group</text>
-          <input class="form-input" :value="form.jobGroup" @input="form.jobGroup = $event.detail.value" placeholder="DEFAULT" />
+          <SheetTextField v-model="form.jobGroup" placeholder="DEFAULT" />
         </view>
         <view class="form-group">
           <text class="form-label">Invoke Target *</text>
-          <input class="form-input" :value="form.invokeTarget" @input="form.invokeTarget = $event.detail.value" placeholder="e.g. ryTask.ryParams('ry')" />
+          <SheetTextField v-model="form.invokeTarget" placeholder="e.g. ryTask.ryParams('ry')" />
         </view>
         <view class="form-group">
           <text class="form-label">Cron Expression *</text>
-          <input class="form-input" :value="form.cronExpression" @input="form.cronExpression = $event.detail.value" placeholder="0/10 * * * * ?" />
+          <SheetTextField v-model="form.cronExpression" placeholder="0/10 * * * * ?" />
         </view>
       </view>
       <template #header-actions>
@@ -104,6 +104,7 @@ import AppTopBar from '@/components/app/AppTopBar.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listJob, getJob, addJob, updateJob, delJob, runJob, changeJobStatus } from '@/api/monitor/job'
 import { hasPermission } from '@/utils/permission'
+import SheetTextField from '@/components/ui/SheetTextField.vue'
 
 const jobList = ref([])
 const loading = ref(false)
@@ -544,10 +545,6 @@ const onRefresh = () => {
   box-shadow: 0 4px 12px rgba(61, 139, 255, 0.4);
   z-index: 100;
 }
-
-.form-view { display: flex; flex-direction: column; gap: $spacing-4; }
-.form-group { display: flex; flex-direction: column; gap: $spacing-2; }
-.form-label { @include text-caption; color: $color-text-secondary; font-weight: $font-weight-medium; }
 
 .form-input {
   @include text-body; color: $color-text-primary; padding: $spacing-3;

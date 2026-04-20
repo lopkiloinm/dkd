@@ -130,7 +130,7 @@
     <view v-else class="form-view">
       <view class="form-group">
         <text class="form-label">Inner Code *</text>
-        <input class="form-input" v-model="formData.innerCode" placeholder="Machine inner code" />
+        <SheetTextField v-model="formData.innerCode" placeholder="Machine inner code" />
       </view>
       <view class="form-group">
         <text class="form-label">Node *</text>
@@ -199,6 +199,7 @@ import { listRegion } from '@/api/manage/region'
 import { listPartner } from '@/api/manage/partner'
 import { listVmType } from '@/api/manage/vmType'
 import { getInfo } from '@/api/login'
+import SheetTextField from '@/components/ui/SheetTextField.vue'
 
 const userStore = useUserStore()
 
@@ -714,26 +715,6 @@ const getStatusVariant = (status) => {
 
 .empty-state { padding: $spacing-4 0; }
 
-.detail-view { display: flex; flex-direction: column; }
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: $spacing-3 0;
-  border-bottom: 1px solid $color-border-subtle;
-
-  &:last-child { border-bottom: none; }
-  &:first-child { padding-top: 0; }
-}
-
-.detail-label { @include text-caption; color: $color-text-secondary; }
-.detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
-
-.form-view { display: flex; flex-direction: column; gap: $spacing-4; }
-.form-group { display: flex; flex-direction: column; gap: $spacing-2; }
-.form-label { @include text-caption; color: $color-text-secondary; font-weight: $font-weight-medium; }
-
 .form-input {
   @include text-body;
   color: $color-text-primary;
@@ -745,27 +726,4 @@ const getStatusVariant = (status) => {
   box-sizing: border-box;
 }
 
-.form-picker {
-  @include text-body;
-  color: $color-text-primary;
-  padding: $spacing-3;
-  background: $color-bg-tertiary;
-  border: 1px solid $color-border-subtle;
-  border-radius: $radius-pill;
-  line-height: 1.4;
-  box-sizing: border-box;
-}
-
-.form-group {
-  picker,
-  :deep(uni-picker) {
-    display: block;
-    width: 100%;
-    line-height: 0;
-    font-size: 0;
-    margin: 0;
-    padding: 0;
-    vertical-align: top;
-  }
-}
 </style>

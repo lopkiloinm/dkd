@@ -86,7 +86,7 @@
     <BottomSheet :visible="showModal" :title="isEdit ? 'Edit Notice' : 'Add Notice'" @update:visible="val => !val && closeModal()" @close="closeModal">
       <view class="form-item">
         <text class="form-label">Title *</text>
-        <input class="n-input" :value="form.noticeTitle" @input="form.noticeTitle = $event.detail.value" placeholder="Enter title" />
+        <SheetTextField v-model="form.noticeTitle" placeholder="Enter title" />
       </view>
       <view class="form-item">
         <text class="form-label">Type *</text>
@@ -102,7 +102,7 @@
       </view>
       <view class="form-item">
         <text class="form-label">Content *</text>
-        <textarea class="n-textarea" :value="form.noticeContent" @input="form.noticeContent = $event.detail.value" placeholder="Enter content" />
+        <SheetTextField v-model="form.noticeContent" placeholder="Enter content" multiline />
       </view>
       <template #header-actions>
         <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
@@ -119,6 +119,7 @@ import AppTopBar from '@/components/app/AppTopBar.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listNotice, getNotice, addNotice, updateNotice, delNotice } from '@/api/system/notice'
 import { hasPermission } from '@/utils/permission'
+import SheetTextField from '@/components/ui/SheetTextField.vue'
 
 const noticeList = ref([])
 const loading = ref(false)
@@ -577,14 +578,6 @@ const onRefresh = () => {
   margin-bottom: 0;
 }
 
-.form-label {
-  display: block;
-  @include text-caption;
-  color: $color-text-secondary;
-  font-weight: $font-weight-medium;
-  margin-bottom: $spacing-2;
-}
-
 .picker-input {
   @include sheet-form-picker-trigger;
 }
@@ -615,7 +608,5 @@ const onRefresh = () => {
   border-bottom: 1px solid $color-border-subtle;
 }
 
-.detail-label { @include text-caption; color: $color-text-secondary; margin-bottom: $spacing-2; display: block; }
-.detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
 .detail-content-text { @include text-body; color: $color-text-primary; line-height: 1.5; display: block; }
 </style>

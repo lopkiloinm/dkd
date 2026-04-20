@@ -316,15 +316,4 @@ onShow(() => { fetchList(true) })
 .info-value { @include text-body; color: $color-text-primary; }
 .info-value--strong { font-weight: $font-weight-semibold; }
 
-.detail-view { display: flex; flex-direction: column; }
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: $spacing-3 0;
-  border-bottom: 1px solid $color-border-subtle;
-  &:last-child { border-bottom: none; }
-}
-.detail-label { @include text-caption; color: $color-text-secondary; }
-.detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
 </style>

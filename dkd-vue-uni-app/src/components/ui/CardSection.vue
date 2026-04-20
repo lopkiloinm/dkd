@@ -32,65 +32,32 @@ const sectionClasses = computed(() => {
 <style scoped lang="scss">
 @import "@/styles/_variables.scss";
 
+/* CardSection owns its own 4-sided padding. Use inside a Card with
+   padding="none" so sibling sections / list rows can render
+   edge-to-edge bottom borders while their content stays inset. */
 .card-section {
   &.card-section-header {
-    padding: $spacing-4 $spacing-4 $spacing-3 $spacing-4;
-    
-    &.card-section-padding-none {
-      padding: 0;
-    }
-    
-    &.card-section-padding-sm {
-      padding: $spacing-2 $spacing-3 $spacing-2 $spacing-3;
-    }
-    
-    &.card-section-padding-md {
-      padding: $spacing-3 $spacing-4 $spacing-3 $spacing-4;
-    }
-    
-    &.card-section-padding-lg {
-      padding: $spacing-4 $spacing-6 $spacing-4 $spacing-6;
-    }
+    padding: $spacing-4 $card-padding $spacing-3 $card-padding;
+    &.card-section-padding-none { padding: 0; }
+    &.card-section-padding-sm   { padding: $spacing-2 $spacing-3; }
+    &.card-section-padding-md   { padding: $spacing-3 $card-padding; }
+    &.card-section-padding-lg   { padding: $spacing-4 $spacing-6; }
   }
-  
+
   &.card-section-body {
-    padding: $spacing-4;
-    
-    &.card-section-padding-none {
-      padding: 0;
-    }
-    
-    &.card-section-padding-sm {
-      padding: $spacing-2 $spacing-3;
-    }
-    
-    &.card-section-padding-md {
-      padding: $spacing-3 $spacing-4;
-    }
-    
-    &.card-section-padding-lg {
-      padding: $spacing-4 $spacing-6;
-    }
+    padding: $spacing-4 $card-padding;
+    &.card-section-padding-none { padding: 0; }
+    &.card-section-padding-sm   { padding: $spacing-2 $spacing-3; }
+    &.card-section-padding-md   { padding: $spacing-3 $card-padding; }
+    &.card-section-padding-lg   { padding: $spacing-4 $spacing-6; }
   }
-  
+
   &.card-section-footer {
-    padding: $spacing-3 $spacing-4 $spacing-4 $spacing-4;
-    
-    &.card-section-padding-none {
-      padding: 0;
-    }
-    
-    &.card-section-padding-sm {
-      padding: $spacing-2 $spacing-3 $spacing-3 $spacing-3;
-    }
-    
-    &.card-section-padding-md {
-      padding: $spacing-3 $spacing-4 $spacing-4 $spacing-4;
-    }
-    
-    &.card-section-padding-lg {
-      padding: $spacing-4 $spacing-6 $spacing-6 $spacing-6;
-    }
+    padding: $spacing-3 $card-padding $spacing-4 $card-padding;
+    &.card-section-padding-none { padding: 0; }
+    &.card-section-padding-sm   { padding: $spacing-2 $spacing-3 $spacing-3 $spacing-3; }
+    &.card-section-padding-md   { padding: $spacing-3 $card-padding $spacing-4 $card-padding; }
+    &.card-section-padding-lg   { padding: $spacing-4 $spacing-6 $spacing-6 $spacing-6; }
   }
 }
 </style>

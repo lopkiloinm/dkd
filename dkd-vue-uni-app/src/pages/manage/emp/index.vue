@@ -561,14 +561,6 @@ const handleTabChange = (tabId) => {
   margin-bottom: 0;
 }
 
-.form-label {
-  display: block;
-  @include text-caption;
-  font-weight: $font-weight-semibold;
-  color: $color-text-secondary;
-  margin-bottom: $spacing-2;
-}
-
 .picker-input {
   height: 44px;
   padding: 0 $spacing-4;
@@ -634,15 +626,4 @@ const handleTabChange = (tabId) => {
   &:last-child { border-bottom: none; }
 }
 
-.detail-label {
-  @include text-caption;
-  color: $color-text-secondary;
-  font-weight: $font-weight-medium;
-}
-
-.detail-value {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
-}
 </style>

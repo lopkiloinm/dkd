@@ -83,15 +83,15 @@
     <BottomSheet :visible="showModal" :title="isEdit ? 'Edit Post' : 'Add Post'" @update:visible="val => !val && closeModal()" @close="closeModal">
       <view class="form-item">
         <text class="form-label">Post Name *</text>
-        <input class="n-input" :value="form.postName" @input="form.postName = $event.detail.value" placeholder="Enter post name" />
+        <SheetTextField v-model="form.postName" placeholder="Enter post name" />
       </view>
       <view class="form-item">
         <text class="form-label">Post Code *</text>
-        <input class="n-input" :value="form.postCode" @input="form.postCode = $event.detail.value" placeholder="Enter post code" />
+        <SheetTextField v-model="form.postCode" placeholder="Enter post code" />
       </view>
       <view class="form-item">
         <text class="form-label">Sort Order *</text>
-        <input class="n-input" :value="form.postSort" @input="form.postSort = $event.detail.value" type="number" placeholder="Enter sort order" />
+        <SheetTextField v-model="form.postSort" placeholder="Enter sort order" numeric allow-decimal />
       </view>
       <view class="form-item">
         <text class="form-label">Status</text>
@@ -101,7 +101,7 @@
       </view>
       <view class="form-item">
         <text class="form-label">Remark</text>
-        <textarea class="n-textarea" :value="form.remark" @input="form.remark = $event.detail.value" placeholder="Enter remark" />
+        <SheetTextField v-model="form.remark" placeholder="Enter remark" multiline />
       </view>
       <template #header-actions>
         <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
@@ -118,6 +118,7 @@ import AppTopBar from '@/components/app/AppTopBar.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listPost, getPost, addPost, updatePost, delPost } from '@/api/system/post'
 import { hasPermission } from '@/utils/permission'
+import SheetTextField from '@/components/ui/SheetTextField.vue'
 
 const postList = ref([])
 const loading = ref(false)
@@ -559,14 +560,6 @@ const onRefresh = () => {
   margin-bottom: 0;
 }
 
-.form-label {
-  display: block;
-  @include text-caption;
-  color: $color-text-secondary;
-  font-weight: $font-weight-medium;
-  margin-bottom: $spacing-2;
-}
-
 .picker-input {
   @include sheet-form-picker-trigger;
 }
@@ -592,14 +585,4 @@ const onRefresh = () => {
   &:last-child { border-bottom: none; }
 }
 
-.detail-label {
-  @include text-caption;
-  color: $color-text-secondary;
-}
-
-.detail-value {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-medium;
-}
 </style>

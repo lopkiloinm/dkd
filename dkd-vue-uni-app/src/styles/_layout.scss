@@ -170,6 +170,99 @@ scroll-view {
   margin: $spacing-3 0;
 }
 
+/* ============================================
+   BottomSheet / Modal content patterns.
+   `.detail-view` (read-only key/value list) and `.form-view`
+   (label + input column) are used across 20+ pages.
+   Defined globally so:
+     - bottom borders of `.detail-row` span EDGE-TO-EDGE inside
+       the sheet (sheet body has 0 horizontal padding).
+     - forms get consistent breathing room without per-page CSS.
+   Pages should NOT redefine these classes.
+   ============================================ */
+
+.detail-view {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-3;
+  padding: $spacing-3 $spacing-4;
+  border-bottom: 1px solid $color-border-subtle;
+
+  &:last-child  { border-bottom: none; }
+}
+
+.detail-row-column {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: $spacing-2;
+}
+
+.detail-label {
+  font-family: $font-family-body;
+  font-size: $font-size-caption-md;
+  color: $color-text-secondary;
+  font-weight: $font-weight-regular;
+}
+
+.detail-value {
+  font-family: $font-family-body;
+  font-size: $font-size-body-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  text-align: right;
+  flex: 1 1 auto;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.detail-row-column .detail-value {
+  text-align: left;
+  width: 100%;
+}
+
+.detail-desc {
+  font-weight: $font-weight-regular;
+  line-height: 1.5;
+}
+
+.form-view {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-4;
+  padding: $spacing-4;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+}
+
+.form-label {
+  font-family: $font-family-body;
+  font-size: $font-size-caption-md;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.form-picker {
+  @include sheet-form-picker-trigger;
+}
+
+.form-help {
+  font-family: $font-family-body;
+  font-size: 11px;
+  color: $color-text-tertiary;
+  line-height: 1.4;
+  margin-top: $spacing-1;
+}
+
 .scroll-area {
   flex: 1;
   min-height: 0;

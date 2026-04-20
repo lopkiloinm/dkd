@@ -33,7 +33,7 @@
       <Input v-model="form.regionName" label="Region Name *" placeholder="Enter region name" />
       <view class="form-item">
         <text class="form-label">Remark *</text>
-        <textarea class="n-textarea" :value="form.remark" @input="form.remark = $event.detail.value" placeholder="Enter remark" />
+        <SheetTextField v-model="form.remark" placeholder="Enter remark" multiline />
       </view>
       <template #header-actions>
         <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
@@ -77,6 +77,7 @@ import EmptyState from '@/components/ui/EmptyState.vue'
 import { listRegion, getRegion, addRegion, updateRegion, delRegion } from '@/api/manage/region'
 import { listNode } from '@/api/manage/node'
 import { hasPermission } from '@/utils/permission'
+import SheetTextField from '@/components/ui/SheetTextField.vue'
 const regionList = ref([])
 const loading = ref(false)
 const isRefreshing = ref(false)
@@ -383,14 +384,6 @@ const handleTabChange = (tabId) => {
   margin-bottom: 0;
 }
 
-.form-label {
-  display: block;
-  @include text-caption;
-  font-weight: $font-weight-semibold;
-  color: $color-text-secondary;
-  margin-bottom: $spacing-2;
-}
-
 .detail-info-row {
   display: flex;
   justify-content: space-between;
@@ -400,17 +393,6 @@ const handleTabChange = (tabId) => {
 
   &:first-child { padding-top: 0; }
   &:last-child { border-bottom: none; }
-}
-
-.detail-label {
-  @include text-caption;
-  color: $color-text-secondary;
-}
-
-.detail-value {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
 }
 
 .node-list-detail {

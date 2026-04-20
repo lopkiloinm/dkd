@@ -141,6 +141,7 @@ const handleVisibleChange = (value) => {
 .filter-content {
   max-width: 100%;
   box-sizing: border-box;
+  padding: 0 $spacing-4;
 }
 
 .filter-section {

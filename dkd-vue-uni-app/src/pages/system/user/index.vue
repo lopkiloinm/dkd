@@ -141,11 +141,11 @@
     <BottomSheet :visible="showModal" :title="isEdit ? 'Edit User' : 'Add User'" @update:visible="val => !val && closeModal()" @close="closeModal">
       <view class="form-item">
         <text class="form-label">User Name *</text>
-        <input class="n-input" :value="form.userName" @input="form.userName = $event.detail.value" placeholder="Enter user name" />
+        <SheetTextField v-model="form.userName" placeholder="Enter user name" />
       </view>
       <view class="form-item">
         <text class="form-label">Nickname *</text>
-        <input class="n-input" :value="form.nickName" @input="form.nickName = $event.detail.value" placeholder="Enter nickname" />
+        <SheetTextField v-model="form.nickName" placeholder="Enter nickname" />
       </view>
       <view class="form-item">
         <text class="form-label">Department *</text>
@@ -155,15 +155,15 @@
       </view>
       <view class="form-item">
         <text class="form-label">Phone</text>
-        <input class="n-input" :value="form.phonenumber" @input="form.phonenumber = $event.detail.value" placeholder="Enter phone number" />
+        <SheetTextField v-model="form.phonenumber" placeholder="Enter phone number" />
       </view>
       <view class="form-item">
         <text class="form-label">Email</text>
-        <input class="n-input" :value="form.email" @input="form.email = $event.detail.value" placeholder="Enter email" />
+        <SheetTextField v-model="form.email" placeholder="Enter email" />
       </view>
       <view class="form-item" v-if="!isEdit">
         <text class="form-label">Password *</text>
-        <input class="n-input" :value="form.password" @input="form.password = $event.detail.value" type="password" placeholder="Enter password" />
+        <SheetTextField v-model="form.password" placeholder="Enter password" />
       </view>
       <view class="form-item">
         <text class="form-label">Status</text>
@@ -188,6 +188,7 @@ import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listUser, getUser, addUser, updateUser, delUser, resetUserPwd } from '@/api/system/user'
 import { listDept } from '@/api/system/dept'
 import { hasPermission } from '@/utils/permission'
+import SheetTextField from '@/components/ui/SheetTextField.vue'
 
 const userList = ref([])
 const loading = ref(false)
@@ -833,14 +834,6 @@ const onRefresh = () => {
   margin-bottom: 0;
 }
 
-.form-label {
-  display: block;
-  @include text-caption;
-  color: $color-text-secondary;
-  font-weight: $font-weight-medium;
-  margin-bottom: $spacing-2;
-}
-
 .picker-input {
   @include sheet-form-picker-trigger;
 }
@@ -887,6 +880,4 @@ const onRefresh = () => {
   &:last-child { border-bottom: none; }
 }
 
-.detail-label { @include text-caption; color: $color-text-secondary; }
-.detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
 </style>

@@ -791,39 +791,4 @@ const handleSearchResult = () => {}
   padding: $spacing-4 0;
 }
 
-.detail-view { display: flex; flex-direction: column; }
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: $spacing-3 0;
-  border-bottom: 1px solid $color-border-subtle;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:first-child {
-    padding-top: 0;
-  }
-}
-
-.detail-row-column {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: $spacing-2;
-}
-
-.detail-label { @include text-caption; color: $color-text-secondary; }
-.detail-value { @include text-body; color: $color-text-primary; font-weight: $font-weight-medium; }
-.detail-desc { font-weight: $font-weight-regular; }
-
-.form-view { display: flex; flex-direction: column; gap: $spacing-4; }
-.form-group { display: flex; flex-direction: column; gap: $spacing-2; }
-.form-label { @include text-caption; color: $color-text-secondary; font-weight: $font-weight-medium; }
-
-.form-picker {
-  @include sheet-form-picker-trigger;
-}
 </style>

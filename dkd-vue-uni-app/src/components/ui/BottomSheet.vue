@@ -7,6 +7,9 @@
     @close="handleClose"
   >
     <template #header>
+      <view class="bs-handle-wrap">
+        <view class="bs-handle" />
+      </view>
       <view class="bs-header">
         <text class="bs-title">{{ title }}</text>
         <view v-if="$slots['header-actions']" class="bs-header-actions">
@@ -56,30 +59,50 @@ const handleVisibleChange = (value) => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
+.bs-handle-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-2 0 $spacing-1 0;
+}
+
+.bs-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
 .bs-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: $spacing-3;
-  padding: $spacing-4;
+  padding: $spacing-2 $spacing-4 $spacing-3 $spacing-4;
 }
 
 .bs-title {
-  @include text-body;
+  @include text-title;
   color: $color-text-primary;
   font-weight: $font-weight-semibold;
   flex: 1;
   min-width: 0;
+  letter-spacing: 0.1px;
 }
 
 .bs-header-actions {
   display: flex;
   align-items: center;
   gap: $spacing-2;
+  flex-shrink: 0;
 }
 
 .bs-body {
-  padding: 0 $spacing-4 $spacing-4 $spacing-4;
+  /* Zero horizontal padding so child sections (`.detail-view` rows,
+     `.form-view`) own their own inset and bottom borders span EDGE
+     TO EDGE inside the sheet. The `.detail-view` and `.form-view`
+     globals in _layout.scss provide the proper inner padding. */
+  padding: 0 0 $spacing-4 0;
   box-sizing: border-box;
 }
 </style>

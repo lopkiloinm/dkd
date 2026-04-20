@@ -90,15 +90,15 @@
     <BottomSheet :visible="showModal" :title="isEdit ? 'Edit Role' : 'Add Role'" @update:visible="val => !val && closeModal()" @close="closeModal">
       <view class="form-item">
         <text class="form-label">Role Name *</text>
-        <input class="n-input" :value="form.roleName" @input="form.roleName = $event.detail.value" placeholder="Enter role name" />
+        <SheetTextField v-model="form.roleName" placeholder="Enter role name" />
       </view>
       <view class="form-item">
         <text class="form-label">Role Key *</text>
-        <input class="n-input" :value="form.roleKey" @input="form.roleKey = $event.detail.value" placeholder="Enter role key" />
+        <SheetTextField v-model="form.roleKey" placeholder="Enter role key" />
       </view>
       <view class="form-item">
         <text class="form-label">Sort Order *</text>
-        <input class="n-input" :value="form.roleSort" @input="form.roleSort = $event.detail.value" type="number" placeholder="Enter sort order" />
+        <SheetTextField v-model="form.roleSort" placeholder="Enter sort order" numeric allow-decimal />
       </view>
       <view class="form-item">
         <text class="form-label">Status</text>
@@ -108,7 +108,7 @@
       </view>
       <view class="form-item">
         <text class="form-label">Remark</text>
-        <textarea class="n-textarea" :value="form.remark" @input="form.remark = $event.detail.value" placeholder="Enter remark" />
+        <SheetTextField v-model="form.remark" placeholder="Enter remark" multiline />
       </view>
       <template #header-actions>
         <view class="action-pill" @click="closeModal"><text class="action-pill-text">Cancel</text></view>
@@ -125,6 +125,7 @@ import AppTopBar from '@/components/app/AppTopBar.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listRole, getRole, addRole, updateRole, delRole, changeRoleStatus } from '@/api/system/role'
 import { hasPermission } from '@/utils/permission'
+import SheetTextField from '@/components/ui/SheetTextField.vue'
 
 const roleList = ref([])
 const loading = ref(false)
@@ -588,14 +589,6 @@ const onRefresh = () => {
   margin-bottom: 0;
 }
 
-.form-label {
-  display: block;
-  @include text-caption;
-  color: $color-text-secondary;
-  font-weight: $font-weight-medium;
-  margin-bottom: $spacing-2;
-}
-
 .picker-input {
   @include sheet-form-picker-trigger;
 }
@@ -621,14 +614,4 @@ const onRefresh = () => {
   &:last-child { border-bottom: none; }
 }
 
-.detail-label {
-  @include text-caption;
-  color: $color-text-secondary;
-}
-
-.detail-value {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-medium;
-}
 </style>

@@ -95,23 +95,23 @@
       </view>
       <view class="form-item">
         <text class="form-label">Dept Name *</text>
-        <input class="n-input" :value="form.deptName" @input="form.deptName = $event.detail.value" placeholder="Enter dept name" />
+        <SheetTextField v-model="form.deptName" placeholder="Enter dept name" />
       </view>
       <view class="form-item">
         <text class="form-label">Order Num *</text>
-        <input class="n-input" :value="form.orderNum" @input="form.orderNum = $event.detail.value" type="number" placeholder="Enter order num" />
+        <SheetTextField v-model="form.orderNum" placeholder="Enter order num" numeric allow-decimal />
       </view>
       <view class="form-item">
         <text class="form-label">Leader</text>
-        <input class="n-input" :value="form.leader" @input="form.leader = $event.detail.value" placeholder="Enter leader" />
+        <SheetTextField v-model="form.leader" placeholder="Enter leader" />
       </view>
       <view class="form-item">
         <text class="form-label">Phone</text>
-        <input class="n-input" :value="form.phone" @input="form.phone = $event.detail.value" placeholder="Enter phone" />
+        <SheetTextField v-model="form.phone" placeholder="Enter phone" />
       </view>
       <view class="form-item">
         <text class="form-label">Email</text>
-        <input class="n-input" :value="form.email" @input="form.email = $event.detail.value" placeholder="Enter email" />
+        <SheetTextField v-model="form.email" placeholder="Enter email" />
       </view>
       <view class="form-item">
         <text class="form-label">Status</text>
@@ -134,6 +134,7 @@ import AppTopBar from '@/components/app/AppTopBar.vue'
 import BottomSheet from '@/components/ui/BottomSheet.vue'
 import { listDept, getDept, addDept, updateDept, delDept } from '@/api/system/dept'
 import { hasPermission } from '@/utils/permission'
+import SheetTextField from '@/components/ui/SheetTextField.vue'
 
 const deptList = ref([])
 const loading = ref(false)
@@ -598,14 +599,6 @@ const onRefresh = () => {
   margin-bottom: 0;
 }
 
-.form-label {
-  display: block;
-  @include text-caption;
-  color: $color-text-secondary;
-  font-weight: $font-weight-medium;
-  margin-bottom: $spacing-2;
-}
-
 .picker-input {
   @include sheet-form-picker-trigger;
 }
@@ -621,14 +614,4 @@ const onRefresh = () => {
   &:last-child { border-bottom: none; }
 }
 
-.detail-label {
-  @include text-caption;
-  color: $color-text-secondary;
-}
-
-.detail-value {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-medium;
-}
 </style>
