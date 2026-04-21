@@ -11,11 +11,21 @@
       />
     </transition>
     <transition :name="`sheet-slide-${position}`" appear @after-leave="mounted = false">
-      <view v-if="visible" :class="sheetClasses" @click.stop @tap.stop>
+      <view
+        v-if="visible"
+        :class="sheetClasses"
+        :style="sheetStyle"
+        @click.stop
+        @tap.stop
+        @touchstart="onTouchStart"
+        @touchmove="onTouchMove"
+        @touchend="onTouchEnd"
+        @touchcancel="onTouchEnd"
+      >
         <view v-if="$slots.header" class="sheet-header">
           <slot name="header"></slot>
         </view>
-        <view class="sheet-body">
+        <view class="sheet-body" ref="bodyRef" @scroll="onBodyScroll">
           <view class="sheet-body-inner">
             <slot></slot>
           </view>
@@ -60,9 +70,122 @@ watch(() => props.visible, (val) => {
 const sheetClasses = computed(() => {
   return [
     'sheet',
-    `sheet-${props.position}`
+    `sheet-${props.position}`,
+    { 'sheet--dragging': dragging.value }
   ]
 })
+
+/* ---- Drag-to-dismiss (bottom sheet only) -------------------------------
+   Follows finger, snaps back below threshold, dismisses past threshold or
+   when flung. Drags initiated on the scrollable body only engage when the
+   body is at scrollTop === 0 and the user pulls downward, so vertical
+   scrolling inside the sheet still works.
+----------------------------------------------------------------------- */
+const DISMISS_DISTANCE = 120   // px past which release dismisses
+const DISMISS_VELOCITY = 0.6   // px/ms — fast flick dismisses regardless of distance
+
+const dragging = ref(false)
+const dragOffset = ref(0)
+const bodyRef = ref(null)
+const bodyScrollTop = ref(0)
+
+let touchStartY = 0
+let touchStartX = 0
+let lastY = 0
+let lastT = 0
+let velocityY = 0
+let axisLocked = false   // once we've decided vertical vs horizontal
+let isVerticalDrag = false
+let engaged = false      // we've claimed the gesture for dismiss
+
+const isDraggable = computed(() => props.position === 'bottom')
+
+const sheetStyle = computed(() => {
+  if (!dragging.value || dragOffset.value <= 0) return ''
+  return `transform: translateY(${dragOffset.value}px);`
+})
+
+const onBodyScroll = (e) => {
+  bodyScrollTop.value = e.target?.scrollTop ?? 0
+}
+
+const onTouchStart = (e) => {
+  if (!isDraggable.value) return
+  const t = e.touches?.[0]
+  if (!t) return
+  touchStartY = t.clientY
+  touchStartX = t.clientX
+  lastY = t.clientY
+  lastT = Date.now()
+  velocityY = 0
+  axisLocked = false
+  isVerticalDrag = false
+  engaged = false
+  dragOffset.value = 0
+}
+
+const onTouchMove = (e) => {
+  if (!isDraggable.value) return
+  const t = e.touches?.[0]
+  if (!t) return
+  const dy = t.clientY - touchStartY
+  const dx = t.clientX - touchStartX
+
+  // Lock axis once we've moved enough to decide direction
+  if (!axisLocked && (Math.abs(dy) > 6 || Math.abs(dx) > 6)) {
+    axisLocked = true
+    isVerticalDrag = Math.abs(dy) > Math.abs(dx)
+  }
+  if (!axisLocked || !isVerticalDrag) return
+
+  // Engage only on downward drag, and only if the body isn't scrolled
+  if (!engaged) {
+    if (dy <= 0) return
+    if (bodyScrollTop.value > 0) return
+    engaged = true
+    dragging.value = true
+  }
+
+  // Track velocity (px/ms)
+  const now = Date.now()
+  const dt = Math.max(now - lastT, 1)
+  velocityY = (t.clientY - lastY) / dt
+  lastY = t.clientY
+  lastT = now
+
+  // Resist upward drag past origin with rubber-band
+  let offset = dy
+  if (offset < 0) offset = -Math.sqrt(-offset * 6)
+  dragOffset.value = offset
+
+  // Prevent page scroll / pull-to-refresh while engaged
+  if (e.cancelable) e.preventDefault()
+}
+
+const onTouchEnd = () => {
+  if (!isDraggable.value) return
+  if (!engaged) {
+    dragging.value = false
+    dragOffset.value = 0
+    return
+  }
+  const shouldDismiss =
+    dragOffset.value > DISMISS_DISTANCE ||
+    (velocityY > DISMISS_VELOCITY && dragOffset.value > 24)
+
+  if (shouldDismiss) {
+    // Let the leave transition take it the rest of the way.
+    dragOffset.value = 0
+    dragging.value = false
+    emit('update:visible', false)
+    emit('close')
+  } else {
+    // Snap back with a CSS transition.
+    dragging.value = false
+    dragOffset.value = 0
+  }
+  engaged = false
+}
 
 const handleBackdropClick = () => {
   if (props.closeOnOverlayClick) {
@@ -115,13 +238,20 @@ watch(() => props.visible, (newVal) => {
   isolation: auto !important;
   background: $glass-card-shine, rgba(18, 20, 28, 0.96);
   /* No idle transition on the panel itself; motion is owned by the
-     wrapping <transition> below so enter/leave can use spring curves. */
+     wrapping <transition> below so enter/leave can use spring curves.
+     During a drag we suppress transitions; on release the snap-back
+     uses a short spring. */
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   width: 100%;
   pointer-events: auto;
   will-change: transform, opacity;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  &.sheet--dragging {
+    transition: none;
+  }
 
   &.sheet-bottom {
     bottom: 0;
