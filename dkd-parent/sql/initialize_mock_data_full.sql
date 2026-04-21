@@ -108,32 +108,33 @@ INSERT INTO tb_sku_class (class_id, class_name, parent_id) VALUES
 -- ============================================================
 -- 6. SKUs  (PK = sku_id; prices in cents)
 -- ============================================================
+-- Product images use picsum.photos with deterministic seeds — real photos, public CDN, always resolve.
 INSERT INTO tb_sku (sku_id, sku_name, sku_image, brand_Name, unit, price, class_id, is_discount, create_time, update_time) VALUES
-( 1, 'Coca-Cola Classic',  'https://cdn.dkd.example/sku/1.png',  'Coca-Cola',   '500ML', 350, 1, 0, NOW(), NOW()),
-( 2, 'Pepsi Max',          'https://cdn.dkd.example/sku/2.png',  'Pepsi',       '500ML', 350, 1, 1, NOW(), NOW()),
-( 3, 'Sprite',             'https://cdn.dkd.example/sku/3.png',  'Coca-Cola',   '500ML', 350, 1, 0, NOW(), NOW()),
-( 4, 'Fanta Orange',       'https://cdn.dkd.example/sku/4.png',  'Coca-Cola',   '500ML', 350, 1, 0, NOW(), NOW()),
-( 5, 'Nestea Lemon',       'https://cdn.dkd.example/sku/5.png',  'Nestle',      '500ML', 400, 1, 0, NOW(), NOW()),
-( 6, 'Still Water 600',    'https://cdn.dkd.example/sku/6.png',  'AquaPure',    '600ML', 200, 1, 0, NOW(), NOW()),
-( 7, 'Sparkling Water',    'https://cdn.dkd.example/sku/7.png',  'AquaPure',    '500ML', 300, 1, 0, NOW(), NOW()),
-( 8, 'Orange Juice 100%',  'https://cdn.dkd.example/sku/8.png',  'FreshCo',     '350ML', 500, 3, 0, NOW(), NOW()),
-( 9, 'Apple Juice',        'https://cdn.dkd.example/sku/9.png',  'FreshCo',     '350ML', 500, 3, 0, NOW(), NOW()),
-(10, 'Kit-Kat 4-Finger',   'https://cdn.dkd.example/sku/10.png', 'Nestle',      '45G',   250, 4, 0, NOW(), NOW()),
-(11, 'Snickers Bar',       'https://cdn.dkd.example/sku/11.png', 'Mars',        '50G',   300, 4, 0, NOW(), NOW()),
-(12, 'M&M Peanut',         'https://cdn.dkd.example/sku/12.png', 'Mars',        '45G',   300, 4, 0, NOW(), NOW()),
-(13, 'Lay''s Classic',     'https://cdn.dkd.example/sku/13.png', 'Lay''s',      '70G',   400, 2, 0, NOW(), NOW()),
-(14, 'Doritos Nacho',      'https://cdn.dkd.example/sku/14.png', 'Frito',       '70G',   400, 2, 1, NOW(), NOW()),
-(15, 'Oreo Cookies',       'https://cdn.dkd.example/sku/15.png', 'Mondelez',    '66G',   350, 4, 0, NOW(), NOW()),
-(16, 'Pringles Original',  'https://cdn.dkd.example/sku/16.png', 'Pringles',    '110G',  550, 2, 0, NOW(), NOW()),
-(17, 'Granola Bar',        'https://cdn.dkd.example/sku/17.png', 'Nature',      '40G',   250, 3, 0, NOW(), NOW()),
-(18, 'Protein Bar',        'https://cdn.dkd.example/sku/18.png', 'FitLab',      '60G',   600, 3, 0, NOW(), NOW()),
-(19, 'Gummy Bears',        'https://cdn.dkd.example/sku/19.png', 'Haribo',      '80G',   300, 4, 0, NOW(), NOW()),
-(20, 'Dark Chocolate',     'https://cdn.dkd.example/sku/20.png', 'Lindt',       '100G',  800, 4, 0, NOW(), NOW()),
-(21, 'Iced Coffee Latte',  'https://cdn.dkd.example/sku/21.png', 'Starbucks',   '250ML', 700, 6, 0, NOW(), NOW()),
-(22, 'Hot Coffee Can',     'https://cdn.dkd.example/sku/22.png', 'Georgia',     '290ML', 450, 6, 0, NOW(), NOW()),
-(23, 'Green Tea',          'https://cdn.dkd.example/sku/23.png', 'Ito En',      '500ML', 350, 6, 0, NOW(), NOW()),
-(24, 'Yogurt Drink',       'https://cdn.dkd.example/sku/24.png', 'Yakult',      '100ML', 250, 5, 0, NOW(), NOW()),
-(25, 'Fresh Salad Cup',    'https://cdn.dkd.example/sku/25.png', 'GreenGo',     '180G',  950, 5, 0, NOW(), NOW());
+( 1, 'Coca-Cola Classic',  'https://picsum.photos/seed/dkd-sku-1/240/240',  'Coca-Cola',   '500ML', 350, 1, 0, NOW(), NOW()),
+( 2, 'Pepsi Max',          'https://picsum.photos/seed/dkd-sku-2/240/240',  'Pepsi',       '500ML', 350, 1, 1, NOW(), NOW()),
+( 3, 'Sprite',             'https://picsum.photos/seed/dkd-sku-3/240/240',  'Coca-Cola',   '500ML', 350, 1, 0, NOW(), NOW()),
+( 4, 'Fanta Orange',       'https://picsum.photos/seed/dkd-sku-4/240/240',  'Coca-Cola',   '500ML', 350, 1, 0, NOW(), NOW()),
+( 5, 'Nestea Lemon',       'https://picsum.photos/seed/dkd-sku-5/240/240',  'Nestle',      '500ML', 400, 1, 0, NOW(), NOW()),
+( 6, 'Still Water 600',    'https://picsum.photos/seed/dkd-sku-6/240/240',  'AquaPure',    '600ML', 200, 1, 0, NOW(), NOW()),
+( 7, 'Sparkling Water',    'https://picsum.photos/seed/dkd-sku-7/240/240',  'AquaPure',    '500ML', 300, 1, 0, NOW(), NOW()),
+( 8, 'Orange Juice 100%',  'https://picsum.photos/seed/dkd-sku-8/240/240',  'FreshCo',     '350ML', 500, 3, 0, NOW(), NOW()),
+( 9, 'Apple Juice',        'https://picsum.photos/seed/dkd-sku-9/240/240',  'FreshCo',     '350ML', 500, 3, 0, NOW(), NOW()),
+(10, 'Kit-Kat 4-Finger',   'https://picsum.photos/seed/dkd-sku-10/240/240', 'Nestle',      '45G',   250, 4, 0, NOW(), NOW()),
+(11, 'Snickers Bar',       'https://picsum.photos/seed/dkd-sku-11/240/240', 'Mars',        '50G',   300, 4, 0, NOW(), NOW()),
+(12, 'M&M Peanut',         'https://picsum.photos/seed/dkd-sku-12/240/240', 'Mars',        '45G',   300, 4, 0, NOW(), NOW()),
+(13, 'Lay''s Classic',     'https://picsum.photos/seed/dkd-sku-13/240/240', 'Lay''s',      '70G',   400, 2, 0, NOW(), NOW()),
+(14, 'Doritos Nacho',      'https://picsum.photos/seed/dkd-sku-14/240/240', 'Frito',       '70G',   400, 2, 1, NOW(), NOW()),
+(15, 'Oreo Cookies',       'https://picsum.photos/seed/dkd-sku-15/240/240', 'Mondelez',    '66G',   350, 4, 0, NOW(), NOW()),
+(16, 'Pringles Original',  'https://picsum.photos/seed/dkd-sku-16/240/240', 'Pringles',    '110G',  550, 2, 0, NOW(), NOW()),
+(17, 'Granola Bar',        'https://picsum.photos/seed/dkd-sku-17/240/240', 'Nature',      '40G',   250, 3, 0, NOW(), NOW()),
+(18, 'Protein Bar',        'https://picsum.photos/seed/dkd-sku-18/240/240', 'FitLab',      '60G',   600, 3, 0, NOW(), NOW()),
+(19, 'Gummy Bears',        'https://picsum.photos/seed/dkd-sku-19/240/240', 'Haribo',      '80G',   300, 4, 0, NOW(), NOW()),
+(20, 'Dark Chocolate',     'https://picsum.photos/seed/dkd-sku-20/240/240', 'Lindt',       '100G',  800, 4, 0, NOW(), NOW()),
+(21, 'Iced Coffee Latte',  'https://picsum.photos/seed/dkd-sku-21/240/240', 'Starbucks',   '250ML', 700, 6, 0, NOW(), NOW()),
+(22, 'Hot Coffee Can',     'https://picsum.photos/seed/dkd-sku-22/240/240', 'Georgia',     '290ML', 450, 6, 0, NOW(), NOW()),
+(23, 'Green Tea',          'https://picsum.photos/seed/dkd-sku-23/240/240', 'Ito En',      '500ML', 350, 6, 0, NOW(), NOW()),
+(24, 'Yogurt Drink',       'https://picsum.photos/seed/dkd-sku-24/240/240', 'Yakult',      '100ML', 250, 5, 0, NOW(), NOW()),
+(25, 'Fresh Salad Cup',    'https://picsum.photos/seed/dkd-sku-25/240/240', 'GreenGo',     '180G',  950, 5, 0, NOW(), NOW());
 
 -- ============================================================
 -- 7. Pricing Policies  (PK = policy_id)

@@ -129,15 +129,6 @@ const handleLogin = async () => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.layout-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: $spacing-6;
-  box-sizing: border-box;
-  background: $color-bg-primary;
-}
 
 .login-card {
   width: 100%;

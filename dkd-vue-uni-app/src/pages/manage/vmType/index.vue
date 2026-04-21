@@ -385,22 +385,8 @@ const closeDetailModal = () => {
   .action-pill--primary & { color: #fff; }
 }
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
 
-.scroll-area {
-  flex: 1;
-  overflow: hidden;
-}
 
-.content-wrapper {
-  padding-left: $spacing-4;
-  padding-right: $spacing-4;
-  box-sizing: border-box;
-}
 
 .vmtype-list {
   padding: 0;

@@ -6,17 +6,17 @@
     @search="handleSearch"
     @notification="handleNotification"
   />
-  <view class="layout-container layout-container--chrome-filter layout-container--bottom-tabs">
-    <view class="filter-tabs chrome-filter-tabs">
-      <SegmentedControl
-        :options="timeRangeOptions"
-        v-model="selectedTimeRange"
-        @change="handleTimeRangeChange"
-      />
-    </view>
+  <view class="layout-container layout-container--bottom-tabs">
 
     <scroll-view class="scroll-area" scroll-y>
       <view class="content-wrapper">
+        <view class="filter-tabs">
+          <SegmentedControl
+            :options="timeRangeOptions"
+            v-model="selectedTimeRange"
+            @change="handleTimeRangeChange"
+          />
+        </view>
         <!-- Revenue Overview -->
         <Motion preset="fade-up" :index="0">
           <Card title="Revenue Overview" accent="primary" icon="dollar-sign" padding="md">
@@ -520,23 +520,8 @@ onShow(() => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
 
-.scroll-area {
-  flex: 1;
-  overflow: hidden;
-}
 
-.content-wrapper {
-  padding-left: $spacing-4;
-  padding-right: $spacing-4;
-  min-height: 100vh;
-  box-sizing: border-box;
-}
 
 .section-title {
   @include text-body;
@@ -733,12 +718,6 @@ onShow(() => {
 .analytics-tab-text {
   @include text-caption;
   font-weight: $font-weight-medium;
-}
-
-.chart-section {
-  .section-title {
-    margin-top: 0;
-  }
 }
 
 .chart-placeholder {

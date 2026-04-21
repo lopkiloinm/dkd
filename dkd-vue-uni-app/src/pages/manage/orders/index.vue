@@ -8,39 +8,6 @@
       @notification="handleNotification"
     />
 
-    <view class="page-header">
-      <view class="header-main">
-        <text class="page-title">Orders</text>
-        <text class="page-subtitle">Transaction history</text>
-      </view>
-    </view>
-
-    <view class="filter-tabs">
-      <scroll-view scroll-x :show-scrollbar="false">
-        <view class="tabs-list">
-          <view
-            v-for="tab in statusTabs"
-            :key="tab.value === null ? 'all' : tab.value"
-            class="tab-item"
-            :class="{ 'tab-active': queryParams.status === tab.value }"
-            @click="onTab(tab.value)"
-          >
-            <text class="tab-text">{{ tab.label }}</text>
-          </view>
-        </view>
-      </scroll-view>
-    </view>
-
-    <view class="filter-bar">
-      <input
-        class="search-input"
-        v-model="queryParams.innerCode"
-        placeholder="Filter by machine code"
-        confirm-type="search"
-        @confirm="fetchList(true)"
-      />
-      <Button variant="ghost" size="sm" @click="fetchList(true)">Apply</Button>
-    </view>
 
     <scroll-view
       scroll-y
@@ -50,7 +17,41 @@
       @refresherrefresh="onRefresh"
       @scrolltolower="loadMore"
     >
-      <view v-if="orderList.length > 0" class="order-list">
+      <view class="content-wrapper">
+        <view class="filter-tabs">
+          <scroll-view scroll-x :show-scrollbar="false">
+            <view class="tabs-list">
+              <view
+                v-for="tab in statusTabs"
+                :key="tab.value === null ? 'all' : tab.value"
+                class="tab-item"
+                :class="{ 'tab-active': queryParams.status === tab.value }"
+                @click="onTab(tab.value)"
+              >
+                <text class="tab-text">{{ tab.label }}</text>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
+        <view class="page-header">
+          <view class="header-main">
+            <text class="page-title">Orders</text>
+            <text class="page-subtitle">Transaction history</text>
+          </view>
+        </view>
+
+        <view class="filter-bar">
+          <input
+            class="search-input"
+            v-model="queryParams.innerCode"
+            placeholder="Filter by machine code"
+            confirm-type="search"
+            @confirm="fetchList(true)"
+          />
+          <Button variant="ghost" size="sm" @click="fetchList(true)">Apply</Button>
+        </view>
+
+        <view v-if="orderList.length > 0" class="order-list">
         <Card
           v-for="item in orderList"
           :key="item.id"
@@ -86,6 +87,7 @@
         </Card>
       </view>
       <EmptyState v-else-if="!loading" icon="receipt" text="No orders" />
+      </view>
     </scroll-view>
 
     <AppBottomBar :active-tab="activeTab" @tab-change="handleTabChange" />
@@ -271,15 +273,11 @@ onShow(() => { fetchList(true) })
 @import '@/styles/_variables.scss';
 @import '@/styles/_mixins.scss';
 
-.layout-container {
-  min-height: 100vh;
-  background: $color-surface-subtle;
-}
 .page-header { padding: $spacing-4 $spacing-4 $spacing-2; }
 .page-title { @include text-headline; color: $color-text-primary; }
 .page-subtitle { @include text-caption; color: $color-text-secondary; }
 
-.filter-tabs { padding: 0 $spacing-4; }
+.filter-tabs { padding: 0; }
 .tabs-list { display: flex; gap: $spacing-2; }
 .tab-item {
   padding: $spacing-2 $spacing-3;
@@ -301,11 +299,6 @@ onShow(() => { fetchList(true) })
   @include text-body;
 }
 
-.scroll-area {
-  height: calc(100vh - 320rpx);
-  padding-bottom: var(--layout-scroll-pad-bottom);
-  box-sizing: border-box;
-}
 .order-list { padding: 0 $spacing-4; display: flex; flex-direction: column; gap: $spacing-3; }
 .order-card { padding: $spacing-3; }
 .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: $spacing-2; }

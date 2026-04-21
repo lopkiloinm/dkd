@@ -220,11 +220,6 @@ const handleTabChange = (tabId) => {
 @import '@/styles/_variables.scss';
 @import '@/styles/_mixins.scss';
 
-.layout-container {
-  min-height: 100vh;
-  background: $color-surface-subtle;
-  padding-bottom: 96rpx;
-}
 
 .page-header {
   padding: $spacing-4 $spacing-4 $spacing-2;
@@ -250,16 +245,12 @@ const handleTabChange = (tabId) => {
   color: $color-text-primary;
 }
 
-.scroll-area { height: calc(100vh - 260rpx); }
-.content-wrapper { padding: 0 $spacing-4; display: flex; flex-direction: column; gap: $spacing-3; }
 
 .machine-card { padding: $spacing-3; }
 .machine-head { display: flex; align-items: center; justify-content: space-between; }
 .machine-title { @include text-title; color: $color-text-primary; }
 .machine-meta { display: flex; gap: $spacing-4; margin-top: $spacing-2; }
 .machine-meta-text { @include text-caption; color: $color-text-secondary; }
-
-.section-title { @include text-title; color: $color-text-primary; margin-top: $spacing-3; }
 
 .slot-list {
   display: flex;

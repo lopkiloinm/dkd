@@ -645,25 +645,10 @@ const handleTabChange = (tabId) => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
 
-.scroll-area {
-  flex: 1;
-  overflow: hidden;
-}
 
-.content-wrapper {
-  padding-left: $spacing-4;
-  padding-right: $spacing-4;
-  box-sizing: border-box;
-}
 
 .week-revenue-card {
-  margin-bottom: $spacing-4;
   cursor: pointer;
   @include interactive-pressable(0.99);
 }
@@ -712,7 +697,7 @@ const handleTabChange = (tabId) => {
   width: 100%;
   max-width: 22px;
   min-height: 0;
-  border-radius: $radius-sm $radius-sm 0 0;
+  border-radius: $radius-xs $radius-xs 0 0;
   background: $color-primary;
 
   /* Only when revenue > 0: tiny % heights still need a visible sliver */
@@ -741,10 +726,6 @@ const handleTabChange = (tabId) => {
   }
 }
 
-.quick-stats {
-  margin-bottom: 0;
-}
-
 .stat-card-link {
   cursor: pointer;
   transition: transform $transition-fast;
@@ -753,10 +734,6 @@ const handleTabChange = (tabId) => {
     transform: scale(0.98);
     opacity: 0.85;
   }
-}
-
-.quick-actions {
-  margin-bottom: 0;
 }
 
 .machine-status-overview {
@@ -947,70 +924,6 @@ const handleTabChange = (tabId) => {
 
 .member-progress {
   width: 100%;
-}
-
-.profile-section {
-  display: flex;
-  align-items: center;
-  gap: $spacing-4;
-  margin-bottom: $spacing-6;
-  padding: $spacing-4;
-  background: $color-bg-tertiary;
-  border-radius: $radius-lg;
-}
-
-.profile-info {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-1;
-}
-
-.user-name {
-  @include text-title;
-  color: $color-text-primary;
-  font-weight: $font-weight-bold;
-}
-
-.user-role {
-  @include text-caption;
-  color: $color-text-secondary;
-}
-
-.analytics-section {
-  margin-bottom: $spacing-6;
-}
-
-.chart-section {
-  margin-bottom: $spacing-6;
-}
-
-.chart-title {
-  @include text-title;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
-}
-
-.chart-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 200px;
-  gap: $spacing-3;
-  
-  .placeholder-text {
-    @include text-caption;
-    color: $color-text-tertiary;
-  }
-}
-
-.section-cards {
-  margin-bottom: 0;
-}
-
-.hot-products-section,
-.abnormal-section {
-  margin-bottom: 0;
 }
 
 .ranking-list {

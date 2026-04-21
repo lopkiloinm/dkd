@@ -106,23 +106,8 @@ onShow(() => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
 
-.scroll-area {
-  flex: 1;
-}
 
-.content-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-4;
-  padding-left: $spacing-4;
-  padding-right: $spacing-4;
-}
 
 .profile-card {
   display: flex;
@@ -154,7 +139,7 @@ onShow(() => {
   align-items: center;
   justify-content: space-between;
   gap: $spacing-3;
-  padding: $spacing-4 0;
+  padding: $spacing-4 $card-padding;
   border-bottom: 1px solid $color-border-subtle;
 
   &:last-child {

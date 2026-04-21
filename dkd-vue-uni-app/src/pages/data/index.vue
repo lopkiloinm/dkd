@@ -1,28 +1,28 @@
 <template>
   <AppTopBar title="Analytics" />
-  <view class="layout-container layout-container--chrome-filter layout-container--bottom-tabs">
-    <view class="filter-tabs chrome-filter-tabs">
-      <scroll-view class="tabs-scroll" scroll-x :show-scrollbar="false">
-        <view class="tabs-list">
-          <view class="master-filter-tab" @click="handleMasterFilter">
-            <Icon name="settings" size="18" color="currentColor" />
-          </view>
-          <view
-            v-for="tab in filterTabs"
-            :key="tab.value"
-            class="tab-item"
-            :class="{ 'tab-active': activeFilter === tab.value }"
-            @click="handleFilterTab(tab.value)"
-          >
-            <text class="tab-text">{{ tab.label }}</text>
-            <text v-if="tab.count !== undefined" class="tab-count">{{ tab.count }}</text>
-          </view>
-        </view>
-      </scroll-view>
-    </view>
+  <view class="layout-container layout-container--bottom-tabs">
 
     <scroll-view class="scroll-area" scroll-y>
       <view class="content-wrapper">
+        <view class="filter-tabs">
+          <scroll-view class="tabs-scroll" scroll-x :show-scrollbar="false">
+            <view class="tabs-list">
+              <view class="master-filter-tab" @click="handleMasterFilter">
+                <Icon name="settings" size="18" color="currentColor" />
+              </view>
+              <view
+                v-for="tab in filterTabs"
+                :key="tab.value"
+                class="tab-item"
+                :class="{ 'tab-active': activeFilter === tab.value }"
+                @click="handleFilterTab(tab.value)"
+              >
+                <text class="tab-text">{{ tab.label }}</text>
+                <text v-if="tab.count !== undefined" class="tab-count">{{ tab.count }}</text>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
         <!-- Time Range Selector -->
         <view class="time-range-selector">
           <view
@@ -215,23 +215,8 @@ const handleTabChange = (tabId) => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
 
-.scroll-area {
-  flex: 1;
-  overflow: hidden;
-}
 
-.content-wrapper {
-  padding-left: $spacing-4;
-  padding-right: $spacing-4;
-  min-height: 100vh;
-  box-sizing: border-box;
-}
 
 .tabs-scroll {
   flex: 1;
@@ -302,7 +287,6 @@ const handleTabChange = (tabId) => {
 .time-range-selector {
   display: flex;
   gap: $spacing-2;
-  margin-bottom: $spacing-6;
   overflow-x: auto;
   padding-bottom: $spacing-1;
 }
@@ -329,8 +313,6 @@ const handleTabChange = (tabId) => {
 }
 
 .chart-section {
-  margin-top: $spacing-6;
-  margin-bottom: $spacing-6;
 }
 
 .chart-title {
@@ -354,14 +336,5 @@ const handleTabChange = (tabId) => {
 }
 
 .metrics-section {
-  margin-bottom: $spacing-6;
-}
-
-.section-title {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
-  margin-bottom: $spacing-3;
-  display: block;
 }
 </style>

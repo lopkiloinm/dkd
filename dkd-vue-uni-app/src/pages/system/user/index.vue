@@ -12,19 +12,6 @@
       </view>
     </view>
 
-    <view class="search-bar">
-      <input class="n-input search-input" :value="queryParams.userName" @input="queryParams.userName = $event.detail.value" placeholder="Search by User Name" @confirm="handleSearch" />
-      <view class="filter-toggle" @click="toggleFilters">
-        <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
-        <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
-      </view>
-      <view class="filters-container" :class="{ expanded: filtersExpanded }">
-        <input class="n-input search-input" :value="queryParams.phonenumber" @input="queryParams.phonenumber = $event.detail.value" placeholder="Search by Phone" @confirm="handleSearch" />
-        <picker mode="selector" :range="statusOptions" :value="filterStatusIndex" @change="onFilterStatusChange">
-          <view class="filter-picker">{{ statusOptions[filterStatusIndex] }}</view>
-        </picker>
-      </view>
-    </view>
 
     <!-- Quick Actions -->
     <view class="quick-actions-bar">
@@ -35,6 +22,19 @@
     </view>
 
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
+      <view class="search-bar">
+        <input class="n-input search-input" :value="queryParams.userName" @input="queryParams.userName = $event.detail.value" placeholder="Search by User Name" @confirm="handleSearch" />
+        <view class="filter-toggle" @click="toggleFilters">
+          <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
+          <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
+        </view>
+        <view class="filters-container" :class="{ expanded: filtersExpanded }">
+          <input class="n-input search-input" :value="queryParams.phonenumber" @input="queryParams.phonenumber = $event.detail.value" placeholder="Search by Phone" @confirm="handleSearch" />
+          <picker mode="selector" :range="statusOptions" :value="filterStatusIndex" @change="onFilterStatusChange">
+            <view class="filter-picker">{{ statusOptions[filterStatusIndex] }}</view>
+          </picker>
+        </view>
+      </view>
       <view class="user-list">
         <view class="user-card" v-for="item in userList" :key="item.userId" @click="handleViewDetail(item)">
           <view class="user-card-header">
@@ -540,13 +540,6 @@ const onRefresh = () => {
   .action-pill--primary & { color: #fff; }
 }
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  box-sizing: border-box;
-  padding: calc($spacing-4 + env(safe-area-inset-top, 0px)) $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
-}
 
 .bulk-actions-bar {
   display: flex;
@@ -652,10 +645,6 @@ const onRefresh = () => {
   color: $apple-text-primary;
 }
 
-.scroll-area {
-  flex: 1;
-  overflow: hidden;
-}
 
 .user-list {
   padding: 0 20px 24px;

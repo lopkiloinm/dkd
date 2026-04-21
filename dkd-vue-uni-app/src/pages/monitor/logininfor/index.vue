@@ -1,21 +1,21 @@
 <template>
   <AppTopBar title="Login Logs" :showBack="true" />
   <view class="layout-container">
-    <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.userName" placeholder="Search by User Name" @confirm="handleSearch" />
-      <view class="filter-toggle" @click="toggleFilters">
-        <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
-        <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
-      </view>
-      <view class="filters-container" :class="{ expanded: filtersExpanded }">
-        <input class="n-input search-input" v-model="queryParams.ipaddr" placeholder="Search by IP" @confirm="handleSearch" />
-        <picker mode="selector" :range="statusOptions" :value="filterStatusIndex" @change="onFilterStatusChange">
-          <view class="filter-picker">{{ statusOptions[filterStatusIndex] }}</view>
-        </picker>
-      </view>
-    </view>
 
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
+      <view class="search-bar">
+        <input class="n-input search-input" v-model="queryParams.userName" placeholder="Search by User Name" @confirm="handleSearch" />
+        <view class="filter-toggle" @click="toggleFilters">
+          <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
+          <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
+        </view>
+        <view class="filters-container" :class="{ expanded: filtersExpanded }">
+          <input class="n-input search-input" v-model="queryParams.ipaddr" placeholder="Search by IP" @confirm="handleSearch" />
+          <picker mode="selector" :range="statusOptions" :value="filterStatusIndex" @change="onFilterStatusChange">
+            <view class="filter-picker">{{ statusOptions[filterStatusIndex] }}</view>
+          </picker>
+        </view>
+      </view>
       <view class="log-list">
         <view class="log-card" v-for="item in logList" :key="item.infoId">
           <view class="log-card-header">
@@ -184,13 +184,6 @@ const onRefresh = () => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  box-sizing: border-box;
-  padding: calc($spacing-4 + env(safe-area-inset-top, 0px)) $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
-}
 
 .search-bar {
   padding: $spacing-4;
@@ -268,10 +261,6 @@ const onRefresh = () => {
   color: $apple-text-primary;
 }
 
-.scroll-area {
-  flex: 1;
-  overflow: hidden;
-}
 
 .log-list {
   padding: 0 20px 24px;

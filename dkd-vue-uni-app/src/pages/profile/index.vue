@@ -120,30 +120,13 @@ onShow(() => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: transparent;
-}
 
-.scroll-area {
-  flex: 1;
-}
 
-.content-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-4;
-  padding-left: $spacing-4;
-  padding-right: $spacing-4;
-}
 
 .profile-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: $spacing-6;
   padding: $spacing-6;
   background: $color-bg-tertiary;
   border-radius: $radius-lg;

@@ -6,29 +6,29 @@
     @search="handleSearch"
     @notification="handleNotification"
   />
-  <view class="layout-container layout-container--chrome-filter layout-container--bottom-tabs">
-    <view class="filter-tabs chrome-filter-tabs">
-      <scroll-view class="tabs-scroll" scroll-x :show-scrollbar="false">
-        <view class="tabs-list">
-          <view class="master-filter-tab" @click="handleMasterFilter">
-            <Icon name="settings" size="18" color="currentColor" />
-          </view>
-          <view
-            v-for="tab in filterTabs"
-            :key="tab.value"
-            class="tab-item"
-            :class="{ 'tab-active': activeFilter === tab.value }"
-            @click="handleFilterTab(tab.value)"
-          >
-            <text class="tab-text">{{ tab.label }}</text>
-            <text v-if="tab.count !== undefined" class="tab-count">{{ tab.count }}</text>
-          </view>
-        </view>
-      </scroll-view>
-    </view>
+  <view class="layout-container layout-container--bottom-tabs">
 
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
       <view class="content-wrapper">
+        <view class="filter-tabs">
+          <scroll-view class="tabs-scroll" scroll-x :show-scrollbar="false">
+            <view class="tabs-list">
+              <view class="master-filter-tab" @click="handleMasterFilter">
+                <Icon name="settings" size="18" color="currentColor" />
+              </view>
+              <view
+                v-for="tab in filterTabs"
+                :key="tab.value"
+                class="tab-item"
+                :class="{ 'tab-active': activeFilter === tab.value }"
+                @click="handleFilterTab(tab.value)"
+              >
+                <text class="tab-text">{{ tab.label }}</text>
+                <text v-if="tab.count !== undefined" class="tab-count">{{ tab.count }}</text>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
         <!-- Quick Actions -->
         <view class="quick-actions">
           <text class="section-title">Quick Actions</text>
@@ -61,31 +61,33 @@
         </view>
 
         <!-- Task List -->
-        <text class="section-title">Task List</text>
-        <view class="task-list">
-          <view v-if="taskList.length === 0 && !loading" class="empty-state">
-            <EmptyState title="No tasks found" description="Try adjusting your filters or create a new task" />
+        <view class="tasks-section">
+          <text class="section-title">Task List</text>
+          <view class="task-list">
+            <view v-if="taskList.length === 0 && !loading" class="empty-state">
+              <EmptyState title="No tasks found" description="Try adjusting your filters or create a new task" />
+            </view>
+            <Card v-for="item in taskList" :key="item.taskId" class="task-card" @click="handleViewDetail(item)">
+              <view class="card-header">
+                <text class="task-code">{{ item.taskCode }}</text>
+                <Badge :variant="getTaskStatusVariant(item.taskStatus)">{{ getTaskStatusText(item.taskStatus) }}</Badge>
+              </view>
+              <view class="task-info">
+                <view class="info-row">
+                  <text class="info-label">Type</text>
+                  <text class="info-value">{{ getTaskTypeText(item.productTypeId) }}</text>
+                </view>
+                <view class="info-row">
+                  <text class="info-label">Machine</text>
+                  <text class="info-value">{{ item.innerCode }}</text>
+                </view>
+                <view class="info-row">
+                  <text class="info-label">Operator</text>
+                  <text class="info-value">{{ item.userName || 'Unassigned' }}</text>
+                </view>
+              </view>
+            </Card>
           </view>
-          <Card v-for="item in taskList" :key="item.taskId" class="task-card" @click="handleViewDetail(item)">
-            <view class="card-header">
-              <text class="task-code">{{ item.taskCode }}</text>
-              <Badge :variant="getTaskStatusVariant(item.taskStatus)">{{ getTaskStatusText(item.taskStatus) }}</Badge>
-            </view>
-            <view class="task-info">
-              <view class="info-row">
-                <text class="info-label">Type</text>
-                <text class="info-value">{{ getTaskTypeText(item.productTypeId) }}</text>
-              </view>
-              <view class="info-row">
-                <text class="info-label">Machine</text>
-                <text class="info-value">{{ item.innerCode }}</text>
-              </view>
-              <view class="info-row">
-                <text class="info-label">Operator</text>
-                <text class="info-value">{{ item.userName || 'Unassigned' }}</text>
-              </view>
-            </view>
-          </Card>
         </view>
       </view>
     </scroll-view>
@@ -641,11 +643,6 @@ const handleSearchResult = () => {}
   .action-pill--primary & { color: #fff; }
 }
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
 
 .tabs-scroll {
   flex: 1;
@@ -713,17 +710,7 @@ const handleSearchResult = () => {}
   }
 }
 
-.scroll-area {
-  flex: 1;
-  overflow: hidden;
-}
 
-.content-wrapper {
-  padding-left: $spacing-4;
-  padding-right: $spacing-4;
-  min-height: 100vh;
-  box-sizing: border-box;
-}
 
 .section-title {
   @include text-body;
@@ -734,7 +721,8 @@ const handleSearchResult = () => {}
 }
 
 .quick-actions {
-  margin-bottom: $spacing-4;
+  display: flex;
+  flex-direction: column;
 }
 
 .task-list {

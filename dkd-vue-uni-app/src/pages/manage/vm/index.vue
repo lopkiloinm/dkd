@@ -6,26 +6,7 @@
     @search="handleSearch"
     @notification="handleNotification"
   />
-  <view class="layout-container">
-    <view class="filter-tabs">
-      <scroll-view class="tabs-scroll" scroll-x :show-scrollbar="false">
-        <view class="tabs-list">
-          <view class="master-filter-tab" @click="handleMasterFilter">
-            <Icon name="settings" size="18" color="currentColor" />
-          </view>
-          <view
-            v-for="tab in filterTabs"
-            :key="tab.value"
-            class="tab-item"
-            :class="{ 'tab-active': activeFilter === tab.value }"
-            @click="handleFilterTab(tab.value)"
-          >
-            <text class="tab-text">{{ tab.label }}</text>
-            <text v-if="tab.count !== undefined" class="tab-count">{{ tab.count }}</text>
-          </view>
-        </view>
-      </scroll-view>
-    </view>
+  <view class="layout-container layout-container--bottom-tabs">
 
     <scroll-view
       class="scroll-area"
@@ -36,6 +17,25 @@
       :refresher-triggered="isRefreshing"
     >
       <view class="content-wrapper">
+        <view class="filter-tabs">
+          <scroll-view class="tabs-scroll" scroll-x :show-scrollbar="false">
+            <view class="tabs-list">
+              <view class="master-filter-tab" @click="handleMasterFilter">
+                <Icon name="settings" size="18" color="currentColor" />
+              </view>
+              <view
+                v-for="tab in filterTabs"
+                :key="tab.value"
+                class="tab-item"
+                :class="{ 'tab-active': activeFilter === tab.value }"
+                @click="handleFilterTab(tab.value)"
+              >
+                <text class="tab-text">{{ tab.label }}</text>
+                <text v-if="tab.count !== undefined" class="tab-count">{{ tab.count }}</text>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
         <text class="section-title">Machines</text>
         <view class="vm-list">
           <view v-if="vmList.length === 0 && !loading" class="empty-state">
@@ -577,18 +577,11 @@ const getStatusVariant = (status) => {
   .action-pill--primary & { color: #fff; }
 }
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background: $color-bg-primary;
-  padding-top: $top-bar-total-height;
-}
 
 .filter-tabs {
   display: flex;
   align-items: center;
-  padding: $spacing-3 $spacing-4;
+  padding: 0;
 }
 
 .tabs-scroll {
@@ -646,24 +639,7 @@ const getStatusVariant = (status) => {
   &:active { opacity: 0.7; }
 }
 
-.scroll-area {
-  flex: 1;
-  overflow: hidden;
-}
 
-.content-wrapper {
-  padding: $spacing-4 $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
-  min-height: 100vh;
-  box-sizing: border-box;
-}
-
-.section-title {
-  @include text-body;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
-  margin-bottom: $spacing-3;
-  display: block;
-}
 
 .vm-list {
   display: flex;

@@ -196,33 +196,10 @@ const handleTabChange = (tabId) => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
 
-.scroll-area {
-  flex: 1;
-  overflow: hidden;
-}
 
-.content-wrapper {
-  padding-left: $spacing-4;
-  padding-right: $spacing-4;
-  min-height: 100vh;
-  box-sizing: border-box;
-}
-
-.section-title {
-  @include text-title;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
-  margin: $spacing-6 0 $spacing-4 0;
-}
 
 .report-types {
-  margin-bottom: $spacing-6;
 }
 
 .report-card {

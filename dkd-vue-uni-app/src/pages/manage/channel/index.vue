@@ -393,13 +393,6 @@ onShow(() => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background: transparent;
-  padding-top: $top-bar-total-height;
-}
 
 .page-header {
   display: flex;
@@ -436,12 +429,6 @@ onShow(() => {
   @include text-body;
 }
 
-.scroll-area {
-  flex: 1;
-  padding: 0 $spacing-4;
-  padding-bottom: var(--layout-scroll-pad-bottom);
-  box-sizing: border-box;
-}
 
 .channel-list {
   display: flex;

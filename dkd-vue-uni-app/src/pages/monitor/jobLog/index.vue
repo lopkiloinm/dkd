@@ -1,11 +1,11 @@
 <template>
   <AppTopBar title="Job Logs" :showBack="true" />
   <view class="layout-container">
-    <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.jobName" placeholder="Search by Job Name" @confirm="handleSearch" />
-    </view>
 
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
+      <view class="search-bar">
+        <input class="n-input search-input" v-model="queryParams.jobName" placeholder="Search by Job Name" @confirm="handleSearch" />
+      </view>
       <view class="log-list">
         <view class="log-card" v-for="item in logList" :key="item.jobLogId">
           <view class="log-card-header">
@@ -144,13 +144,6 @@ const onRefresh = () => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  box-sizing: border-box;
-  padding: calc($spacing-4 + env(safe-area-inset-top, 0px)) $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
-}
 
 .search-bar {
   padding: $spacing-4;
@@ -170,10 +163,6 @@ const onRefresh = () => {
   box-sizing: border-box;
 }
 
-.scroll-area {
-  flex: 1;
-  overflow: hidden;
-}
 
 .log-list {
   padding: 0 20px 24px;

@@ -1,12 +1,12 @@
 <template>
   <AppTopBar title="Code Generation" :showBack="true" />
   <view class="layout-container">
-    <view class="search-bar">
-      <input class="n-input search-input" v-model="queryParams.tableName" placeholder="Search by Table Name" @confirm="handleSearch" />
-      <input class="n-input search-input" v-model="queryParams.tableComment" placeholder="Search by Table Comment" @confirm="handleSearch" />
-    </view>
 
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
+      <view class="search-bar">
+        <input class="n-input search-input" v-model="queryParams.tableName" placeholder="Search by Table Name" @confirm="handleSearch" />
+        <input class="n-input search-input" v-model="queryParams.tableComment" placeholder="Search by Table Comment" @confirm="handleSearch" />
+      </view>
       <view class="table-list">
         <view class="table-card" v-for="item in tableList" :key="item.tableId">
           <view class="table-card-header">
@@ -192,13 +192,6 @@ const onRefresh = () => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  box-sizing: border-box;
-  padding: calc($spacing-4 + env(safe-area-inset-top, 0px)) $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
-}
 
 .search-bar {
   padding: $spacing-4 $spacing-5 $spacing-4;
@@ -218,10 +211,6 @@ const onRefresh = () => {
   box-sizing: border-box;
 }
 
-.scroll-area {
-  flex: 1;
-  overflow: hidden;
-}
 
 .table-list {
   padding: 0 $spacing-5 $spacing-6;

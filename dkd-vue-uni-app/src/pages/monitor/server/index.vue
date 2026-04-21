@@ -199,18 +199,7 @@ const onRefresh = () => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  box-sizing: border-box;
-  padding: calc($spacing-4 + env(safe-area-inset-top, 0px)) $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
-}
 
-.scroll-area {
-  flex: 1;
-  overflow: hidden;
-}
 
 .server-info {
   padding: $spacing-5;

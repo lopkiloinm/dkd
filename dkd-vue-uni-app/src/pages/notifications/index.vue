@@ -1,32 +1,28 @@
 <template>
+  <AppTopBar title="Notifications" :show-back="true">
+    <template #actions>
+      <view class="action-pill" @click="markAllRead"><text class="action-pill-text">Mark all</text></view>
+    </template>
+  </AppTopBar>
   <view class="layout-container">
-    <view class="page-header">
-      <view class="header-back" @click="handleBack">
-        <Icon name="chevron-left" size="18" color="currentColor" />
-        <text class="header-back-text">Back</text>
-      </view>
-      <text class="page-title">Notifications</text>
-      <text class="header-action" @click="markAllRead">Mark all</text>
-    </view>
-
-    <view class="filter-tabs">
-      <scroll-view class="tabs-scroll" scroll-x :show-scrollbar="false">
-        <view class="tabs-list">
-          <view
-            v-for="tab in filterTabs"
-            :key="tab.value"
-            class="tab-item"
-            :class="{ 'tab-active': activeFilter === tab.value }"
-            @click="handleFilterTab(tab.value)"
-          >
-            <text class="tab-text">{{ tab.label }}</text>
-          </view>
-        </view>
-      </scroll-view>
-    </view>
 
     <scroll-view class="scroll-area" scroll-y refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing" @scrolltolower="loadMore">
       <view class="content-wrapper">
+        <view class="filter-tabs">
+          <scroll-view class="tabs-scroll" scroll-x :show-scrollbar="false">
+            <view class="tabs-list">
+              <view
+                v-for="tab in filterTabs"
+                :key="tab.value"
+                class="tab-item"
+                :class="{ 'tab-active': activeFilter === tab.value }"
+                @click="handleFilterTab(tab.value)"
+              >
+                <text class="tab-text">{{ tab.label }}</text>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
         <view v-if="notificationList.length === 0 && !loading" class="empty-state">
           <EmptyState title="No notifications" description="You're all caught up!" />
         </view>
@@ -86,6 +82,7 @@
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import Icon from '@/components/ui/Icon.vue'
+import AppTopBar from '@/components/app/AppTopBar.vue'
 import Card from '@/components/ui/Card.vue'
 import Badge from '@/components/ui/Badge.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
@@ -203,11 +200,6 @@ onShow(() => {
 @import "@/styles/_variables.scss";
 @import "@/styles/_mixins.scss";
 
-.layout-container {
-  min-height: 100vh;
-  background: $color-bg-primary;
-  padding-top: $top-bar-total-height;
-}
 
 .page-header {
   position: fixed;
@@ -249,7 +241,7 @@ onShow(() => {
 }
 
 .filter-tabs {
-  padding: $spacing-3 $spacing-4;
+  padding: 0;
 }
 
 .tabs-scroll {
@@ -282,16 +274,7 @@ onShow(() => {
   color: $color-text-secondary;
 }
 
-.scroll-area {
-  height: calc(100vh - #{$top-bar-total-height} - 52px);
-}
 
-.content-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-3;
-  padding: 0 $spacing-4 $spacing-6;
-}
 
 .notification-card {
   cursor: pointer;

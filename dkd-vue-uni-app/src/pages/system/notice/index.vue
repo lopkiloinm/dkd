@@ -1,20 +1,20 @@
 <template>
   <AppTopBar title="Notice Management" :showBack="true" />
   <view class="layout-container">
-    <view class="search-bar">
-      <input class="n-input search-input" :value="queryParams.noticeTitle" @input="queryParams.noticeTitle = $event.detail.value" placeholder="Search by Title" @confirm="handleSearch" />
-      <view class="filter-toggle" @click="toggleFilters">
-        <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
-        <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
-      </view>
-      <view class="filters-container" :class="{ expanded: filtersExpanded }">
-        <picker mode="selector" :range="noticeTypeOptions" :value="filterNoticeTypeIndex" @change="onFilterNoticeTypeChange">
-          <view class="filter-picker">{{ noticeTypeOptions[filterNoticeTypeIndex] }}</view>
-        </picker>
-      </view>
-    </view>
 
     <scroll-view class="scroll-area" scroll-y @scrolltolower="loadMore" refresher-enabled @refresherrefresh="onRefresh" :refresher-triggered="isRefreshing">
+      <view class="search-bar">
+        <input class="n-input search-input" :value="queryParams.noticeTitle" @input="queryParams.noticeTitle = $event.detail.value" placeholder="Search by Title" @confirm="handleSearch" />
+        <view class="filter-toggle" @click="toggleFilters">
+          <text class="filter-toggle-text">{{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}</text>
+          <text class="filter-toggle-icon">{{ filtersExpanded ? '▼' : '▶' }}</text>
+        </view>
+        <view class="filters-container" :class="{ expanded: filtersExpanded }">
+          <picker mode="selector" :range="noticeTypeOptions" :value="filterNoticeTypeIndex" @change="onFilterNoticeTypeChange">
+            <view class="filter-picker">{{ noticeTypeOptions[filterNoticeTypeIndex] }}</view>
+          </picker>
+        </view>
+      </view>
       <view class="notice-list">
         <view class="notice-card" v-for="item in noticeList" :key="item.noticeId" @click="handleViewDetail(item)">
           <view class="notice-card-header">
@@ -341,13 +341,6 @@ const onRefresh = () => {
   .action-pill--primary & { color: #fff; }
 }
 
-.layout-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  box-sizing: border-box;
-  padding: calc($spacing-4 + env(safe-area-inset-top, 0px)) $spacing-4 calc($spacing-4 + #{$bottom-bar-height} + env(safe-area-inset-bottom, 0px)) $spacing-4;
-}
 
 .search-bar {
   padding: $spacing-4;
@@ -425,10 +418,6 @@ const onRefresh = () => {
   color: $apple-text-primary;
 }
 
-.scroll-area {
-  flex: 1;
-  overflow: hidden;
-}
 
 .notice-list {
   padding: 0 $spacing-5 $spacing-6;

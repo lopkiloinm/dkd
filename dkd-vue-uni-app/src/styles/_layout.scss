@@ -47,6 +47,20 @@ scroll-view {
   background-color: $color-bg-primary !important;
 }
 
+// When a list page uses a separate `.search-bar` above its list (no .content-wrapper
+// shell), the search bar still needs to clear the fixed AppTopBar AND the inner list
+// needs its own top spacing reset because the search-bar now owns the top reservation.
+.layout-container:not(.layout-chrome-manual) .scroll-area > .search-bar:first-child {
+  margin: calc(var(--layout-scroll-pad-top) + #{$spacing-4}) $spacing-4 0 $spacing-4;
+}
+.layout-container:not(.layout-chrome-manual) .scroll-area > .search-bar:first-child + * {
+  margin-top: $spacing-4;
+}
+// Last child of scroll-area gets bottom safe-area + tab clearance.
+.layout-container:not(.layout-chrome-manual) .scroll-area > *:last-child {
+  padding-bottom: var(--layout-scroll-pad-bottom);
+}
+
 .search-bar {
   @include surface-card-glass($radius-lg, $shadow-md);
   padding: $spacing-4;
@@ -131,15 +145,28 @@ scroll-view {
   gap: $layout-section-gap;
 }
 
-/* Section heading above a Card (when the title can't live inside the card itself) */
+/* Section heading above a Card (when the title can't live inside the card itself).
+   Default has NO outer margin — when used as a direct child of .content-wrapper its
+   spacing comes from the parent gap. The `+ *` rule provides the tight title→content
+   gap when the title introduces an immediate sibling. */
 .section-title {
   display: block;
-  margin: $spacing-4 0 $spacing-2 0;
+  margin: 0;
   font-family: $font-family-body;
   font-size: $font-size-title-sm;
   font-weight: $font-weight-semibold;
   color: $color-text-primary;
   letter-spacing: 0.1px;
+}
+
+.section-title + * {
+  margin-top: $spacing-2;
+}
+
+/* When .section-title is a direct child of .content-wrapper its trailing `+ *` margin
+   would double-stack with the parent gap; cancel it in that context. */
+.content-wrapper > .section-title + * {
+  margin-top: 0;
 }
 
 .section-title:first-child {
@@ -316,52 +343,18 @@ scroll-view {
   overflow: hidden;
 }
 
-// Fixed pill under AppTopBar — same glass language as bars; reserve $filter-chrome-reserved-height in page layout padding-top
-.chrome-filter-tabs {
-  position: fixed;
-  left: $top-bar-inline-margin;
-  right: $top-bar-inline-margin;
-  top: calc(#{$top-bar-total-height} + #{$chrome-filter-gap-from-topbar});
-  z-index: 1018;
+// In-flow filter tab strip (sits inside .content-wrapper, scrolls with page).
+// Spacing between filter-tabs and the next sibling is provided by .content-wrapper's gap;
+// do NOT add margin here or it will double-stack with that gap.
+.filter-tabs {
   display: flex;
   align-items: center;
-  width: calc(100% - #{$top-bar-inline-margin} * 2);
-  max-width: $chrome-filter-pill-max-width;
-  margin-left: auto;
-  margin-right: auto;
-  padding: $chrome-filter-vertical-padding $spacing-2;
-  box-sizing: border-box;
-  min-height: calc(#{$chrome-filter-row-min} + #{$chrome-filter-vertical-padding} * 2);
-  @include surface-chrome($radius-pill, $shadow-md);
+  gap: $spacing-2;
 
-  .tabs-scroll {
-    flex: 1;
-    min-width: 0;
-  }
-
+  .tabs-scroll,
   .segmented-control {
     flex: 1;
     min-width: 0;
-  }
-
-  // Slightly denser chips so tabs stay readable on blur
-  .tab-item:not(.tab-active) {
-    background: rgba(6, 8, 12, 0.58);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .tab-item.tab-active {
-    border: 1px solid rgba(255, 255, 255, 0.12);
-  }
-
-  .master-filter-tab {
-    background: rgba(6, 8, 12, 0.58);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .segmented-control .segment:not(.segment-active) {
-    background: rgba(6, 8, 12, 0.58);
-    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
 
